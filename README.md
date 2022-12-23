@@ -126,6 +126,8 @@ TL;DR : There are so many technology tools and so many terms that we can use but
 
 ------
 
+![high-level-arch](https://github.com/adinandradrs/cezbek-engine/blob/master/docs/erd.png?raw=true)
+
 #### System Migration
 
 ------
