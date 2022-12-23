@@ -3,12 +3,15 @@
 Cezbek Engine is a new core back-end system that helps Kezbek manage business, at scale. With Cezbek Engine, Kezbek can have 
 
 - Business to Business (B2B) onboarding for enterprise partner
-- B2B Customer Whitelist Management
-- B2B Discount and Cashback Strategy Management
-- Discount and Cashback offers to all of B2B Customer
-- Loyalty, "tiering" gamification, and notification to boost customer engagement
-- Budget friendly payment providers to give B2B partner a better experience
-- Dashboard for reporting & analytics
+- B2B cashback workflow for customer transaction
+- B2B loyalty reward workflow for "tiering" gamification 
+- Notification to boost customer engagement
+- **Budget friendly payment providers** to give Kezbek finance team a better experience (*)
+- **Dashboard for reporting & analytics** for invoice and reconciliation purpose (*) 
+
+(*) means a new additional features
+
+As per this document is created, Kezbek will not manage which product and campaign that partner have to use Kezbek workflow.
 
 ### Contents
 
@@ -29,9 +32,9 @@ Cezbek Engine is a new core back-end system that helps Kezbek manage business, a
 
 ------
 
-In technically Cezbek Engine itself is a multipurpose service to provide :
+Technically Cezbek Engine itself is a multipurpose service to provide :
 
-- Cezbek APIs to serve all APIs that related to Kezbek business operation, B2B partner, and B2B customer
+- Cezbek APIs to serve all APIs that related to Kezbek business operation and B2B partner
 - Cezbek Job to serve backend job and scheduled task to support asynchronous business process  
 - Cezbek Analytics to serve reporting as summary for Kezbek organization and the B2B partner
 
@@ -111,7 +114,7 @@ Below is the table of standard open-source libraries that we used in Cezbek Engi
 
 For the naming convention for all of those things, we are following the nature of Go that has been writen on [Effective Go](https://go.dev/doc/effective_go) that has and emitted by community.
 
-TL;DR : There are so many technology tools and so many terms that we can use but can lead a debate among us. So to avoid those conflicts and as the achievement is to know what is the best way, we also open for many options out of there if necessary.   
+TL;DR : There are so many technology tools and so many terms that we can use but can lead a debate among us. So to avoid those conflicts and as the achievement is to know what is the best way, we also open for many options out of there if necessary. 
 
 ### Documentation
 
