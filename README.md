@@ -13,7 +13,7 @@ Cezbek Engine is a new core back-end system that helps Kezbek manage business, a
 
 As per this document is created
 
-- Kezbek is officially partnered with LinkSaja, GoPaid, and Josvo for wallet service provider. Then it only works for B2B partner's customer who have MSISDN as identifier.
+- Kezbek is officially partnered with LinkSaja, GoPaid, and Josvo as wallet service providers. Then it only works for B2B partner's customer who have MSISDN as identifier.
 - To top-up wallet service provider Kezbek could use H2H process or thru 3rd party payment provider, based on the lowest service charge. 
 
 - Kezbek will not manage customer whitelists, product, and campaign that partner that can use Kezbek workflow.
