@@ -116,6 +116,16 @@ For the naming convention for all of those things, we are following the nature o
 
 TL;DR : There are so many technology tools and so many terms that we can use but can lead a debate among us. So to avoid those conflicts and as the achievement is to know what is the best way, we also open for many options out of there if necessary. 
 
+#### Data Structure
+
+------
+
+#### System Migration
+
+------
+
+
+
 ### Documentation
 
 ------
