@@ -11,7 +11,10 @@ Cezbek Engine is a new core back-end system that helps Kezbek manage business, a
 
 (*) means a new additional features
 
-As per this document is created, Kezbek will not manage which product and campaign that partner have to use Kezbek workflow.
+As per this document is created
+
+- Kezbek will not manage which product and campaign that partner have to use Kezbek workflow.
+- Kezbek balance can be used in transaction as long as the transaction amount is not over limit (balance) and means the transaction is not applicable to get another cashback.
 
 ### Contents
 
