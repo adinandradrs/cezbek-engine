@@ -15,7 +15,7 @@ As per this document is created
 
 - Each B2B partner's customer will have their own balance for a business fair 
 
-- Kezbek will not manage which product and campaign that partner have to use Kezbek workflow.
+- Kezbek will not manage which identifier, product, and campaign that partner have to use Kezbek workflow.
 - Kezbek balance can be used in transaction as long as the transaction amount is not over limit (balance) and means the transaction is not applicable to get another cashback.
 
 ### Contents
