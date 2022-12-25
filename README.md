@@ -83,7 +83,11 @@ Our code delivery to operation is using GitHub action as the CI/CD, and should p
 3. Quality : SonarQube Cloud will scan the code quality, men and code should be improvise together along with Kezbek commitment to develop their employee skill and their product quality. A rating for maintain level, A rating for security, 0 of code smell, and 0 of bugs.
 4. Package : Compilation, packaging, and send to the machine. For a reason, GitHub Package will be used as artifactory and release versioning.
 
-In contrast for the production environment, we recommend to use docker and K8s as the application backbone. Because by using K8s we could scale our apps with a more easy way. So even we are not using it on development environment due to *economics* case, it still have so many similarities because the docker itself is just for a container that non mainly used by the developer. Still it does not break 12 factor apps for dev/prod parity. The packaging will be handled by CI/CD based on the selected branch.
+In contrast for the production environment, we recommend to use docker and K8s as the application backbone and heavily backed up by AWS. Because by using K8s we could scale our apps with a more easy way. So even we are not using it on development environment due to *economics* case, it still have so many similarities because the docker itself is just for a container that non mainly used by the developer. Still it does not break 12 factor apps for dev/prod parity. The packaging will be handled by CI/CD based on the selected branch.
+
+We still recommend Consul and Vault as the configmaps and secrets source, due to its ability as a distributed config server and can be secured using authentication.
+
+![](https://github.com/adinandradrs/cezbek-engine/blob/master/docs/archie-1.0-HLA-PROD-HA.jpg?raw=true)
 
 #### Technology Architecture
 
@@ -107,7 +111,7 @@ Below is the table of standard open-source libraries that we used in Cezbek Engi
 | Pgxpool          | v4.17.2            | Storage                   | Postgres library that support transaction, pool mechanism, cache, and pgxscan to optimize scanning into struct with a lesser ops allocation. Docs for [reference](https://github.com/efectn/go-orm-benchmarks/blob/master/results.md). We avoid to use ORM if we are not smart enough to use a raw SQL. |
 | UberZap          | v1.22.0            | Logger                    | Log library that used by Uber, the output data statically by default is a JSON format. So it becomes developer friendly if the log is stored into Elastic tool. Docs for [reference](http://hackemist.com/logbench/). |
 | Go-Redis         | v6.15.9            | Storage                   | Redis library that support pool mechanism. Docs for [reference](https://levelup.gitconnected.com/fastest-redis-client-library-for-go-7993f618f5ab). |
-| HashiCorp Consul |                    | Service                   | Consul library to support service discovery and config management system as we are not using K8s. |
+| HashiCorp Consul |                    | Service                   | Consul library to support service discovery and config management system as we are not using K8s on development. |
 | Fiber            | v23.6.0            | Router                    | Built-in library in Fiber framework for HTTP router, middleware (interceptor), and limiter. |
 | Fiber            | v23.6.0            | Monitor                   | Built in library in Fiber framework for resource monitoring. |
 | Fiber w/ stdlib  | v23.6.0 w/ 1.17.12 | Message Parser            | Built-in library in Fiber framework and combined with standard library to support message encoding decoding such as JSON, Struct, and interface. |
