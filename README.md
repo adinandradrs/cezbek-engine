@@ -83,6 +83,8 @@ Our code delivery to operation is using GitHub action as the CI/CD, and should p
 3. Quality : SonarQube Cloud will scan the code quality, men and code should be improvise together along with Kezbek commitment to develop their employee skill and their product quality. A rating for maintain level, A rating for security, 0 of code smell, and 0 of bugs.
 4. Package : Compilation, packaging, and send to the machine. For a reason, GitHub Package will be used as artifactory and release versioning.
 
+In contrast for the production environment, we recommend to use docker and K8s as the application backbone. Because by using K8s we could scale our apps with a more easy way. So even we are not using it on development environment due to *economics* case, it still have so many similarities because the docker itself is just for a container that non mainly used by the developer. Still it does not break 12 factor apps for dev/prod parity. The packaging will be handled by CI/CD based on the selected branch.
+
 #### Technology Architecture
 
 ------
@@ -130,15 +132,15 @@ TL;DR : There are so many technology tools and so many terms that we can use but
 
 Kezbek database is separated into 2 schemas (in production it can be placed in a different machine if we do not use high performant server) : 
 
-- cezbek-engine as a schema that holds transaction and tiering data
+- cezbek-engine as a schema that holds transaction and tiering data.
 
-- cezbek-analytics as a schema that holds transaction summary and used for reporting
+- cezbek-analytics as a schema that holds transaction summary and used for reporting.
 
 At Cezbek engine schema itself some data is coming from an event sourcing that rely on 2PC to be more consistent on rollback or failed transaction. Cezbek analytics data populated and is coming from cezbek engine as the summary data does not need to be real time. There are 3 summaries that should be collected :  
 
-- Transaction summary per day 
-- Payment provider *fee service* expense
-- Summary B2B partner customer transaction history
+- Transaction summary per day.
+- Payment provider *fee service* expense.
+- Summary B2B partner customer transaction history.
 
 #### System Migration
 
