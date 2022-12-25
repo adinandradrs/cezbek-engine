@@ -10,13 +10,15 @@ type BaseEntity struct {
 	UpdatedDate sql.NullTime   `json:"updated_date"`
 }
 
-type BusinessError struct {
-	ErrorCode    string
-	ErrorMessage string
-}
+type (
+	BusinessError struct {
+		ErrorCode    string
+		ErrorMessage string
+	}
 
-type TechnicalError struct {
-	Exception string `json:"exception"`
-	Occurred  int64  `json:"occurred_unixts"`
-	Ticket    string `json:"ticket"`
-}
+	TechnicalError struct {
+		Exception string `json:"exception"`
+		Occurred  int64  `json:"occurred_unixts"`
+		Ticket    string `json:"ticket"`
+	}
+)
