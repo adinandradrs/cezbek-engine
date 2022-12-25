@@ -31,15 +31,15 @@ func (c Consul) Register() *model.TechnicalError {
 	if err != nil {
 		c.Logger.Fatal("cannot initialize consul client", zap.Error(err))
 	}
-	registration := new(consul.AgentServiceRegistration)
-	registration.ID = c.Service
-	registration.Name = c.Service
-	registration.Address = c.Host
-	registration.Port = c.Port
-	registration.Check = new(consul.AgentServiceCheck)
-	registration.Check.Interval = c.CheckInterval
-	registration.Check.Timeout = c.CheckTimeout
-	err = client.Agent().ServiceRegister(registration)
+	reg := new(consul.AgentServiceRegistration)
+	reg.ID = c.Service
+	reg.Name = c.Service
+	reg.Address = c.Host
+	reg.Port = c.Port
+	reg.Check = new(consul.AgentServiceCheck)
+	reg.Check.Interval = c.CheckInterval
+	reg.Check.Timeout = c.CheckTimeout
+	err = client.Agent().ServiceRegister(reg)
 	if err != nil {
 		return &model.TechnicalError{
 			Exception: err.Error(),
