@@ -11,3 +11,11 @@ type (
 		Message string `json:"message,omitempty"`
 	}
 )
+
+type (
+	BadPayloadResponse struct {
+		FailedField string
+		Tag         string
+		Value       string
+	}
+)
