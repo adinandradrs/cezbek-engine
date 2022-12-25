@@ -134,7 +134,7 @@ Kezbek database is separated into 2 schemas (in production it can be placed in a
 
 - cezbek-analytics as a schema that holds transaction summary and used for reporting
 
-At Cezbek engine schema itself some data is coming from an event sourcing that rely on 2PC to be more consistent on rollback or failed transaction. Cezbek analytics data populated and is coming from cezbek schema as the summary data does not need to be real time. There are 3 summaries that should be collected :  
+At Cezbek engine schema itself some data is coming from an event sourcing that rely on 2PC to be more consistent on rollback or failed transaction. Cezbek analytics data populated and is coming from cezbek engine as the summary data does not need to be real time. There are 3 summaries that should be collected :  
 
 - Transaction summary per day 
 - Payment provider *fee service* expense
