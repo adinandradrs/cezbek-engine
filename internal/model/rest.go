@@ -18,4 +18,13 @@ type (
 		Tag         string
 		Value       string
 	}
+
+	PaginationResponse struct {
+		Number        int    `json:"number,omitempty"`
+		Size          int    `json:"size,omitempty"`
+		TotalElements int    `json:"total_elements,omitempty"`
+		TotalPages    int    `json:"total_pages,omitempty"`
+		Sort          string `json:"sort,omitempty"`
+		SortBy        string `json:"sort_by,omitempty"`
+	}
 )
