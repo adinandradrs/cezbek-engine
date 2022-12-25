@@ -128,6 +128,18 @@ TL;DR : There are so many technology tools and so many terms that we can use but
 
 ![high-level-arch](https://github.com/adinandradrs/cezbek-engine/blob/master/docs/erd.png?raw=true)
 
+Kezbek database is separated into 2 schemas (in production it can be placed in a different machine if we do not use high performant server) : 
+
+- cezbek-engine as a schema that holds transaction and tiering data
+
+- cezbek-analytics as a schema that holds transaction summary and used for reporting
+
+At Cezbek engine schema itself some data is coming from an event sourcing that rely on 2PC to be more consistent on rollback or failed transaction. Cezbek analytics data populated and is coming from cezbek schema as the summary data does not need to be real time. There are 3 summaries that should be collected :  
+
+- Transaction summary per day 
+- Payment provider *fee service* expense
+- Summary B2B partner customer transaction history
+
 #### System Migration
 
 ------
