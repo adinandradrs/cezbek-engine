@@ -150,7 +150,7 @@ At Cezbek engine schema itself some data is coming from an event sourcing that r
 
 ------
 
-
+For configmap and secrets we will use a repository called cezbek-sre-ops. For data to generate table on a schema and data manipulation we will use a repository called cezbek-sre-data. Data migration will be automated by CI/CD that run Flyway.
 
 ### Documentation
 
