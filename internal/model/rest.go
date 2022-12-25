@@ -35,6 +35,15 @@ type (
 )
 
 type (
+	SearchRequest struct {
+		TextSearch string `json:"text_search"`
+		Start      uint   `json:"start" binding:"required" example:"0"`
+		Limit      uint   `json:"limit" binding:"required" example:"5"`
+		SortBy     string `json:"sort_by" `
+		Sort       string `json:"sort" enums:"ASC,DESC"`
+		SessionRequest
+	}
+
 	SessionRequest struct {
 		Id       string `swaggerignore:"true"`
 		Partner  string `swaggerignore:"true"`
