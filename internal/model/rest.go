@@ -27,4 +27,9 @@ type (
 		Sort          string `json:"sort,omitempty"`
 		SortBy        string `json:"sort_by,omitempty"`
 	}
+
+	TransactionResponse struct {
+		TransactionTimestamp uint   `json:"transaction_timestamp"`
+		TransactionId        string `json:"transaction_id"`
+	}
 )
