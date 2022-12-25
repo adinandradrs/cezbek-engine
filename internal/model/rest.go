@@ -35,6 +35,11 @@ type (
 )
 
 type (
+	FindByIdRequest struct {
+		Id int64 `json:"id"`
+		SessionRequest
+	}
+
 	SearchRequest struct {
 		TextSearch string `json:"text_search"`
 		Start      uint   `json:"start" binding:"required" example:"0"`
