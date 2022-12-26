@@ -3,12 +3,12 @@ module github.com/adinandradrs/cezbek-engine
 go 1.17
 
 require (
+	github.com/go-playground/validator/v10 v10.11.1
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/hashicorp/consul/api v1.18.0
 	github.com/jackc/pgconn v1.13.0
 	github.com/jackc/pgx/v4 v4.17.0
 	github.com/lestrrat-go/jwx v1.2.25
-	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/go-playground/validator/v10 v10.11.1
 )
 
 require (
@@ -16,8 +16,11 @@ require (
 	github.com/aws/aws-sdk-go v1.44.167 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/go-playground/locales v0.14.0 // indirect
+	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-hclog v1.2.0 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
@@ -26,6 +29,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/serf v0.10.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect

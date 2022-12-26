@@ -15,7 +15,7 @@ type Consul struct {
 	CheckInterval string
 	CheckTimeout  string
 	Logger        *zap.Logger
-	Config        *viper.Viper
+	Viper         *viper.Viper
 }
 
 type ConsulWatcher interface {
@@ -50,12 +50,12 @@ func (c Consul) Register() *model.TechnicalError {
 }
 
 func (c Consul) readConfig() {
-	err := c.Config.AddRemoteProvider("consul", fmt.Sprintf("%s:%v", c.Host, c.Port), c.Service)
+	err := c.Viper.AddRemoteProvider("consul", fmt.Sprintf("%s:%v", c.Host, c.Port), c.Service)
 	if err != nil {
 		c.Logger.Fatal("viper cannot settle with remote consul", zap.Error(err))
 	}
-	c.Config.SetConfigType("json")
-	err = c.Config.ReadRemoteConfig()
+	c.Viper.SetConfigType("json")
+	err = c.Viper.ReadRemoteConfig()
 	if err != nil {
 		c.Logger.Fatal("viper cannot read KV on remote consul", zap.Error(err))
 	}

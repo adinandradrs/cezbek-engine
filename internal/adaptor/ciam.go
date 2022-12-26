@@ -28,16 +28,16 @@ type (
 	}
 )
 
-func NewCognito(c *Cognito) CiamWatcher {
-	return c
+func NewCognito(c Cognito) CiamWatcher {
+	return &c
 }
 
-func pubKey(token *jwt.Token, jwkurl string) (pkey interface{}, err error) {
+func pubKey(token *jwt.Token, url string) (pkey interface{}, err error) {
 	kid, exists := token.Header["kid"].(string)
 	if !exists {
 		return nil, errors.New("kid header does not exists")
 	}
-	kset, err := jwk.ParseString(jwkurl)
+	kset, err := jwk.ParseString(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve JWK")
 	}
