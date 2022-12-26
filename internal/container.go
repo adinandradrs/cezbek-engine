@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"github.com/adinandradrs/cezbek-engine/internal/adaptor"
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/storage"
 	"github.com/spf13/viper"
@@ -10,18 +11,35 @@ import (
 type Container struct {
 	Logger *zap.Logger
 	Viper  *viper.Viper
+	app    string
 }
 
-func NewContainer() Container {
-	log := apps.NewLog(false)
-	vp, err := apps.NewEnv(log)
+func NewContainer(app string) Container {
+	logger := apps.NewLog(false)
+	conf, err := apps.NewEnv(logger)
 	if err != nil {
-		log.Fatal("error to load config", zap.Any("", &err))
+		logger.Panic("error to load config", zap.Any("", &err))
 	}
-	return Container{
-		Logger: log,
-		Viper:  vp,
+	return register(&Container{
+		Logger: logger,
+		Viper:  conf,
+		app:    app,
+	})
+}
+
+func register(c *Container) Container {
+	clientSvc := adaptor.NewConsul(adaptor.Consul{
+		Host:    c.Viper.GetString("consul_host"),
+		Port:    c.Viper.GetInt("consul_port"),
+		Service: c.Viper.GetString(c.app),
+		Viper:   c.Viper,
+		Logger:  c.Logger,
+	})
+	ex := clientSvc.Register()
+	if ex != nil {
+		c.Logger.Panic("error to register", zap.Any("", &ex))
 	}
+	return *c
 }
 
 type (

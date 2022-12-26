@@ -2,20 +2,21 @@ package adaptor
 
 import (
 	"fmt"
+	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
 	consul "github.com/hashicorp/consul/api"
 	"github.com/spf13/viper"
+	_ "github.com/spf13/viper/remote"
 	"go.uber.org/zap"
+	"strconv"
 )
 
 type Consul struct {
-	Host          string
-	Port          int
-	Service       string
-	CheckInterval string
-	CheckTimeout  string
-	Logger        *zap.Logger
-	Viper         *viper.Viper
+	Host    string
+	Port    int
+	Service string
+	Logger  *zap.Logger
+	Viper   *viper.Viper
 }
 
 type ConsulWatcher interface {
@@ -27,36 +28,39 @@ func NewConsul(c Consul) ConsulWatcher {
 }
 
 func (c Consul) Register() *model.TechnicalError {
-	client, err := consul.NewClient(consul.DefaultConfig())
+	client, err := consul.NewClient(&consul.Config{
+		Address: c.Host + ":" + strconv.Itoa(c.Port),
+	})
 	if err != nil {
 		c.Logger.Fatal("cannot initialize consul client", zap.Error(err))
 	}
-	reg := new(consul.AgentServiceRegistration)
-	reg.ID = c.Service
-	reg.Name = c.Service
-	reg.Address = c.Host
-	reg.Port = c.Port
-	reg.Check = new(consul.AgentServiceCheck)
-	reg.Check.Interval = c.CheckInterval
-	reg.Check.Timeout = c.CheckTimeout
-	err = client.Agent().ServiceRegister(reg)
+	err = client.Agent().ServiceRegister(&consul.AgentServiceRegistration{
+		ID:      c.Service,
+		Name:    c.Service,
+		Address: c.Host,
+		Port:    c.Port,
+	})
 	if err != nil {
-		return &model.TechnicalError{
-			Exception: err.Error(),
-		}
+		return apps.Exception("failed to register service", err, zap.Any("", c), c.Logger)
 	}
-	c.readConfig()
+	ex := c.readConfig()
+	if ex != nil {
+		return ex
+	}
 	return nil
 }
 
-func (c Consul) readConfig() {
-	err := c.Viper.AddRemoteProvider("consul", fmt.Sprintf("%s:%v", c.Host, c.Port), c.Service)
+func (c Consul) readConfig() *model.TechnicalError {
+	err := c.Viper.AddRemoteProvider("consul",
+		fmt.Sprintf("%s:%v", c.Host, c.Port),
+		c.Service)
 	if err != nil {
-		c.Logger.Fatal("viper cannot settle with remote consul", zap.Error(err))
+		return apps.Exception("failed to settle remote provider", err, zap.Any("", c), c.Logger)
 	}
 	c.Viper.SetConfigType("json")
 	err = c.Viper.ReadRemoteConfig()
 	if err != nil {
-		c.Logger.Fatal("viper cannot read KV on remote consul", zap.Error(err))
+		return apps.Exception("failed to read remote config", err, zap.Any("", c), c.Logger)
 	}
+	return nil
 }
