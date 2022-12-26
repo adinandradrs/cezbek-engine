@@ -7,20 +7,20 @@ import (
 	"os"
 )
 
-func NewEnv(logger *zap.Logger) (*model.TechnicalError, *viper.Viper) {
+func NewEnv(logger *zap.Logger) (*viper.Viper, *model.TechnicalError) {
 	v := viper.New()
 	if _, err := os.Stat(".env"); err == nil {
 		v.SetConfigFile(".env")
 		err := v.ReadInConfig()
 		if err != nil {
 			logger.Fatal("failed to load configuration from .env file", zap.Error(err))
-			return &model.TechnicalError{
+			return nil, &model.TechnicalError{
 				Exception: err.Error(),
-			}, nil
+			}
 		}
 	} else {
 		logger.Info("no configuration from .env")
 		v.AutomaticEnv()
 	}
-	return nil, v
+	return v, nil
 }
