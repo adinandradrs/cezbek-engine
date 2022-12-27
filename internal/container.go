@@ -8,11 +8,18 @@ import (
 	"go.uber.org/zap"
 )
 
-type Container struct {
-	Logger *zap.Logger
-	Viper  *viper.Viper
-	app    string
-}
+type (
+	Container struct {
+		Logger *zap.Logger
+		Viper  *viper.Viper
+		app    string
+	}
+
+	Env struct {
+		ContextPath string
+		HttpPort    string
+	}
+)
 
 func NewContainer(app string) Container {
 	logger := apps.NewLog(false)
@@ -20,14 +27,14 @@ func NewContainer(app string) Container {
 	if err != nil {
 		logger.Panic("error to load config", zap.Any("", &err))
 	}
-	return register(&Container{
+	return svcRegister(&Container{
 		Logger: logger,
 		Viper:  conf,
 		app:    app,
 	})
 }
 
-func register(c *Container) Container {
+func svcRegister(c *Container) Container {
 	clientSvc := adaptor.NewConsul(adaptor.Consul{
 		Host:    c.Viper.GetString("consul_host"),
 		Port:    c.Viper.GetInt("consul_port"),
@@ -41,13 +48,6 @@ func register(c *Container) Container {
 	}
 	return *c
 }
-
-type (
-	Env struct {
-		ContextPath string
-		HttpPort    string
-	}
-)
 
 func (c *Container) LoadPool() *storage.PgPool {
 	return storage.NewPgPool(&storage.PgOptions{
