@@ -49,13 +49,17 @@ func pubKey(token *jwt.Token, url string) (pkey interface{}, err error) {
 	return pkey, nil
 }
 
-func (c Cognito) JwtInfo(t string) (res map[string]interface{}, e *model.TechnicalError) {
-	token, err := jwt.Parse(t, func(token *jwt.Token) (interface{}, error) {
+func (c Cognito) parseToken(t string) (*jwt.Token, error) {
+	return jwt.Parse(t, func(token *jwt.Token) (interface{}, error) {
 		if _, result := token.Method.(*jwt.SigningMethodRSA); !result {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return pubKey(token, c.JWK)
 	})
+}
+
+func (c Cognito) JwtInfo(t string) (res map[string]interface{}, e *model.TechnicalError) {
+	token, err := c.parseToken(t)
 	if err != nil {
 		return nil, apps.Exception("failed to get JWT Info from token", err, zap.String("token", t), c.Logger)
 	}
