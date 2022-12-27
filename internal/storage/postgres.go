@@ -25,7 +25,7 @@ type PgPool struct {
 }
 
 type Pooler interface {
-	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
+	BeginTx(ctx context.Context, opts pgx.TxOptions) (pgx.Tx, error)
 	Begin(ctx context.Context) (pgx.Tx, error)
 	QueryRow(ctx context.Context, sql string, args ...interface{}) pgx.Row
 	Exec(ctx context.Context, sql string, args ...interface{}) (pgconn.CommandTag, error)
