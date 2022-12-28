@@ -78,7 +78,7 @@ Below is the detail of development budget estimation per month, seems AWS provid
 
 Our code delivery to operation is using GitHub action as the CI/CD, and should passed the 4 steps :
 
-1. MR : Legitimate to push from feature branch into release/sprint-{x} branch.
+1. Merge Request (MR) : Legitimate to push from feature branch into release/sprint-{x} branch.
 2. Test : Unit test should pass and have at least 75% of code coverage, Kezbek does not accept for a non testable code or low code coverage to embrace the next refactoring. Also with its SAST result, Kezbek wants a bug free software.
 3. Quality : SonarQube Cloud will scan the code quality, men and code should be improvise together along with Kezbek commitment to develop their employee skill and their product quality. A rating for maintain level, A rating for security, 0 of code smell, and 0 of bugs.
 4. Package : Compilation, packaging, and send to the machine. For a reason, GitHub Package will be used as artifactory and release versioning.
@@ -102,31 +102,28 @@ As this apps that born in the cloud with its limited development resource,we pro
 
 Services in Cezbek Engine are not divided into small things (atomic service) due to its commitment to consistent with the [domain boundary context](https://learn.microsoft.com/en-us/azure/architecture/microservices/model/domain-analysis) and to prevent [over-layer service](https://betterprogramming.pub/is-your-microservices-architecture-more-pinball-or-mcdonalds-9d2a79224da7). Over-layered service could be the cause of many negative side effect such as higher latency due to a communication flood over protocol, waste of infrastructure resource due to too many deploy, scattered and will be hard to maintain. This engine also stored in monorepo structure, a version-controlled code repository that holds many projects. While these projects may be related, they are often logically independent and run by different teams.
 
-Postgres has been choose as Object Relational Database over MySQL and Oracle due to its open-source and widely used on the market (Tokopedia, Gojek, Tiket, BRI, Mandiri, and Traveloka). Redis also has been choose as it is free on cloud and mandatory to have a distributed caching between services, the nice part is Redis has a pooling mechanism. Could you imagine if we are relying on disk I/O to centralize our operation for store, fetch, and put an event in a large scale of process? Tremendously it can be a chaos due to limited queue of I/O operation and getting worse if the operation come in concurrent. 
+Postgres has been choose as Object Relational Database over MySQL and Oracle due to its open-source and widely used on the market (Tokopedia, Gojek, Tiket, BRI, Mandiri, and Traveloka). Redis also has been choose as it is free on cloud and mandatory to have a distributed caching between services, the nice part is Redis has a pooling mechanism. We could image if we are relying on disk I/O to centralize our operation for store, fetch, and put an event in a large scale of process. Tremendously it can be a chaos due to limited queue of I/O operation and getting worse if the operation come in concurrent. 
 
-Below is the table of standard open-source libraries that we used in Cezbek Engine. Each of them have been selected based on "*not so many manual activity*" and we are trying not too have so many variant as much as possible due to vendor library management restriction. As we make it to be more simple and less effort to maintain the version : 
+For the naming convention for all of those things, we are following the nature of Go that has been writen on [Effective Go](https://go.dev/doc/effective_go) that has and emitted by community. Below is the table of standard open-source libraries that we used in Cezbek Engine. Each of them have been selected based on "*not so many manual activity*" and we are trying not too have so many variant as much as possible due to vendor library management restriction. TL;DR : There are so many technology tools and so many terms that we can use but can lead a debate among us. So to avoid those conflicts and as the achievement is to know what is the best way, we also open for many options out of there if necessary. As we make it to be more simple and less effort to maintain the version : 
 
-| Library          | Version            | Category                  | Description                                                  |
-| ---------------- | ------------------ | ------------------------- | ------------------------------------------------------------ |
-| Pgxpool          | v4.17.2            | Storage                   | Postgres library that support transaction, pool mechanism, cache, and pgxscan to optimize scanning into struct with a lesser ops allocation. Docs for [reference](https://github.com/efectn/go-orm-benchmarks/blob/master/results.md). We avoid to use ORM if we are not smart enough to use a raw SQL. |
-| UberZap          | v1.22.0            | Logger                    | Log library that used by Uber, the output data statically by default is a JSON format. So it becomes developer friendly if the log is stored into Elastic tool. Docs for [reference](http://hackemist.com/logbench/). |
-| Go-Redis         | v6.15.9            | Storage                   | Redis library that support pool mechanism. Docs for [reference](https://levelup.gitconnected.com/fastest-redis-client-library-for-go-7993f618f5ab). |
-| HashiCorp Consul |                    | Service                   | Consul library to support service discovery and config management system as we are not using K8s on development. |
-| Fiber            | v23.6.0            | Router                    | Built-in library in Fiber framework for HTTP router, middleware (interceptor), and limiter. |
-| Fiber            | v23.6.0            | Monitor                   | Built in library in Fiber framework for resource monitoring. |
-| Fiber w/ stdlib  | v23.6.0 w/ 1.17.12 | Message Parser            | Built-in library in Fiber framework and combined with standard library to support message encoding decoding such as JSON, Struct, and interface. |
-| Fiber w/ stdlib  | v23.6.0 w/ 1.17.12 | File Operation            | Built-in library in Fiber framework for disk operation and stdlib for file operation. |
-| S3 AWS SDK       | v1.44.81           | Object Storage            | S3 object storage library to store and fetch file, legally supported by Amazon Web Service. |
-| SQS AWS SDK      | v1.44.81           | Message Queue             | SQS library to do message queue ops, legally supported by Amazon Web Service. |
-| Gojek Heimdall   | v7.0.2             | External Adaptor          | Extended of standard Go HTTP client library for circuit breaker. Actually this library is using Hystrix. We use Heimdall because the sophisticated of casual typing by using its interface, we do not have to define of every context on each HTTP client function. |
-| Go Cron          | v1.17.0            | Job                       | Job library that support UNIX cron expression, quartz, and resource lock for distributed job. One of the top usage by community and mostly have many custom time options, we can not benchmark this one but can be trusted due to its active maintainer. |
-| Gosec            | v2.14.0            | CLI Toolkit               | Go CLI SAST checker, standard Go AST by go.dev and has been a basic standard plugin in many CI cloud provider (GitLab, GitHub, CircleCI, and Codacy). |
-| Swaggo           | v1.8.4             | CLI Toolkit and OpenAPI   | Go CLI Swagger Open API code generator.                      |
-| Counterfeiter    | v6.5.0             | CLI Toolkit and Unit Test | Go CLI and library unit test, mock, and stub code generator. A CLI that extends Go Mockgen to use Go testify. |
-
-For the naming convention for all of those things, we are following the nature of Go that has been writen on [Effective Go](https://go.dev/doc/effective_go) that has and emitted by community.
-
-TL;DR : There are so many technology tools and so many terms that we can use but can lead a debate among us. So to avoid those conflicts and as the achievement is to know what is the best way, we also open for many options out of there if necessary. 
+| Library         | Version            | Category                  | Description                                                  |
+| --------------- | ------------------ | ------------------------- | ------------------------------------------------------------ |
+| Pgxpool         | v4.17.2            | Storage                   | Postgres library that support transaction, pool mechanism, cache, and pgxscan to optimize scanning into struct with a lesser ops allocation. Docs for [reference](https://github.com/efectn/go-orm-benchmarks/blob/master/results.md). We avoid to use ORM if we are not smart enough to use a raw SQL. |
+| UberZap         | v1.22.0            | Logger                    | Log library that used by Uber, the output data statically by default is a JSON format. So it becomes developer friendly if the log is stored into Elastic tool. Docs for [reference](http://hackemist.com/logbench/). |
+| Go-Redis        | v6.15.9            | Storage                   | Redis library that support pool mechanism. Docs for [reference](https://levelup.gitconnected.com/fastest-redis-client-library-for-go-7993f618f5ab). |
+| Consul          |                    | Service                   | Consul library to support service discovery and config management system as we are not using K8s on development. |
+| Viper           |                    | Config                    | Viper is a library that could do a multiform of configuration. It could fetch the config from a config server, OS environment variable, and YAML format. |
+| Fiber           | v23.6.0            | Router                    | Built-in library in Fiber framework for HTTP router, middleware (interceptor), and limiter. |
+| Fiber           | v23.6.0            | Monitor                   | Built in library in Fiber framework for resource monitoring. |
+| Fiber w/ stdlib | v23.6.0 w/ 1.17.12 | Message Parser            | Built-in library in Fiber framework and combined with standard library to support message encoding decoding such as JSON, Struct, and interface. |
+| Fiber w/ stdlib | v23.6.0 w/ 1.17.12 | File Operation            | Built-in library in Fiber framework for disk operation and stdlib for file operation. |
+| S3 AWS SDK      | v1.44.81           | Object Storage            | S3 object storage library to store and fetch file, legally supported by Amazon Web Service. |
+| SQS AWS SDK     | v1.44.81           | Message Queue             | SQS library to do message queue ops, legally supported by Amazon Web Service. |
+| Gojek Heimdall  | v7.0.2             | External Adaptor          | Extended of standard Go HTTP client library for circuit breaker. Actually this library is using Hystrix. We use Heimdall because the sophisticated of casual typing by using its interface, we do not have to define of every context on each HTTP client function. |
+| Go Cron         | v1.17.0            | Job                       | Job library that support UNIX cron expression, quartz, and resource lock for distributed job. One of the top usage by community and mostly have many custom time options, we can not benchmark this one but can be trusted due to its active maintainer. |
+| Gosec           | v2.14.0            | CLI Toolkit               | Go CLI SAST checker, standard Go AST by go.dev and has been a basic standard plugin in many CI cloud provider (GitLab, GitHub, CircleCI, and Codacy). |
+| Swaggo          | v1.8.4             | CLI Toolkit and OpenAPI   | Go CLI Swagger Open API code generator.                      |
+| Counterfeiter   | v6.5.0             | CLI Toolkit and Unit Test | Go CLI and library unit test, mock, and stub code generator. A CLI that extends Go Mockgen to use Go testify. |
 
 #### Data Structure
 
@@ -136,7 +133,7 @@ TL;DR : There are so many technology tools and so many terms that we can use but
 
 Kezbek database is separated into 2 schemas (in production it can be placed in a different machine if we do not use high performant server) : 
 
-- cezbek-engine as a daily schema that holds transaction and tiering data.
+- cezbek-engine as a operating schema that holds parameters, partners, transactions, and tiering data.
 
 - cezbek-analytics as a reporting schema that holds transaction summary and used for reporting.
 
