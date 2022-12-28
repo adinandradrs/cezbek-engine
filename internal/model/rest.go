@@ -29,7 +29,7 @@ type (
 	}
 
 	TransactionResponse struct {
-		TransactionTimestamp uint   `json:"transaction_timestamp"`
+		TransactionTimestamp int64  `json:"transaction_timestamp"`
 		TransactionId        string `json:"transaction_id"`
 	}
 )
