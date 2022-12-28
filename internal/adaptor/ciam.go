@@ -83,7 +83,7 @@ func (c Cognito) JwtInfo(t string) (map[string]interface{}, *model.TechnicalErro
 	return nil, apps.Exception("bad JWT claim", fmt.Errorf("failed to claim JWT"), zap.String("token", t), c.Logger)
 }
 
-func (c Cognito) SignUpPartner(m model.CiamSignUpPartnerRequest) (*model.CiamUserResponse, *model.TechnicalError) {
+func (c Cognito) OnboardPartner(m model.CiamSignUpPartnerRequest) (*model.CiamUserResponse, *model.TechnicalError) {
 	inp := &cognito.SignUpInput{
 		Username:   aws.String(m.Username),
 		Password:   aws.String(m.Password),
@@ -104,16 +104,21 @@ func (c Cognito) SignUpPartner(m model.CiamSignUpPartnerRequest) (*model.CiamUse
 			},
 		},
 	}
-	o, err := c.Provider.SignUp(inp)
+	out, err := c.Provider.SignUp(inp)
 	if err != nil {
 		return nil, apps.Exception("failed to sign up partner", err, zap.String("username", m.Username), c.Logger)
 	}
-	c.Logger.Info("CIAM output on sign up partner", zap.Any("output", o))
+	c.Logger.Info("CIAM output on sign up partner", zap.Any("output", out))
 	return &model.CiamUserResponse{
 		TransactionResponse: model.TransactionResponse{
 			TransactionId:        apps.TransactionId(m.PhoneNumber),
 			TransactionTimestamp: time.Now().Unix(),
 		},
-		SubId: *o.UserSub,
+		SubId: *out.UserSub,
 	}, nil
+}
+
+func (c Cognito) Authenticate(m model.CiamSignInRequest) (*model.CiamUserResponse, *model.TechnicalError) {
+	//TODO implement me
+	panic("implement me")
 }
