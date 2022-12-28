@@ -19,8 +19,8 @@ import (
 
 type CiamWatcher interface {
 	JwtInfo(t string) (map[string]interface{}, *model.TechnicalError)
-	PartnerSignUp(m model.CiamSignUpPartnerRequest) (*model.CiamUserResponse, *model.TechnicalError)
-	SignIn(m model.CiamSignInRequest) (*model.CiamUserResponse, *model.TechnicalError)
+	OnboardPartner(m model.CiamSignUpPartnerRequest) (*model.CiamUserResponse, *model.TechnicalError)
+	Authenticate(m model.CiamSignInRequest) (*model.CiamUserResponse, *model.TechnicalError)
 }
 
 type (
