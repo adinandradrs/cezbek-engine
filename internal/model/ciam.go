@@ -12,7 +12,7 @@ type (
 
 	CiamSignInRequest struct {
 		Username string
-		Password string
+		Secret   string
 	}
 )
 
@@ -20,5 +20,12 @@ type (
 	CiamUserResponse struct {
 		SubId string
 		TransactionResponse
+	}
+
+	CiamAuthenticationResponse struct {
+		AccessToken  string
+		Token        string
+		RefreshToken string
+		ExpiresIn    int64
 	}
 )

@@ -20,7 +20,7 @@ import (
 type CiamWatcher interface {
 	JwtInfo(t string) (map[string]interface{}, *model.TechnicalError)
 	OnboardPartner(m model.CiamSignUpPartnerRequest) (*model.CiamUserResponse, *model.TechnicalError)
-	Authenticate(m model.CiamSignInRequest) (*model.CiamUserResponse, *model.TechnicalError)
+	Authenticate(m model.CiamSignInRequest) (*model.CiamAuthenticationResponse, *model.TechnicalError)
 }
 
 type (
@@ -106,9 +106,9 @@ func (c Cognito) OnboardPartner(m model.CiamSignUpPartnerRequest) (*model.CiamUs
 	}
 	out, err := c.Provider.SignUp(inp)
 	if err != nil {
-		return nil, apps.Exception("failed to sign up partner", err, zap.String("username", m.Username), c.Logger)
+		return nil, apps.Exception("failed to onboard partner", err, zap.String("username", m.Username), c.Logger)
 	}
-	c.Logger.Info("CIAM output on sign up partner", zap.Any("output", out))
+	c.Logger.Info("CIAM output on onboard partner", zap.Any("output", out))
 	return &model.CiamUserResponse{
 		TransactionResponse: model.TransactionResponse{
 			TransactionId:        apps.TransactionId(m.PhoneNumber),
@@ -118,7 +118,24 @@ func (c Cognito) OnboardPartner(m model.CiamSignUpPartnerRequest) (*model.CiamUs
 	}, nil
 }
 
-func (c Cognito) Authenticate(m model.CiamSignInRequest) (*model.CiamUserResponse, *model.TechnicalError) {
-	//TODO implement me
-	panic("implement me")
+func (c Cognito) Authenticate(m model.CiamSignInRequest) (*model.CiamAuthenticationResponse, *model.TechnicalError) {
+	inp := &cognito.InitiateAuthInput{
+		AuthFlow: aws.String(cognito.AuthFlowTypeUserPasswordAuth),
+		AuthParameters: map[string]*string{
+			"USERNAME":    aws.String(m.Username),
+			"PASSWORD":    aws.String(m.Secret),
+			"SECRET_HASH": aws.String(c.secretHash(m.Username)),
+		},
+		ClientId: aws.String(c.ClientId),
+	}
+	out, err := c.Provider.InitiateAuth(inp)
+	if err != nil {
+		return nil, apps.Exception("failed to authenticate user", err, zap.String("username", m.Username), c.Logger)
+	}
+	return &model.CiamAuthenticationResponse{
+		AccessToken:  *out.AuthenticationResult.AccessToken,
+		Token:        *out.AuthenticationResult.IdToken,
+		RefreshToken: *out.AuthenticationResult.RefreshToken,
+		ExpiresIn:    *out.AuthenticationResult.ExpiresIn,
+	}, nil
 }
