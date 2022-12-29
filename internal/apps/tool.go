@@ -22,6 +22,13 @@ func TransactionId(identifier string) string {
 	return "C002" + time.Now().Format("060102150405") + identifier[0:5] + "0"
 }
 
+func Transaction(identifier string) model.TransactionResponse {
+	return model.TransactionResponse{
+		TransactionId:        TransactionId(identifier),
+		TransactionTimestamp: time.Now().Unix(),
+	}
+}
+
 func StringExists(key string, strs []string) bool {
 	for _, v := range strs {
 		if v == key {

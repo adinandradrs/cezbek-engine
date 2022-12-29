@@ -14,7 +14,6 @@ import (
 	_ "github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/jwk"
 	"go.uber.org/zap"
-	"time"
 )
 
 type CiamWatcher interface {
@@ -110,11 +109,8 @@ func (c Cognito) OnboardPartner(m model.CiamOnboardPartnerRequest) (*model.CiamU
 	}
 	c.Logger.Info("CIAM output on onboard partner", zap.Any("output", out))
 	return &model.CiamUserResponse{
-		TransactionResponse: model.TransactionResponse{
-			TransactionId:        apps.TransactionId(m.PhoneNumber),
-			TransactionTimestamp: time.Now().Unix(),
-		},
-		SubId: *out.UserSub,
+		TransactionResponse: apps.Transaction(m.PhoneNumber),
+		SubId:               *out.UserSub,
 	}, nil
 }
 
