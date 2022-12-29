@@ -1,7 +1,7 @@
 package model
 
 type (
-	CiamSignUpPartnerRequest struct {
+	CiamOnboardPartnerRequest struct {
 		Username    string
 		Name        string
 		PhoneNumber string
@@ -10,7 +10,7 @@ type (
 		Password    string
 	}
 
-	CiamSignInRequest struct {
+	CiamAuthenticationRequest struct {
 		Username string
 		Secret   string
 	}

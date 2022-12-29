@@ -19,8 +19,8 @@ import (
 
 type CiamWatcher interface {
 	JwtInfo(t string) (map[string]interface{}, *model.TechnicalError)
-	OnboardPartner(m model.CiamSignUpPartnerRequest) (*model.CiamUserResponse, *model.TechnicalError)
-	Authenticate(m model.CiamSignInRequest) (*model.CiamAuthenticationResponse, *model.TechnicalError)
+	OnboardPartner(m model.CiamOnboardPartnerRequest) (*model.CiamUserResponse, *model.TechnicalError)
+	Authenticate(m model.CiamAuthenticationRequest) (*model.CiamAuthenticationResponse, *model.TechnicalError)
 }
 
 type (
@@ -83,7 +83,7 @@ func (c Cognito) JwtInfo(t string) (map[string]interface{}, *model.TechnicalErro
 	return nil, apps.Exception("bad JWT claim", fmt.Errorf("failed to claim JWT"), zap.String("token", t), c.Logger)
 }
 
-func (c Cognito) OnboardPartner(m model.CiamSignUpPartnerRequest) (*model.CiamUserResponse, *model.TechnicalError) {
+func (c Cognito) OnboardPartner(m model.CiamOnboardPartnerRequest) (*model.CiamUserResponse, *model.TechnicalError) {
 	inp := &cognito.SignUpInput{
 		Username:   aws.String(m.Username),
 		Password:   aws.String(m.Password),
@@ -118,7 +118,7 @@ func (c Cognito) OnboardPartner(m model.CiamSignUpPartnerRequest) (*model.CiamUs
 	}, nil
 }
 
-func (c Cognito) Authenticate(m model.CiamSignInRequest) (*model.CiamAuthenticationResponse, *model.TechnicalError) {
+func (c Cognito) Authenticate(m model.CiamAuthenticationRequest) (*model.CiamAuthenticationResponse, *model.TechnicalError) {
 	inp := &cognito.InitiateAuthInput{
 		AuthFlow: aws.String(cognito.AuthFlowTypeUserPasswordAuth),
 		AuthParameters: map[string]*string{
