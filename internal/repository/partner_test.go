@@ -79,4 +79,25 @@ func TestPartner_Add(t *testing.T) {
 		assert.NotNil(t, ex)
 	})
 
+	t.Run("should rollback on commit failure", func(t *testing.T) {
+		pool.EXPECT().BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable}).
+			Return(tx, nil)
+		rows := pgxpoolmock.NewRows([]string{"id"}).AddRow(1).ToPgxRows()
+		tx.EXPECT().QueryRow(context.Background(), `insert into partners (partner, code, api_key, salt, secret, email, 
+		msisdn, email, officer, address, partner_logo, status, is_deleted, created_by, created_date)
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, $13, now()) returning id`,
+			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret.String, data.Email.String,
+			data.Msisdn.String, data.Email.String, data.Officer.String, data.PartnerLogo.String, data.Status).
+			Return(rows)
+		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
+		tx.EXPECT().Commit(ctx).Times(1).Return(fmt.Errorf("something went wrong on commit insert partner tx"))
+		defer func() {
+			if r := recover(); r != nil {
+				assert.Equal(t, "transaction add partner failed", r)
+			}
+		}()
+		ex := persister.Add(data)
+		assert.Equal(t, "something went wrong on commit insert partner tx", ex.Exception)
+	})
+
 }
