@@ -5,6 +5,7 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
 	"github.com/adinandradrs/cezbek-engine/internal/storage"
+	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
 )
@@ -16,6 +17,7 @@ type Partner struct {
 
 type PartnerPersister interface {
 	Add(m model.Partner) *model.TechnicalError
+	CountByCode(code string) (*int, *model.TechnicalError)
 }
 
 func NewPartner(p Partner) PartnerPersister {
@@ -46,4 +48,23 @@ func (p Partner) Add(data model.Partner) *model.TechnicalError {
 	}
 
 	return nil
+}
+
+func (p Partner) CountByCode(code string) (*int, *model.TechnicalError) {
+	total := 0
+	rows, err := p.Pool.Query(context.Background(), `select count(id) as total from partners where 
+		code=$1 AND is_deleted=false`, code)
+	if err != nil {
+		return nil, apps.Exception("failed to count by code", err,
+			zap.String("code", code), p.Logger)
+	}
+
+	err = pgxscan.ScanOne(&total, rows)
+	if err != nil {
+		return nil, apps.Exception("failed to map count own by code", err,
+			zap.String("code", code), p.Logger)
+	}
+
+	return &total, nil
+
 }

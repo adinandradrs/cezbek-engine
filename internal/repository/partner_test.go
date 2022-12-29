@@ -101,3 +101,42 @@ func TestPartner_Add(t *testing.T) {
 	})
 
 }
+
+func TestPartner_CountByCode(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	logger, pool := apps.NewLog(false), pgxpoolmock.NewMockPgxIface(ctrl)
+	code := "LINKSAJA"
+	ctx := context.Background()
+	persister := NewPartner(Partner{
+		Logger: logger,
+		Pool:   pool,
+	})
+
+	t.Run("should success", func(t *testing.T) {
+		rows := pgxpoolmock.NewRows([]string{"total"}).AddRow(1).ToPgxRows()
+		pool.EXPECT().Query(ctx, `select count(id) as total from partners where 
+		code=$1 AND is_deleted=false`, code).Return(rows, nil)
+		total, ex := persister.CountByCode(code)
+		assert.Equal(t, 1, *total)
+		assert.Nil(t, ex)
+	})
+
+	t.Run("should return exception on failed to count query", func(t *testing.T) {
+		pool.EXPECT().Query(ctx, `select count(id) as total from partners where 
+		code=$1 AND is_deleted=false`, code).Return(nil,
+			fmt.Errorf("something went wrong on count query"))
+		total, ex := persister.CountByCode(code)
+		assert.Nil(t, total)
+		assert.Equal(t, "something went wrong on count query", ex.Exception)
+	})
+
+	t.Run("should return exception on scan count query", func(t *testing.T) {
+		rows := pgxpoolmock.NewRows([]string{}).AddRow().ToPgxRows()
+		pool.EXPECT().Query(ctx, `select count(id) as total from partners where 
+		code=$1 AND is_deleted=false`, code).Return(rows, nil)
+		total, ex := persister.CountByCode(code)
+		assert.Nil(t, total)
+		assert.NotNil(t, ex)
+	})
+}
