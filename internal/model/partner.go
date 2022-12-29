@@ -28,6 +28,7 @@ type (
 		Officer string `json:"officer" validate:"required"`
 		Address string `json:"address" validate:"required"`
 		Logo    string `json:"logo" validate:"required"`
+		SessionRequest
 	}
 
 	PartnerAuthenticationRequest struct {
