@@ -140,3 +140,58 @@ func TestPartner_CountByCode(t *testing.T) {
 		assert.NotNil(t, ex)
 	})
 }
+
+func TestPartner_FindActiveByCodeAndApiKey(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	logger, pool := apps.NewLog(false), pgxpoolmock.NewMockPgxIface(ctrl)
+	code, key := "LINKSAJA", "api-key-123-abc-456"
+	ctx := context.Background()
+	persister := NewPartner(Partner{
+		Logger: logger,
+		Pool:   pool,
+	})
+
+	t.Run("should success", func(t *testing.T) {
+		rows := pgxpoolmock.NewRows([]string{"id", "partner", "code", "api_key", "salt",
+			"secret", "email", "msisdn"}).AddRow(int64(1), sql.NullString{String: "PT. LinkSaja Indonesia Terpadu", Valid: true},
+			sql.NullString{String: "LINKSAJA", Valid: true}, sql.NullString{String: "api-key-123-abc-456", Valid: true},
+			sql.NullString{String: "s4lTs3cr3T", Valid: true}, sql.NullString{String: "s0m3things3creTs!#", Valid: true},
+			sql.NullString{String: "someone@email.net", Valid: true},
+			sql.NullString{String: "628123456789", Valid: true}).ToPgxRows()
+		pool.EXPECT().Query(ctx, ` select id, partner, code, api_key, salt, secret,
+			email, msisdn from partners where code = $1 and api_key = $2 
+			and status = $3 and is_deleted = false `, code, key, apps.StatusActive).
+			Return(rows, nil)
+		data, ex := persister.FindActiveByCodeAndApiKey(code, key)
+		assert.Equal(t, int64(1), data.Id)
+		assert.NotNil(t, data)
+		assert.Nil(t, ex)
+	})
+
+	t.Run("should return exception on failed to execute query", func(t *testing.T) {
+		pool.EXPECT().Query(ctx, ` select id, partner, code, api_key, salt, secret,
+			email, msisdn from partners where code = $1 and api_key = $2 
+			and status = $3 and is_deleted = false `, code, key, apps.StatusActive).
+			Return(nil, fmt.Errorf("something went wrong on execute query"))
+		data, ex := persister.FindActiveByCodeAndApiKey(code, key)
+		assert.Nil(t, data)
+		assert.NotNil(t, ex)
+	})
+
+	t.Run("should return exception on map query result", func(t *testing.T) {
+		rows := pgxpoolmock.NewRows([]string{"id", "partner", "code", "api_key", "salt",
+			"secret", "email", "msisdn"}).AddRow(1, sql.NullString{String: "PT. LinkSaja Indonesia Terpadu", Valid: true},
+			sql.NullString{String: "LINKSAJA", Valid: true}, sql.NullString{String: "api-key-123-abc-456", Valid: true},
+			sql.NullString{String: "s4lTs3cr3T", Valid: true}, sql.NullString{String: "s0m3things3creTs!#", Valid: true},
+			sql.NullString{String: "someone@email.net", Valid: true},
+			sql.NullString{String: "628123456789", Valid: true}).ToPgxRows()
+		pool.EXPECT().Query(ctx, ` select id, partner, code, api_key, salt, secret,
+			email, msisdn from partners where code = $1 and api_key = $2 
+			and status = $3 and is_deleted = false `, code, key, apps.StatusActive).
+			Return(rows, nil)
+		data, ex := persister.FindActiveByCodeAndApiKey(code, key)
+		assert.Nil(t, data)
+		assert.NotNil(t, ex)
+	})
+}

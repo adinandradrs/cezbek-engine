@@ -18,6 +18,7 @@ type Partner struct {
 type PartnerPersister interface {
 	Add(m model.Partner) *model.TechnicalError
 	CountByCode(code string) (*int, *model.TechnicalError)
+	FindActiveByCodeAndApiKey(code string, key string) (*model.Partner, *model.TechnicalError)
 }
 
 func NewPartner(p Partner) PartnerPersister {
@@ -66,5 +67,20 @@ func (p Partner) CountByCode(code string) (*int, *model.TechnicalError) {
 	}
 
 	return &total, nil
+}
+
+func (p Partner) FindActiveByCodeAndApiKey(code string, key string) (*model.Partner, *model.TechnicalError) {
+	d := model.Partner{}
+	query, err := p.Pool.Query(context.Background(), ` select id, partner, code, api_key, salt, secret,
+			email, msisdn from partners where code = $1 and api_key = $2 
+			and status = $3 and is_deleted = false `, code, key, apps.StatusActive)
+	if err != nil {
+		return nil, apps.Exception("failed to find active by code and api key", err, zap.Strings("", []string{code, key}), p.Logger)
+	}
+	err = pgxscan.ScanOne(&d, query)
+	if err != nil {
+		return nil, apps.Exception("failed to map active by code and api key", err, zap.Strings("", []string{code, key}), p.Logger)
+	}
+	return &d, nil
 
 }
