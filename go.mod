@@ -61,6 +61,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sagikazarmark/crypt v0.8.0 // indirect
+	github.com/sethvargo/go-password v0.2.0 // indirect
 	github.com/spf13/afero v1.9.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
