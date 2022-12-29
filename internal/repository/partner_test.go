@@ -195,3 +195,65 @@ func TestPartner_FindActiveByCodeAndApiKey(t *testing.T) {
 		assert.NotNil(t, ex)
 	})
 }
+
+func TestPartner_FindActiveByEmail(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	logger, pool := apps.NewLog(false), pgxpoolmock.NewMockPgxIface(ctrl)
+	email := "someone@email.net"
+	ctx := context.Background()
+	persister := NewPartner(Partner{
+		Logger: logger,
+		Pool:   pool,
+	})
+
+	t.Run("should success", func(t *testing.T) {
+		rows := pgxpoolmock.NewRows([]string{"id", "partner", "code", "api_key", "salt",
+			"secret", "email", "msisdn", "partner_logo", "address"}).AddRow(int64(1), sql.NullString{String: "PT. LinkSaja Indonesia Terpadu", Valid: true},
+			sql.NullString{String: "LINKSAJA", Valid: true}, sql.NullString{String: "api-key-123-abc-456", Valid: true},
+			sql.NullString{String: "s4lTs3cr3T", Valid: true}, sql.NullString{String: "s0m3things3creTs!#", Valid: true},
+			sql.NullString{String: "someone@email.net", Valid: true},
+			sql.NullString{String: "628123456789", Valid: true},
+			sql.NullString{String: "/logo/linksaja-1.png", Valid: true},
+			sql.NullString{String: "Jl. Nakula Sadewa no. 8B Jakarta Selatan", Valid: true}).ToPgxRows()
+		pool.EXPECT().Query(ctx, ` select id, partner, code, 
+			api_key, salt, secret, email, msisdn, partner_logo, 
+			address from partners where email = $1 and status = $2 
+			and is_deleted = false `, email, apps.StatusActive).
+			Return(rows, nil)
+		data, ex := persister.FindActiveByEmail(email)
+		assert.Equal(t, int64(1), data.Id)
+		assert.NotNil(t, data)
+		assert.Nil(t, ex)
+	})
+
+	t.Run("should return exception on failed to execute query", func(t *testing.T) {
+		pool.EXPECT().Query(ctx, ` select id, partner, code, 
+			api_key, salt, secret, email, msisdn, partner_logo, 
+			address from partners where email = $1 and status = $2 
+			and is_deleted = false `, email, apps.StatusActive).
+			Return(nil, fmt.Errorf("something went wrong on execute query"))
+		data, ex := persister.FindActiveByEmail(email)
+		assert.Nil(t, data)
+		assert.NotNil(t, ex)
+	})
+
+	t.Run("should return exception on map query result", func(t *testing.T) {
+		rows := pgxpoolmock.NewRows([]string{"id", "partner", "code", "api_key", "salt",
+			"secret", "email", "msisdn", "partner_logo", "address"}).AddRow(1, sql.NullString{String: "PT. LinkSaja Indonesia Terpadu", Valid: true},
+			sql.NullString{String: "LINKSAJA", Valid: true}, sql.NullString{String: "api-key-123-abc-456", Valid: true},
+			sql.NullString{String: "s4lTs3cr3T", Valid: true}, sql.NullString{String: "s0m3things3creTs!#", Valid: true},
+			sql.NullString{String: "someone@email.net", Valid: true},
+			sql.NullString{String: "628123456789", Valid: true},
+			sql.NullString{String: "/logo/linksaja-1.png", Valid: true},
+			sql.NullString{String: "Jl. Nakula Sadewa no. 8B Jakarta Selatan", Valid: true}).ToPgxRows()
+		pool.EXPECT().Query(ctx, ` select id, partner, code, 
+			api_key, salt, secret, email, msisdn, partner_logo, 
+			address from partners where email = $1 and status = $2 
+			and is_deleted = false `, email, apps.StatusActive).
+			Return(rows, nil)
+		data, ex := persister.FindActiveByEmail(email)
+		assert.Nil(t, data)
+		assert.NotNil(t, ex)
+	})
+}

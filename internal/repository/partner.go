@@ -19,6 +19,7 @@ type PartnerPersister interface {
 	Add(m model.Partner) *model.TechnicalError
 	CountByCode(code string) (*int, *model.TechnicalError)
 	FindActiveByCodeAndApiKey(code string, key string) (*model.Partner, *model.TechnicalError)
+	FindActiveByEmail(email string) (*model.Partner, *model.TechnicalError)
 }
 
 func NewPartner(p Partner) PartnerPersister {
@@ -77,10 +78,29 @@ func (p Partner) FindActiveByCodeAndApiKey(code string, key string) (*model.Part
 	if err != nil {
 		return nil, apps.Exception("failed to find active by code and api key", err, zap.Strings("", []string{code, key}), p.Logger)
 	}
+
 	err = pgxscan.ScanOne(&d, query)
 	if err != nil {
 		return nil, apps.Exception("failed to map active by code and api key", err, zap.Strings("", []string{code, key}), p.Logger)
 	}
-	return &d, nil
 
+	return &d, nil
+}
+
+func (p Partner) FindActiveByEmail(email string) (*model.Partner, *model.TechnicalError) {
+	d := model.Partner{}
+	query, err := p.Pool.Query(context.Background(), ` select id, partner, code, 
+			api_key, salt, secret, email, msisdn, partner_logo, 
+			address from partners where email = $1 and status = $2 
+			and is_deleted = false `, email, apps.StatusActive)
+	if err != nil {
+		return nil, apps.Exception("failed to find active by email", err, zap.String("", email), p.Logger)
+	}
+
+	err = pgxscan.ScanOne(&d, query)
+	if err != nil {
+		return nil, apps.Exception("failed to map active by email", err, zap.String("", email), p.Logger)
+	}
+
+	return &d, nil
 }
