@@ -65,7 +65,7 @@ type (
 		OS            string `json:"os" swaggerignore:"true"`
 		Version       string `json:"version" swaggerignore:"true"`
 		Language      string `json:"language" swaggerignore:"true"`
-		DeviceId      string `json:"deviceId" swaggerignore:"true"`
+		DeviceId      string `json:"device_id" swaggerignore:"true"`
 		Authorization string `json:"authorization" swaggerignore:"true"`
 		AuthSignature string `json:"auth_signature" swaggerignore:"true"`
 		RefreshToken  string `json:"refresh_token" swaggerignore:"true"`
