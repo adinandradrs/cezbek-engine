@@ -50,13 +50,13 @@ type (
 	}
 
 	SessionRequest struct {
-		Id       string `swaggerignore:"true"`
-		Partner  string `swaggerignore:"true"`
-		Username string `swaggerignore:"true"`
-		Msisdn   string `swaggerignore:"true"`
-		Email    string `swaggerignore:"true"`
-		Role     string `swaggerignore:"true"`
-		Fullname string `swaggerignore:"true"`
+		Id          int64  `swaggerignore:"true"`
+		PartnerCode string `swaggerignore:"true"`
+		Username    string `swaggerignore:"true"`
+		Msisdn      string `swaggerignore:"true"`
+		Email       string `swaggerignore:"true"`
+		Role        string `swaggerignore:"true"`
+		Fullname    string `swaggerignore:"true"`
 		ContextRequest
 	}
 
@@ -67,8 +67,9 @@ type (
 		Language      string `json:"language" swaggerignore:"true"`
 		DeviceId      string `json:"deviceId" swaggerignore:"true"`
 		Authorization string `json:"authorization" swaggerignore:"true"`
-		RefreshToken  string `json:"refreshToken" swaggerignore:"true"`
-		TransactionId string `json:"transactionId" swaggerignore:"true"`
-		ApiKey        string `json:"apiKey" swaggerignore:"true"`
+		AuthSignature string `json:"auth_signature" swaggerignore:"true"`
+		RefreshToken  string `json:"refresh_token" swaggerignore:"true"`
+		TransactionId string `json:"transaction_id" swaggerignore:"true"`
+		ApiKey        string `json:"api_key" swaggerignore:"true"`
 	}
 )
