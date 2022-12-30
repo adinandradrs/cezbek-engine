@@ -23,7 +23,7 @@ func TestPartner_Add(t *testing.T) {
 		Code:        sql.NullString{String: "LINKSAJA", Valid: true},
 		ApiKey:      sql.NullString{String: "api-key-123-abc-456", Valid: true},
 		Salt:        sql.NullString{String: "s4lTs3cr3T", Valid: true},
-		Secret:      sql.NullString{String: "s0m3things3creTs!#", Valid: true},
+		Secret:      []byte("something"),
 		Email:       sql.NullString{String: "kezbeksupport@linksaja.co.id", Valid: true},
 		Msisdn:      sql.NullString{String: "628123456789", Valid: true},
 		Officer:     sql.NullString{String: "Someone", Valid: true},
@@ -43,7 +43,7 @@ func TestPartner_Add(t *testing.T) {
 		tx.EXPECT().QueryRow(context.Background(), `insert into partners (partner, code, api_key, salt, secret, email, 
 		msisdn, email, officer, address, partner_logo, status, is_deleted, created_by, created_date)
 		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, $13, now()) returning id`,
-			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret.String, data.Email.String,
+			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret, data.Email.String,
 			data.Msisdn.String, data.Email.String, data.Officer.String, data.PartnerLogo.String, data.Status).
 			Return(rows)
 		tx.EXPECT().Commit(ctx).Times(1).Return(nil)
@@ -71,7 +71,7 @@ func TestPartner_Add(t *testing.T) {
 		tx.EXPECT().QueryRow(context.Background(), `insert into partners (partner, code, api_key, salt, secret, email, 
 		msisdn, email, officer, address, partner_logo, status, is_deleted, created_by, created_date)
 		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, $13, now()) returning id`,
-			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret.String, data.Email.String,
+			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret, data.Email.String,
 			data.Msisdn.String, data.Email.String, data.Officer.String, data.PartnerLogo.String, data.Status).
 			Return(rows)
 		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
@@ -86,7 +86,7 @@ func TestPartner_Add(t *testing.T) {
 		tx.EXPECT().QueryRow(context.Background(), `insert into partners (partner, code, api_key, salt, secret, email, 
 		msisdn, email, officer, address, partner_logo, status, is_deleted, created_by, created_date)
 		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, $13, now()) returning id`,
-			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret.String, data.Email.String,
+			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret, data.Email.String,
 			data.Msisdn.String, data.Email.String, data.Officer.String, data.PartnerLogo.String, data.Status).
 			Return(rows)
 		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
@@ -102,11 +102,15 @@ func TestPartner_Add(t *testing.T) {
 
 }
 
-func TestPartner_CountByCode(t *testing.T) {
+func TestPartner_CountByIdentifier(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger, pool := apps.NewLog(false), pgxpoolmock.NewMockPgxIface(ctrl)
-	code := "LINKSAJA"
+	data := model.Partner{
+		Code:   sql.NullString{String: "LINKSAJA"},
+		Email:  sql.NullString{String: "someone@linksaja.id"},
+		Msisdn: sql.NullString{String: "62811234567"},
+	}
 	ctx := context.Background()
 	persister := NewPartner(Partner{
 		Logger: logger,
@@ -114,28 +118,31 @@ func TestPartner_CountByCode(t *testing.T) {
 	})
 
 	t.Run("should success", func(t *testing.T) {
-		rows := pgxpoolmock.NewRows([]string{"total"}).AddRow(1).ToPgxRows()
-		pool.EXPECT().Query(ctx, `select count(id) as total from partners where 
-		code=$1 AND is_deleted=false`, code).Return(rows, nil)
-		total, ex := persister.CountByCode(code)
+		rows := pgxpoolmock.NewRows([]string{"total_to_add"}).AddRow(1).ToPgxRows()
+		pool.EXPECT().Query(ctx, `select count(id) as total_to_add from partners where 
+		(code=$1 or email = $2 or msisdn = $3) AND is_deleted=false`, data.Code.String, data.Email.String,
+			data.Msisdn.String).Return(rows, nil)
+		total, ex := persister.CountByIdentifier(data)
 		assert.Equal(t, 1, *total)
 		assert.Nil(t, ex)
 	})
 
 	t.Run("should return exception on failed to count query", func(t *testing.T) {
-		pool.EXPECT().Query(ctx, `select count(id) as total from partners where 
-		code=$1 AND is_deleted=false`, code).Return(nil,
+		pool.EXPECT().Query(ctx, `select count(id) as total_to_add from partners where 
+		(code=$1 or email = $2 or msisdn = $3) AND is_deleted=false`, data.Code.String, data.Email.String,
+			data.Msisdn.String).Return(nil,
 			fmt.Errorf("something went wrong on count query"))
-		total, ex := persister.CountByCode(code)
+		total, ex := persister.CountByIdentifier(data)
 		assert.Nil(t, total)
 		assert.Equal(t, "something went wrong on count query", ex.Exception)
 	})
 
 	t.Run("should return exception on scan count query", func(t *testing.T) {
 		rows := pgxpoolmock.NewRows([]string{}).AddRow().ToPgxRows()
-		pool.EXPECT().Query(ctx, `select count(id) as total from partners where 
-		code=$1 AND is_deleted=false`, code).Return(rows, nil)
-		total, ex := persister.CountByCode(code)
+		pool.EXPECT().Query(ctx, `select count(id) as total_to_add from partners where 
+		(code=$1 or email = $2 or msisdn = $3) AND is_deleted=false`, data.Code.String, data.Email.String,
+			data.Msisdn.String).Return(rows, nil)
+		total, ex := persister.CountByIdentifier(data)
 		assert.Nil(t, total)
 		assert.NotNil(t, ex)
 	})
@@ -156,7 +163,7 @@ func TestPartner_FindActiveByCodeAndApiKey(t *testing.T) {
 		rows := pgxpoolmock.NewRows([]string{"id", "partner", "code", "api_key", "salt",
 			"secret", "email", "msisdn"}).AddRow(int64(1), sql.NullString{String: "PT. LinkSaja Indonesia Terpadu", Valid: true},
 			sql.NullString{String: "LINKSAJA", Valid: true}, sql.NullString{String: "api-key-123-abc-456", Valid: true},
-			sql.NullString{String: "s4lTs3cr3T", Valid: true}, sql.NullString{String: "s0m3things3creTs!#", Valid: true},
+			sql.NullString{String: "s4lTs3cr3T", Valid: true}, []byte("something"),
 			sql.NullString{String: "someone@email.net", Valid: true},
 			sql.NullString{String: "628123456789", Valid: true}).ToPgxRows()
 		pool.EXPECT().Query(ctx, ` select id, partner, code, api_key, salt, secret,
@@ -183,7 +190,7 @@ func TestPartner_FindActiveByCodeAndApiKey(t *testing.T) {
 		rows := pgxpoolmock.NewRows([]string{"id", "partner", "code", "api_key", "salt",
 			"secret", "email", "msisdn"}).AddRow(1, sql.NullString{String: "PT. LinkSaja Indonesia Terpadu", Valid: true},
 			sql.NullString{String: "LINKSAJA", Valid: true}, sql.NullString{String: "api-key-123-abc-456", Valid: true},
-			sql.NullString{String: "s4lTs3cr3T", Valid: true}, sql.NullString{String: "s0m3things3creTs!#", Valid: true},
+			sql.NullString{String: "s4lTs3cr3T", Valid: true}, []byte("something"),
 			sql.NullString{String: "someone@email.net", Valid: true},
 			sql.NullString{String: "628123456789", Valid: true}).ToPgxRows()
 		pool.EXPECT().Query(ctx, ` select id, partner, code, api_key, salt, secret,
@@ -211,7 +218,7 @@ func TestPartner_FindActiveByEmail(t *testing.T) {
 		rows := pgxpoolmock.NewRows([]string{"id", "partner", "code", "api_key", "salt",
 			"secret", "email", "msisdn", "partner_logo", "address"}).AddRow(int64(1), sql.NullString{String: "PT. LinkSaja Indonesia Terpadu", Valid: true},
 			sql.NullString{String: "LINKSAJA", Valid: true}, sql.NullString{String: "api-key-123-abc-456", Valid: true},
-			sql.NullString{String: "s4lTs3cr3T", Valid: true}, sql.NullString{String: "s0m3things3creTs!#", Valid: true},
+			sql.NullString{String: "s4lTs3cr3T", Valid: true}, []byte("something"),
 			sql.NullString{String: "someone@email.net", Valid: true},
 			sql.NullString{String: "628123456789", Valid: true},
 			sql.NullString{String: "/logo/linksaja-1.png", Valid: true},

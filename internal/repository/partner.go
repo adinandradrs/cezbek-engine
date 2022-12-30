@@ -17,7 +17,7 @@ type Partner struct {
 
 type PartnerPersister interface {
 	Add(m model.Partner) *model.TechnicalError
-	CountByCode(code string) (*int, *model.TechnicalError)
+	CountByIdentifier(m model.Partner) (*int, *model.TechnicalError)
 	FindActiveByCodeAndApiKey(code string, key string) (*model.Partner, *model.TechnicalError)
 	FindActiveByEmail(email string) (*model.Partner, *model.TechnicalError)
 }
@@ -38,7 +38,7 @@ func (p Partner) Add(data model.Partner) *model.TechnicalError {
 	err = tx.QueryRow(context.Background(), `insert into partners (partner, code, api_key, salt, secret, email, 
 		msisdn, email, officer, address, partner_logo, status, is_deleted, created_by, created_date)
 		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, $13, now()) returning id`,
-		data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret.String, data.Email.String,
+		data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret, data.Email.String,
 		data.Msisdn.String, data.Email.String, data.Officer.String, data.PartnerLogo.String, data.Status).Scan(&pid)
 	if err != nil {
 		return apps.Exception("failed to insert into partners table", err,
@@ -52,19 +52,22 @@ func (p Partner) Add(data model.Partner) *model.TechnicalError {
 	return nil
 }
 
-func (p Partner) CountByCode(code string) (*int, *model.TechnicalError) {
+func (p Partner) CountByIdentifier(data model.Partner) (*int, *model.TechnicalError) {
 	total := 0
-	rows, err := p.Pool.Query(context.Background(), `select count(id) as total from partners where 
-		code=$1 AND is_deleted=false`, code)
+	rows, err := p.Pool.Query(context.Background(), `select count(id) as total_to_add from partners where 
+		(code=$1 or email = $2 or msisdn = $3) AND is_deleted=false`, data.Code.String, data.Email.String,
+		data.Msisdn.String)
 	if err != nil {
-		return nil, apps.Exception("failed to count by code", err,
-			zap.String("code", code), p.Logger)
+		return nil, apps.Exception("failed to count identifier", err,
+			zap.Strings("criteria", []string{data.Code.String, data.Email.String,
+				data.Msisdn.String}), p.Logger)
 	}
 
 	err = pgxscan.ScanOne(&total, rows)
 	if err != nil {
-		return nil, apps.Exception("failed to map count own by code", err,
-			zap.String("code", code), p.Logger)
+		return nil, apps.Exception("failed to map count identifier result", err,
+			zap.Strings("criteria", []string{data.Code.String, data.Email.String,
+				data.Msisdn.String}), p.Logger)
 	}
 
 	return &total, nil
