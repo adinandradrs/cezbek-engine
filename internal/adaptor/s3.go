@@ -20,22 +20,17 @@ type (
 		Source      io.Reader
 		Destination string
 	}
-
-	S3UploadResponse struct {
-		Id      string
-		Version string
-	}
 )
 
 type S3Watcher interface {
-	Upload(req *S3UploadRequest) (*S3UploadResponse, *model.TechnicalError)
+	Upload(req *S3UploadRequest) (*s3manager.UploadOutput, *model.TechnicalError)
 }
 
 func NewS3(b *S3Bucket) S3Watcher {
 	return b
 }
 
-func (b S3Bucket) Upload(req *S3UploadRequest) (*S3UploadResponse, *model.TechnicalError) {
+func (b S3Bucket) Upload(req *S3UploadRequest) (*s3manager.UploadOutput, *model.TechnicalError) {
 	v, err := b.Uploader.Upload(&s3manager.UploadInput{
 		Bucket:      &b.Bucket,
 		Key:         &req.Destination,
@@ -46,9 +41,6 @@ func (b S3Bucket) Upload(req *S3UploadRequest) (*S3UploadResponse, *model.Techni
 	if err != nil {
 		return nil, apps.Exception("failed to upload file", err, zap.Any("data", req), b.Logger)
 	}
-
-	return &S3UploadResponse{
-		Id:      v.UploadID,
-		Version: *v.VersionID,
-	}, nil
+	b.Logger.Info("s3 response", zap.Any("", v))
+	return v, nil
 }
