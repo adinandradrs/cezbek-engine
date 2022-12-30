@@ -36,6 +36,15 @@ func RandomPassword(len int, d int, sym int, logger *zap.Logger) (res string, e 
 	return res, e
 }
 
+func RandomBytes(n int, logger *zap.Logger) ([]byte, *model.TechnicalError) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
+	if err != nil {
+		return nil, Exception("failed to generate random byte", err, zap.Int("len", n), logger)
+	}
+	return b, nil
+}
+
 func Hash(key string) string {
 	sha256 := sha256.New()
 	sha256.Write([]byte(key))
@@ -43,7 +52,10 @@ func Hash(key string) string {
 }
 
 func Encrypt(d string, h string, logger *zap.Logger) (res []byte, ex *model.TechnicalError) {
-	c, _ := aes.NewCipher([]byte(h))
+	c, err := aes.NewCipher([]byte(h))
+	if err != nil {
+		return res, Exception("failed to add cipher", err, zap.String("h", h), logger)
+	}
 	o, err := cipher.NewGCM(c)
 	if err != nil {
 		return res, Exception("failed to encrypt GCM data", err, zap.String("h", h), logger)
