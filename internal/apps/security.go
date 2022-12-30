@@ -3,8 +3,8 @@ package apps
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/md5"
 	"crypto/rand"
-	"crypto/sha256"
 	"encoding/hex"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
 	"github.com/sethvargo/go-password/password"
@@ -36,19 +36,10 @@ func RandomPassword(len int, d int, sym int, logger *zap.Logger) (res string, e 
 	return res, e
 }
 
-func RandomBytes(n int, logger *zap.Logger) ([]byte, *model.TechnicalError) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	if err != nil {
-		return nil, Exception("failed to generate random byte", err, zap.Int("len", n), logger)
-	}
-	return b, nil
-}
-
 func Hash(key string) string {
-	sha256 := sha256.New()
-	sha256.Write([]byte(key))
-	return hex.EncodeToString(sha256.Sum(nil))
+	md := md5.New()
+	md.Write([]byte(key))
+	return hex.EncodeToString(md.Sum(nil))
 }
 
 func Encrypt(d string, h string, logger *zap.Logger) (res []byte, ex *model.TechnicalError) {
