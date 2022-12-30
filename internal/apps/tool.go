@@ -51,3 +51,10 @@ func ValidateStruct(err error) []*model.BadPayloadResponse {
 	}
 	return errors
 }
+
+func DefaultSuccessResponse(m string, data interface{}) *model.Response {
+	return &model.Response{
+		Meta: model.Meta{Code: SuccessCode, Message: m},
+		Data: data,
+	}
+}
