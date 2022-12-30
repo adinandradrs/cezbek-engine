@@ -46,7 +46,7 @@ func TestPartner_Add(t *testing.T) {
 		rows := pgxpoolmock.NewRows([]string{"id"}).AddRow(1).ToPgxRows()
 		tx.EXPECT().QueryRow(context.Background(), `insert into partners (partner, code, api_key, salt, secret, email, 
 		msisdn, officer, address, logo, status, is_deleted, created_by, created_date)
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, $12, now()) returning id`,
+		values ($1, $2, $3, $4, $5::bytea, $6, $7, $8, $9, $10, $11, false, $12, now()) returning id`,
 			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret, data.Email.String,
 			data.Msisdn.String, data.Officer.String, data.Address.String, data.Logo.String, data.Status, data.CreatedBy.Int64).
 			Return(rows)
@@ -74,7 +74,7 @@ func TestPartner_Add(t *testing.T) {
 		rows := pgxpoolmock.NewRows([]string{}).AddRow().ToPgxRows()
 		tx.EXPECT().QueryRow(context.Background(), `insert into partners (partner, code, api_key, salt, secret, email, 
 		msisdn, officer, address, logo, status, is_deleted, created_by, created_date)
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, $12, now()) returning id`,
+		values ($1, $2, $3, $4, $5::bytea, $6, $7, $8, $9, $10, $11, false, $12, now()) returning id`,
 			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret, data.Email.String,
 			data.Msisdn.String, data.Officer.String, data.Address.String, data.Logo.String, data.Status, data.CreatedBy.Int64).
 			Return(rows)
@@ -89,7 +89,7 @@ func TestPartner_Add(t *testing.T) {
 		rows := pgxpoolmock.NewRows([]string{"id"}).AddRow(1).ToPgxRows()
 		tx.EXPECT().QueryRow(context.Background(), `insert into partners (partner, code, api_key, salt, secret, email, 
 		msisdn, officer, address, logo, status, is_deleted, created_by, created_date)
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, $12, now()) returning id`,
+		values ($1, $2, $3, $4, $5::bytea, $6, $7, $8, $9, $10, $11, false, $12, now()) returning id`,
 			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret, data.Email.String,
 			data.Msisdn.String, data.Officer.String, data.Address.String, data.Logo.String, data.Status, data.CreatedBy.Int64).
 			Return(rows)
