@@ -10,7 +10,7 @@ import (
 
 // @title Kezbek - Cashback Engine Sandbox
 // @version 1.0
-// @description This cashback sandbox is used for testing purpose only. Serve Kezbek APIs for the customer. It is not intended for production use.
+// @description This Cashback Engine Sandbox is only used for test and development purpose. To explore and serve all Kezbek operational APIs as a live data. It is not intended for production usage.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name Kezbek Developer

@@ -195,7 +195,7 @@ var SwaggerInfo = &swag.Spec{
 	BasePath:         "/api",
 	Schemes:          []string{},
 	Title:            "Kezbek - Cashback Engine Sandbox",
-	Description:      "This cashback sandbox is used for testing purpose only. Serve Kezbek APIs for the customer. It is not intended for production use.",
+	Description:      "This Cashback Engine Sandbox is only used for test and development purpose. To explore and serve all Kezbek operational APIs as a live data. It is not intended for production usage.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }
