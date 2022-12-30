@@ -58,3 +58,10 @@ func DefaultSuccessResponse(m string, data interface{}) *model.Response {
 		Data: data,
 	}
 }
+
+func BusinessErrorResponse(e *model.BusinessError) *model.Response {
+	return &model.Response{
+		Meta: model.Meta{Code: e.ErrorCode, Message: e.ErrorMessage},
+		Data: nil,
+	}
+}
