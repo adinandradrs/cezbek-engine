@@ -29,12 +29,13 @@ func main() {
 	ucase := c.RegisterUsecase(infra, redis)
 
 	app := fiber.New()
-	router := app.Group("/api/v1")
+	app.Get(env.ContextPath+"/swagger/*", swagger.WrapHandler)
 	handler.DefaultHandler(app, env.ContextPath)
+
+	router := app.Group("/api/v1")
 	handler.PartnerHandler(router, handler.Partner{
 		PartnerManager: ucase.PartnerManager,
 	})
-	app.Get(env.ContextPath+"/swagger/*", swagger.WrapHandler)
 
 	_ = app.Listen(env.HttpPort)
 }
