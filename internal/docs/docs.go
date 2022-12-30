@@ -73,7 +73,8 @@ const docTemplate = `{
                     },
                     {
                         "enum": [
-                            "EBIZKEZBEK"
+                            "EBIZKEZBEK",
+                            "B2BCLIENT"
                         ],
                         "type": "string",
                         "description": "Client Channel",
@@ -152,7 +153,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "default": "100000",
+                        "default": "Bintaro Exchange Mall Blok A1",
                         "description": "Office Address",
                         "name": "address",
                         "in": "formData",

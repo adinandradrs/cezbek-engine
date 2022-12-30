@@ -46,6 +46,7 @@ paths:
       - description: Client Channel
         enum:
         - EBIZKEZBEK
+        - B2BCLIENT
         in: header
         name: x-client-channel
         required: true
@@ -101,7 +102,7 @@ paths:
         name: officer
         required: true
         type: string
-      - default: "100000"
+      - default: Bintaro Exchange Mall Blok A1
         description: Office Address
         in: formData
         name: address
