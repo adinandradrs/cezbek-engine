@@ -7,18 +7,18 @@ import (
 
 type (
 	Partner struct {
-		Id          int64          `json:"id" db:"id"`
-		Partner     sql.NullString `json:"partner" db:"partner"`
-		Code        sql.NullString `json:"code" db:"code"`
-		ApiKey      sql.NullString `json:"api_key" db:"api_key"`
-		Salt        sql.NullString `json:"salt" db:"salt"`
-		Secret      sql.RawBytes   `json:"secret" db:"secret"`
-		Email       sql.NullString `json:"email" db:"email"`
-		Msisdn      sql.NullString `json:"msisdn" db:"msisdn"`
-		Officer     sql.NullString `json:"officer" db:"officer"`
-		Address     sql.NullString `json:"address" db:"address"`
-		PartnerLogo sql.NullString `json:"partner_logo" db:"partner_logo"`
-		Status      int            `json:"status" db:"status"`
+		Id      int64          `json:"id" db:"id"`
+		Partner sql.NullString `json:"partner" db:"partner"`
+		Code    sql.NullString `json:"code" db:"code"`
+		ApiKey  sql.NullString `json:"api_key" db:"api_key"`
+		Salt    sql.NullString `json:"salt" db:"salt"`
+		Secret  sql.RawBytes   `json:"secret" db:"secret"`
+		Email   sql.NullString `json:"email" db:"email"`
+		Msisdn  sql.NullString `json:"msisdn" db:"msisdn"`
+		Officer sql.NullString `json:"officer" db:"officer"`
+		Address sql.NullString `json:"address" db:"address"`
+		Logo    sql.NullString `json:"logo" db:"logo"`
+		Status  int            `json:"status" db:"status"`
 		BaseEntity
 	}
 )
