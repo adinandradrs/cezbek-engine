@@ -194,8 +194,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "/api",
 	Schemes:          []string{},
-	Title:            "Kezbek - Cezbek Engine Sandbox",
-	Description:      "This trip service sandbox is used for testing purpose only. Serve Kezbek APIs for the customer. It is not intended for production use.",
+	Title:            "Kezbek - Cashback Engine Sandbox",
+	Description:      "This cashback sandbox is used for testing purpose only. Serve Kezbek APIs for the customer. It is not intended for production use.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

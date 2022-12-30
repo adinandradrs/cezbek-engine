@@ -8,9 +8,9 @@ import (
 	swagger "github.com/swaggo/fiber-swagger"
 )
 
-// @title Kezbek - Cezbek Engine Sandbox
+// @title Kezbek - Cashback Engine Sandbox
 // @version 1.0
-// @description This trip service sandbox is used for testing purpose only. Serve Kezbek APIs for the customer. It is not intended for production use.
+// @description This cashback sandbox is used for testing purpose only. Serve Kezbek APIs for the customer. It is not intended for production use.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name Kezbek Developer

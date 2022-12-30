@@ -4,13 +4,13 @@ info:
     email: developer@kezbek.id
     name: Kezbek Developer
     url: https://kezbek.id
-  description: This trip service sandbox is used for testing purpose only. Serve Kezbek
+  description: This cashback sandbox is used for testing purpose only. Serve Kezbek
     APIs for the customer. It is not intended for production use.
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: Kezbek - Cezbek Engine Sandbox
+  title: Kezbek - Cashback Engine Sandbox
   version: "1.0"
 paths:
   /ping:

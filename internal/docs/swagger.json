@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "This trip service sandbox is used for testing purpose only. Serve Kezbek APIs for the customer. It is not intended for production use.",
-        "title": "Kezbek - Cezbek Engine Sandbox",
+        "description": "This cashback sandbox is used for testing purpose only. Serve Kezbek APIs for the customer. It is not intended for production use.",
+        "title": "Kezbek - Cashback Engine Sandbox",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "Kezbek Developer",
