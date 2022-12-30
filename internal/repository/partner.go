@@ -36,10 +36,10 @@ func (p Partner) Add(data model.Partner) *model.TechnicalError {
 	defer tx.Rollback(context.Background())
 
 	err = tx.QueryRow(context.Background(), `insert into partners (partner, code, api_key, salt, secret, email, 
-		msisdn, email, officer, address, partner_logo, status, is_deleted, created_by, created_date)
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, $13, now()) returning id`,
+		msisdn, officer, address, logo, status, is_deleted, created_by, created_date)
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, $12, now()) returning id`,
 		data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret, data.Email.String,
-		data.Msisdn.String, data.Email.String, data.Officer.String, data.PartnerLogo.String, data.Status).Scan(&pid)
+		data.Msisdn.String, data.Officer.String, data.Address.String, data.Logo.String, data.Status, data.CreatedBy.Int64).Scan(&pid)
 	if err != nil {
 		return apps.Exception("failed to insert into partners table", err,
 			zap.String("code", data.Code.String), p.Logger)
@@ -93,7 +93,7 @@ func (p Partner) FindActiveByCodeAndApiKey(code string, key string) (*model.Part
 func (p Partner) FindActiveByEmail(email string) (*model.Partner, *model.TechnicalError) {
 	d := model.Partner{}
 	query, err := p.Pool.Query(context.Background(), ` select id, partner, code, 
-			api_key, salt, secret, email, msisdn, partner_logo, 
+			api_key, salt, secret, email, msisdn, logo, 
 			address from partners where email = $1 and status = $2 
 			and is_deleted = false `, email, apps.StatusActive)
 	if err != nil {

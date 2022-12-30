@@ -19,16 +19,20 @@ func TestPartner_Add(t *testing.T) {
 	logger, pool, tx := apps.NewLog(false), pgxpoolmock.NewMockPgxIface(ctrl),
 		pgxpoolmock.NewMockPgxIface(ctrl)
 	data := model.Partner{
-		Partner:     sql.NullString{String: "PT. LinkSaja Indonesia", Valid: true},
-		Code:        sql.NullString{String: "LINKSAJA", Valid: true},
-		ApiKey:      sql.NullString{String: "api-key-123-abc-456", Valid: true},
-		Salt:        sql.NullString{String: "s4lTs3cr3T", Valid: true},
-		Secret:      []byte("something"),
-		Email:       sql.NullString{String: "kezbeksupport@linksaja.co.id", Valid: true},
-		Msisdn:      sql.NullString{String: "628123456789", Valid: true},
-		Officer:     sql.NullString{String: "Someone", Valid: true},
-		PartnerLogo: sql.NullString{String: "/logo/linksaja-1.png", Valid: true},
-		Status:      apps.StatusActive,
+		Partner: sql.NullString{String: "PT. LinkSaja Indonesia", Valid: true},
+		Code:    sql.NullString{String: "LINKSAJA", Valid: true},
+		ApiKey:  sql.NullString{String: "api-key-123-abc-456", Valid: true},
+		Salt:    sql.NullString{String: "s4lTs3cr3T", Valid: true},
+		Secret:  []byte("something"),
+		Email:   sql.NullString{String: "kezbeksupport@linksaja.co.id", Valid: true},
+		Msisdn:  sql.NullString{String: "628123456789", Valid: true},
+		Officer: sql.NullString{String: "Someone", Valid: true},
+		Logo:    sql.NullString{String: "/logo/linksaja-1.png", Valid: true},
+		Address: sql.NullString{String: "Street A"},
+		Status:  apps.StatusActive,
+		BaseEntity: model.BaseEntity{
+			CreatedBy: sql.NullInt64{Int64: int64(1), Valid: true},
+		},
 	}
 	ctx := context.Background()
 	persister := NewPartner(Partner{
@@ -41,10 +45,10 @@ func TestPartner_Add(t *testing.T) {
 			Return(tx, nil)
 		rows := pgxpoolmock.NewRows([]string{"id"}).AddRow(1).ToPgxRows()
 		tx.EXPECT().QueryRow(context.Background(), `insert into partners (partner, code, api_key, salt, secret, email, 
-		msisdn, email, officer, address, partner_logo, status, is_deleted, created_by, created_date)
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, $13, now()) returning id`,
+		msisdn, officer, address, logo, status, is_deleted, created_by, created_date)
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, $12, now()) returning id`,
 			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret, data.Email.String,
-			data.Msisdn.String, data.Email.String, data.Officer.String, data.PartnerLogo.String, data.Status).
+			data.Msisdn.String, data.Officer.String, data.Address.String, data.Logo.String, data.Status, data.CreatedBy.Int64).
 			Return(rows)
 		tx.EXPECT().Commit(ctx).Times(1).Return(nil)
 		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
@@ -69,10 +73,10 @@ func TestPartner_Add(t *testing.T) {
 			Return(tx, nil)
 		rows := pgxpoolmock.NewRows([]string{}).AddRow().ToPgxRows()
 		tx.EXPECT().QueryRow(context.Background(), `insert into partners (partner, code, api_key, salt, secret, email, 
-		msisdn, email, officer, address, partner_logo, status, is_deleted, created_by, created_date)
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, $13, now()) returning id`,
+		msisdn, officer, address, logo, status, is_deleted, created_by, created_date)
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, $12, now()) returning id`,
 			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret, data.Email.String,
-			data.Msisdn.String, data.Email.String, data.Officer.String, data.PartnerLogo.String, data.Status).
+			data.Msisdn.String, data.Officer.String, data.Address.String, data.Logo.String, data.Status, data.CreatedBy.Int64).
 			Return(rows)
 		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
 		ex := persister.Add(data)
@@ -84,10 +88,10 @@ func TestPartner_Add(t *testing.T) {
 			Return(tx, nil)
 		rows := pgxpoolmock.NewRows([]string{"id"}).AddRow(1).ToPgxRows()
 		tx.EXPECT().QueryRow(context.Background(), `insert into partners (partner, code, api_key, salt, secret, email, 
-		msisdn, email, officer, address, partner_logo, status, is_deleted, created_by, created_date)
-		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, $13, now()) returning id`,
+		msisdn, officer, address, logo, status, is_deleted, created_by, created_date)
+		values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, $12, now()) returning id`,
 			data.Partner.String, data.Code.String, data.ApiKey.String, data.Salt.String, data.Secret, data.Email.String,
-			data.Msisdn.String, data.Email.String, data.Officer.String, data.PartnerLogo.String, data.Status).
+			data.Msisdn.String, data.Officer.String, data.Address.String, data.Logo.String, data.Status, data.CreatedBy.Int64).
 			Return(rows)
 		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
 		tx.EXPECT().Commit(ctx).Times(1).Return(fmt.Errorf("something went wrong on commit insert partner tx"))
@@ -216,7 +220,7 @@ func TestPartner_FindActiveByEmail(t *testing.T) {
 
 	t.Run("should success", func(t *testing.T) {
 		rows := pgxpoolmock.NewRows([]string{"id", "partner", "code", "api_key", "salt",
-			"secret", "email", "msisdn", "partner_logo", "address"}).AddRow(int64(1), sql.NullString{String: "PT. LinkSaja Indonesia Terpadu", Valid: true},
+			"secret", "email", "msisdn", "logo", "address"}).AddRow(int64(1), sql.NullString{String: "PT. LinkSaja Indonesia Terpadu", Valid: true},
 			sql.NullString{String: "LINKSAJA", Valid: true}, sql.NullString{String: "api-key-123-abc-456", Valid: true},
 			sql.NullString{String: "s4lTs3cr3T", Valid: true}, []byte("something"),
 			sql.NullString{String: "someone@email.net", Valid: true},
@@ -224,7 +228,7 @@ func TestPartner_FindActiveByEmail(t *testing.T) {
 			sql.NullString{String: "/logo/linksaja-1.png", Valid: true},
 			sql.NullString{String: "Jl. Nakula Sadewa no. 8B Jakarta Selatan", Valid: true}).ToPgxRows()
 		pool.EXPECT().Query(ctx, ` select id, partner, code, 
-			api_key, salt, secret, email, msisdn, partner_logo, 
+			api_key, salt, secret, email, msisdn, logo, 
 			address from partners where email = $1 and status = $2 
 			and is_deleted = false `, email, apps.StatusActive).
 			Return(rows, nil)
@@ -236,7 +240,7 @@ func TestPartner_FindActiveByEmail(t *testing.T) {
 
 	t.Run("should return exception on failed to execute query", func(t *testing.T) {
 		pool.EXPECT().Query(ctx, ` select id, partner, code, 
-			api_key, salt, secret, email, msisdn, partner_logo, 
+			api_key, salt, secret, email, msisdn, logo, 
 			address from partners where email = $1 and status = $2 
 			and is_deleted = false `, email, apps.StatusActive).
 			Return(nil, fmt.Errorf("something went wrong on execute query"))
@@ -247,7 +251,7 @@ func TestPartner_FindActiveByEmail(t *testing.T) {
 
 	t.Run("should return exception on map query result", func(t *testing.T) {
 		rows := pgxpoolmock.NewRows([]string{"id", "partner", "code", "api_key", "salt",
-			"secret", "email", "msisdn", "partner_logo", "address"}).AddRow(1, sql.NullString{String: "PT. LinkSaja Indonesia Terpadu", Valid: true},
+			"secret", "email", "msisdn", "logo", "address"}).AddRow(1, sql.NullString{String: "PT. LinkSaja Indonesia Terpadu", Valid: true},
 			sql.NullString{String: "LINKSAJA", Valid: true}, sql.NullString{String: "api-key-123-abc-456", Valid: true},
 			sql.NullString{String: "s4lTs3cr3T", Valid: true}, sql.NullString{String: "s0m3things3creTs!#", Valid: true},
 			sql.NullString{String: "someone@email.net", Valid: true},
@@ -255,7 +259,7 @@ func TestPartner_FindActiveByEmail(t *testing.T) {
 			sql.NullString{String: "/logo/linksaja-1.png", Valid: true},
 			sql.NullString{String: "Jl. Nakula Sadewa no. 8B Jakarta Selatan", Valid: true}).ToPgxRows()
 		pool.EXPECT().Query(ctx, ` select id, partner, code, 
-			api_key, salt, secret, email, msisdn, partner_logo, 
+			api_key, salt, secret, email, msisdn, logo, 
 			address from partners where email = $1 and status = $2 
 			and is_deleted = false `, email, apps.StatusActive).
 			Return(rows, nil)
