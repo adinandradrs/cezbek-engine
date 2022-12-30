@@ -1,6 +1,9 @@
 package model
 
-import "database/sql"
+import (
+	"database/sql"
+	"mime/multipart"
+)
 
 type (
 	Partner struct {
@@ -9,7 +12,7 @@ type (
 		Code        sql.NullString `json:"code" db:"code"`
 		ApiKey      sql.NullString `json:"api_key" db:"api_key"`
 		Salt        sql.NullString `json:"salt" db:"salt"`
-		Secret      sql.NullString `json:"secret" db:"secret"`
+		Secret      sql.RawBytes   `json:"secret" db:"secret"`
 		Email       sql.NullString `json:"email" db:"email"`
 		Msisdn      sql.NullString `json:"msisdn" db:"msisdn"`
 		Officer     sql.NullString `json:"officer" db:"officer"`
@@ -21,13 +24,24 @@ type (
 )
 
 type (
-	PartnerRequest struct {
-		Partner string `json:"partner" validate:"required"`
-		Email   string `json:"email" validate:"required"`
-		Msisdn  string `json:"msisdn" validate:"required"`
-		Officer string `json:"officer" validate:"required"`
-		Address string `json:"address" validate:"required"`
-		Logo    string `json:"logo" validate:"required"`
+	AddPartnerRequest struct {
+		Partner string               `json:"partner" validate:"required"`
+		Code    string               `json:"code" validate:"required"`
+		Email   string               `json:"email" validate:"required"`
+		Msisdn  string               `json:"msisdn" validate:"required"`
+		Officer string               `json:"officer" validate:"required"`
+		Address string               `json:"address" validate:"required"`
+		Logo    multipart.FileHeader `swaggerignore:"true" validate:"required"`
+		SessionRequest
+	}
+
+	UpdatePartnerRequest struct {
+		Id      int64
+		Partner string                `json:"partner" validate:"required"`
+		Msisdn  string                `json:"msisdn" validate:"required"`
+		Officer string                `json:"officer" validate:"required"`
+		Address string                `json:"address" validate:"required"`
+		Logo    *multipart.FileHeader `swaggerignore:"true"`
 		SessionRequest
 	}
 
