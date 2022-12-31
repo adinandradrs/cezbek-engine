@@ -32,6 +32,13 @@ type (
 		TransactionTimestamp int64  `json:"transaction_timestamp"`
 		TransactionId        string `json:"transaction_id"`
 	}
+
+	SessionResponse struct {
+		Token        string `json:"token"`
+		RefreshToken string `json:"refresh_token"`
+		AccessToken  string `json:"access_token"`
+		Expired      *int64 `json:"expired"`
+	}
 )
 
 type (
