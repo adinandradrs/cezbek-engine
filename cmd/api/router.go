@@ -7,10 +7,6 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/handler"
 	"github.com/gofiber/fiber/v2"
 	swagger "github.com/swaggo/fiber-swagger"
-	"go.uber.org/zap"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // @title Kezbek - Cashback Engine Sandbox
@@ -49,12 +45,6 @@ func main() {
 	handler.PartnerHandler(partners, handler.Partner{
 		PartnerManager: ucase.PartnerManager,
 	})
-	//hmac
-	epoch := time.Now().Unix()
-
-	d := fiber.MethodPost + ":" + strings.ToUpper("LAJADA") + ":" + strconv.FormatInt(epoch, 10) + ":" +
-		strings.ToUpper("ee33c45e2cfe3e08d352698d31da6bee")
-	c.Logger.Info("EPOCH", zap.Int64("unixts", epoch), zap.String("hmac", apps.HMAC(d, "LAJADA")))
 
 	_ = app.Listen(env.HttpPort)
 }
