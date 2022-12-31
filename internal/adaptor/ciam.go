@@ -98,8 +98,12 @@ func (c Cognito) OnboardPartner(m model.CiamOnboardPartnerRequest) (*model.CiamU
 				Value: aws.String(m.Email),
 			},
 			{
+				Name:  aws.String("picture"),
+				Value: aws.String(m.Picture),
+			},
+			{
 				Name:  aws.String("phone_number"),
-				Value: aws.String(m.PhoneNumber),
+				Value: aws.String("+" + m.PhoneNumber),
 			},
 		},
 	}
