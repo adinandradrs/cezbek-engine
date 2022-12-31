@@ -26,8 +26,8 @@ type S3Watcher interface {
 	Upload(req *S3UploadRequest) (*s3manager.UploadOutput, *model.TechnicalError)
 }
 
-func NewS3(b *S3Bucket) S3Watcher {
-	return b
+func NewS3(b S3Bucket) S3Watcher {
+	return &b
 }
 
 func (b S3Bucket) Upload(req *S3UploadRequest) (*s3manager.UploadOutput, *model.TechnicalError) {
