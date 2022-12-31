@@ -46,6 +46,84 @@
                 }
             }
         },
+        "/v1/authorization/b2b": {
+            "post": {
+                "description": "This API is to authorize B2B partner's officer account",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization APIs"
+                ],
+                "summary": "B2B Partner Authorization API",
+                "parameters": [
+                    {
+                        "enum": [
+                            "EBIZKEZBEK",
+                            "B2BCLIENT"
+                        ],
+                        "type": "string",
+                        "description": "Client Channel",
+                        "name": "x-client-channel",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "android 10",
+                        "description": "Client OS or Browser Agent",
+                        "name": "x-client-os",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Device ID",
+                        "name": "x-client-device",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "1.0.0",
+                        "description": "Client Platform Version",
+                        "name": "x-client-version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Original Timestamp in UNIX format (EPOCH)",
+                        "name": "x-client-timestamp",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "B2B Partner Authentication Payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.OfficerAuthenticationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/v1/authorization/client": {
             "post": {
                 "description": "This API is to authorize client's signature and code",
@@ -278,10 +356,21 @@
     "definitions": {
         "model.ClientAuthenticationRequest": {
             "type": "object",
+            "required": [
+                "code"
+            ],
             "properties": {
                 "code": {
                     "type": "string",
                     "example": "LAJADA"
+                }
+            }
+        },
+        "model.OfficerAuthenticationRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
                 }
             }
         }

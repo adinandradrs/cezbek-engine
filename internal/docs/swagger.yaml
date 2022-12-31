@@ -5,6 +5,13 @@ definitions:
       code:
         example: LAJADA
         type: string
+    required:
+    - code
+    type: object
+  model.OfficerAuthenticationRequest:
+    properties:
+      email:
+        type: string
     type: object
 info:
   contact:
@@ -40,6 +47,60 @@ paths:
       summary: Show the status of server.
       tags:
       - Default
+  /v1/authorization/b2b:
+    post:
+      consumes:
+      - application/json
+      description: This API is to authorize B2B partner's officer account
+      parameters:
+      - description: Client Channel
+        enum:
+        - EBIZKEZBEK
+        - B2BCLIENT
+        in: header
+        name: x-client-channel
+        required: true
+        type: string
+      - default: android 10
+        description: Client OS or Browser Agent
+        in: header
+        name: x-client-os
+        required: true
+        type: string
+      - description: Client Device ID
+        in: header
+        name: x-client-device
+        required: true
+        type: string
+      - default: 1.0.0
+        description: Client Platform Version
+        in: header
+        name: x-client-version
+        required: true
+        type: string
+      - description: Client Original Timestamp in UNIX format (EPOCH)
+        in: header
+        name: x-client-timestamp
+        required: true
+        type: string
+      - description: B2B Partner Authentication Payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.OfficerAuthenticationRequest'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: B2B Partner Authorization API
+      tags:
+      - Authorization APIs
   /v1/authorization/client:
     post:
       consumes:
