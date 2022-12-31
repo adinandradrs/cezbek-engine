@@ -45,17 +45,39 @@ type (
 		SessionRequest
 	}
 
-	PartnerAuthenticationRequest struct {
+	ClientAuthenticationRequest struct {
 		Signature string `swaggerignore:"true"`
 		Code      string `json:"code"`
 	}
 
-	PartnerOfficerAuthValidationRequest struct {
+	OfficerAuthenticationRequest struct {
 		Email string `json:"email"`
 	}
 
-	PartnerOfficerAuthVerificationRequest struct {
-		Email string `json:"email"`
-		Otp   string `json:"otp"`
+	OfficerValidationRequest struct {
+		TransactionId string `json:"transaction_id"`
+		Otp           string `json:"otp"`
+	}
+)
+
+type (
+	ClientAuthenticationResponse struct {
+		Code    string `json:"code"`
+		Company string `json:"company"`
+		SessionResponse
+	}
+
+	OfficerAuthenticationResponse struct {
+		RemainingSeconds int `json:"remaining_seconds"`
+		TransactionResponse
+	}
+
+	OfficerValidationResponse struct {
+		UrlLogo string `json:"url_logo"`
+		Msisdn  string `json:"msisdn"`
+		Email   string `json:"email"`
+		Code    string `json:"code"`
+		Company string `json:"company"`
+		SessionResponse
 	}
 )
