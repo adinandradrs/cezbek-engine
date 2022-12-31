@@ -23,6 +23,7 @@ func PartnerHandler(r fiber.Router, p Partner) {
 // @Tags Partner Management APIs
 // Add Partner API
 // @Summary Add Partner API
+// @Description This API is to register a new B2B Partner data as user and client
 // @Schemes
 // @Accept json
 // @Param Authorization header string false "Your Token to Access" default(Bearer )

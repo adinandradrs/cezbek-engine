@@ -44,8 +44,9 @@ paths:
     post:
       consumes:
       - application/json
+      description: This API is to authorize client's signature and code
       parameters:
-      - description: Client HMAC signature
+      - description: Client signature using HMAC SHA256, signature formula is <b>HEX(HMAC(SHA256(UPPER(HTTP-METHOD):UPPER(CODE):UNIX-EPOCH:UPPER(API-KEY))))</b>
         in: header
         name: x-client-signature
         required: true
@@ -100,13 +101,14 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-      summary: Client Authentication API
+      summary: Client Authorization API
       tags:
-      - Authentication APIs
+      - Authorization APIs
   /v1/partners:
     post:
       consumes:
       - application/json
+      description: This API is to register a new B2B Partner data as user and client
       parameters:
       - default: Bearer
         description: Your Token to Access

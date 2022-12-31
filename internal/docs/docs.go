@@ -56,17 +56,18 @@ const docTemplate = `{
         },
         "/v1/authorization/client": {
             "post": {
+                "description": "This API is to authorize client's signature and code",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication APIs"
+                    "Authorization APIs"
                 ],
-                "summary": "Client Authentication API",
+                "summary": "Client Authorization API",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Client HMAC signature",
+                        "description": "Client signature using HMAC SHA256, signature formula is \u003cb\u003eHEX(HMAC(SHA256(UPPER(HTTP-METHOD):UPPER(CODE):UNIX-EPOCH:UPPER(API-KEY))))\u003c/b\u003e",
                         "name": "x-client-signature",
                         "in": "header",
                         "required": true
@@ -147,6 +148,7 @@ const docTemplate = `{
         },
         "/v1/partners": {
             "post": {
+                "description": "This API is to register a new B2B Partner data as user and client",
                 "consumes": [
                     "application/json"
                 ],

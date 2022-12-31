@@ -23,9 +23,10 @@ func AuthorizationHandler(r fiber.Router, a Authorization) {
 // @Tags Authorization APIs
 // Client Authorization API
 // @Summary Client Authorization API
+// @Description This API is to authorize client's signature and code
 // @Schemes
 // @Accept json
-// @Param x-client-signature header string true "Client signature using HMAC SHA256"
+// @Param x-client-signature header string true "Client signature using HMAC SHA256, signature formula is <b>HEX(HMAC(SHA256(UPPER(HTTP-METHOD):UPPER(CODE):UNIX-EPOCH:UPPER(API-KEY))))</b>"
 // @Param x-api-key header string true "Client API Key"
 // @Param x-client-channel header string true "Client Channel" Enums(EBIZKEZBEK, B2BCLIENT)
 // @Param x-client-os  header string true "Client OS or Browser Agent" default(android 10)
