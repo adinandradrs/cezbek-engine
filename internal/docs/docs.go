@@ -54,6 +54,97 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/authorization/client": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication APIs"
+                ],
+                "summary": "Client Authentication API",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Client HMAC signature",
+                        "name": "x-client-signature",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client API Key",
+                        "name": "x-api-key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "EBIZKEZBEK",
+                            "B2BCLIENT"
+                        ],
+                        "type": "string",
+                        "description": "Client Channel",
+                        "name": "x-client-channel",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "android 10",
+                        "description": "Client OS or Browser Agent",
+                        "name": "x-client-os",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Device ID",
+                        "name": "x-client-device",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "1.0.0",
+                        "description": "Client Platform Version",
+                        "name": "x-client-version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Original Timestamp in UNIX format (EPOCH)",
+                        "name": "x-client-timestamp",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Client Authentication Payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ClientAuthenticationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/v1/partners": {
             "post": {
                 "consumes": [
@@ -107,7 +198,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Client Original Time Request in UNIX Timestamp",
+                        "description": "Client Original Timestamp in UNIX format (EPOCH)",
                         "name": "x-client-timestamp",
                         "in": "header"
                     },
@@ -182,7 +273,21 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error"
+                    },
+                    "503": {
+                        "description": "Service Unavailable"
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "model.ClientAuthenticationRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "LAJADA"
                 }
             }
         }

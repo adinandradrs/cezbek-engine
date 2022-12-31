@@ -1,4 +1,11 @@
 basePath: /api
+definitions:
+  model.ClientAuthenticationRequest:
+    properties:
+      code:
+        example: LAJADA
+        type: string
+    type: object
 info:
   contact:
     email: developer@kezbek.id
@@ -33,6 +40,69 @@ paths:
       summary: Show the status of server.
       tags:
       - Default
+  /v1/authorization/client:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Client HMAC signature
+        in: header
+        name: x-client-signature
+        required: true
+        type: string
+      - description: Client API Key
+        in: header
+        name: x-api-key
+        required: true
+        type: string
+      - description: Client Channel
+        enum:
+        - EBIZKEZBEK
+        - B2BCLIENT
+        in: header
+        name: x-client-channel
+        required: true
+        type: string
+      - default: android 10
+        description: Client OS or Browser Agent
+        in: header
+        name: x-client-os
+        required: true
+        type: string
+      - description: Client Device ID
+        in: header
+        name: x-client-device
+        required: true
+        type: string
+      - default: 1.0.0
+        description: Client Platform Version
+        in: header
+        name: x-client-version
+        required: true
+        type: string
+      - description: Client Original Timestamp in UNIX format (EPOCH)
+        in: header
+        name: x-client-timestamp
+        required: true
+        type: string
+      - description: Client Authentication Payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.ClientAuthenticationRequest'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: Client Authentication API
+      tags:
+      - Authentication APIs
   /v1/partners:
     post:
       consumes:
@@ -68,7 +138,7 @@ paths:
         name: x-client-version
         required: true
         type: string
-      - description: Client Original Time Request in UNIX Timestamp
+      - description: Client Original Timestamp in UNIX format (EPOCH)
         in: header
         name: x-client-timestamp
         type: string
@@ -124,6 +194,8 @@ paths:
           description: Forbidden
         "500":
           description: Internal Server Error
+        "503":
+          description: Service Unavailable
       summary: Add Partner API
       tags:
       - Partner Management APIs
