@@ -4,7 +4,7 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/adaptor"
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
-	"github.com/adinandradrs/cezbek-engine/internal/repository"
+	"github.com/adinandradrs/cezbek-engine/mock/repository"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
