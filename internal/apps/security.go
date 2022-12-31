@@ -3,8 +3,10 @@ package apps
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/hmac"
 	"crypto/md5"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
 	"github.com/sethvargo/go-password/password"
@@ -25,6 +27,12 @@ func RandomOtp(d int) (string, error) {
 		b[i] = ns[num.Int64()]
 	}
 	return string(b), nil
+}
+
+func HMAC(d string, s string) string {
+	h := hmac.New(sha256.New, []byte(s))
+	h.Write([]byte(d))
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 func RandomPassword(len int, d int, sym int, logger *zap.Logger) (res string, e *model.TechnicalError) {

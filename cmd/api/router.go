@@ -2,10 +2,15 @@ package main
 
 import (
 	"github.com/adinandradrs/cezbek-engine/internal"
+	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	_ "github.com/adinandradrs/cezbek-engine/internal/docs"
 	"github.com/adinandradrs/cezbek-engine/internal/handler"
 	"github.com/gofiber/fiber/v2"
 	swagger "github.com/swaggo/fiber-swagger"
+	"go.uber.org/zap"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // @title Kezbek - Cashback Engine Sandbox
@@ -32,10 +37,24 @@ func main() {
 	app.Get(env.ContextPath+"/swagger/*", swagger.WrapHandler)
 	handler.DefaultHandler(app, env.ContextPath)
 
-	router := app.Group("/api/v1")
-	handler.PartnerHandler(router, handler.Partner{
+	m := apps.Middleware{Logger: c.Logger}
+	authenticator := apps.Authenticator(m)
+
+	authorization := app.Group("/api/v1/authorization").Use(authenticator)
+	handler.AuthorizationHandler(authorization, handler.Authorization{
+		OnboardManager: ucase.OnboardManager,
+	})
+
+	partners := app.Group("/api/v1/partners")
+	handler.PartnerHandler(partners, handler.Partner{
 		PartnerManager: ucase.PartnerManager,
 	})
+	//hmac
+	epoch := time.Now().Unix()
+
+	d := fiber.MethodPost + ":" + strings.ToUpper("LAJADA") + ":" + strconv.FormatInt(epoch, 10) + ":" +
+		strings.ToUpper("ee33c45e2cfe3e08d352698d31da6bee")
+	c.Logger.Info("EPOCH", zap.Int64("unixts", epoch), zap.String("hmac", apps.HMAC(d, "LAJADA")))
 
 	_ = app.Listen(env.HttpPort)
 }

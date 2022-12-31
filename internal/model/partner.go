@@ -46,8 +46,8 @@ type (
 	}
 
 	ClientAuthenticationRequest struct {
-		Signature string `swaggerignore:"true"`
-		Code      string `json:"code"`
+		ApiKey string `swaggerignore:"true"`
+		Code   string `json:"code" example:"LAJADA"`
 	}
 
 	OfficerAuthenticationRequest struct {

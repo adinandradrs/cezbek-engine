@@ -16,9 +16,8 @@ func newPartnerResource(p Partner) *Partner {
 }
 
 func PartnerHandler(r fiber.Router, p Partner) {
-	handler := newPartnerResource(p)
-	route := "/partners"
-	r.Post(route, handler.add)
+	h := newPartnerResource(p)
+	r.Post("/", h.add)
 }
 
 // @Tags Partner Management APIs
@@ -31,7 +30,7 @@ func PartnerHandler(r fiber.Router, p Partner) {
 // @Param x-client-os  header string true "Client OS or Browser Agent" default(android 10)
 // @Param x-client-device  header string true "Client Device ID"
 // @Param x-client-version  header string true "Client Platform Version" default(1.0.0)
-// @Param x-client-timestamp  header string false "Client Original Time Request in UNIX Timestamp"
+// @Param x-client-timestamp  header string false "Client Original Timestamp in UNIX format (EPOCH)"
 // @Param partner formData string true "Partner Corporate" default(PT. Lajada Piranti Commerce)
 // @Param code formData string true "Partner Code" default(LAJADA)
 // @Param email formData string true "Partner Email" default(kezbek.support@lajada.net)

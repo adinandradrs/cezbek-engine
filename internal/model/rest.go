@@ -37,7 +37,7 @@ type (
 		Token        string `json:"token"`
 		RefreshToken string `json:"refresh_token"`
 		AccessToken  string `json:"access_token"`
-		Expired      *int64 `json:"expired"`
+		Expired      *int64 `json:"expired,omitempty"`
 	}
 )
 

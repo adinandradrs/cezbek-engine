@@ -7,6 +7,7 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/repository"
 	"github.com/adinandradrs/cezbek-engine/internal/storage"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/management"
+	"github.com/adinandradrs/cezbek-engine/internal/usecase/partner"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -41,6 +42,7 @@ type (
 
 	Usecase struct {
 		management.PartnerManager
+		partner.OnboardManager
 	}
 )
 
@@ -156,12 +158,19 @@ func (c *Container) RegisterUsecase(infra Infra, rds storage.Cacher) Usecase {
 	path := c.Viper.GetString("aws.s3.path")
 	return Usecase{
 		PartnerManager: management.NewPartner(management.Partner{
-			Dao:         dao,
+			Dao:         dao.PartnerPersister,
 			CiamWatcher: infra.CiamPartner,
 			S3Watcher:   infra.S3Watcher,
 			CDN:         cdn,
 			PathS3:      path,
 			Logger:      c.Logger,
+		}),
+		OnboardManager: partner.NewOnboard(partner.Onboard{
+			Dao:           dao.PartnerPersister,
+			Cacher:        rds,
+			ClientAuthTTL: c.Viper.GetDuration("ttl.client_auth"),
+			CiamWatcher:   infra.CiamPartner,
+			Logger:        c.Logger,
 		}),
 	}
 }
