@@ -5,32 +5,23 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/model"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"go.uber.org/zap"
-	"io"
 )
 
-type (
-	S3Bucket struct {
-		Bucket   string
-		Uploader *s3manager.Uploader
-		Logger   *zap.Logger
-	}
-
-	S3UploadRequest struct {
-		ContentType string
-		Source      io.Reader
-		Destination string
-	}
-)
+type S3Bucket struct {
+	Bucket   string
+	Uploader *s3manager.Uploader
+	Logger   *zap.Logger
+}
 
 type S3Watcher interface {
-	Upload(req *S3UploadRequest) (*s3manager.UploadOutput, *model.TechnicalError)
+	Upload(req *model.S3UploadRequest) (*s3manager.UploadOutput, *model.TechnicalError)
 }
 
 func NewS3(b S3Bucket) S3Watcher {
 	return &b
 }
 
-func (b S3Bucket) Upload(req *S3UploadRequest) (*s3manager.UploadOutput, *model.TechnicalError) {
+func (b S3Bucket) Upload(req *model.S3UploadRequest) (*s3manager.UploadOutput, *model.TechnicalError) {
 	v, err := b.Uploader.Upload(&s3manager.UploadInput{
 		Bucket:      &b.Bucket,
 		Key:         &req.Destination,

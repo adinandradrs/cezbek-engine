@@ -36,7 +36,7 @@ func (p Partner) uploadLogo(tid string, logo multipart.FileHeader) (*string, *mo
 	fext := nsplit[len(nsplit)-1]
 	floc := p.PathS3 + "logo/" + fname + "." + fext
 	f, _ := logo.Open()
-	_, err := p.S3Watcher.Upload(&adaptor.S3UploadRequest{
+	_, err := p.S3Watcher.Upload(&model.S3UploadRequest{
 		Destination: floc,
 		Source:      f,
 		ContentType: logo.Header.Get(fiber.HeaderContentType),

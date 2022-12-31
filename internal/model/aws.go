@@ -1,5 +1,7 @@
 package model
 
+import "io"
+
 type (
 	CiamOnboardPartnerRequest struct {
 		Username    string
@@ -13,6 +15,12 @@ type (
 	CiamAuthenticationRequest struct {
 		Username string
 		Secret   string
+	}
+
+	S3UploadRequest struct {
+		ContentType string
+		Source      io.Reader
+		Destination string
 	}
 )
 
