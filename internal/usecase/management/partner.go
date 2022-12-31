@@ -15,12 +15,12 @@ import (
 )
 
 type Partner struct {
-	Dao       repository.PartnerPersister
-	Ciam      adaptor.CiamWatcher
-	S3Watcher adaptor.S3Watcher
-	CDN       string
-	PathS3    string
-	Logger    *zap.Logger
+	Dao         repository.PartnerPersister
+	CiamWatcher adaptor.CiamWatcher
+	S3Watcher   adaptor.S3Watcher
+	CDN         string
+	PathS3      string
+	Logger      *zap.Logger
 }
 
 type PartnerManager interface {
@@ -57,7 +57,7 @@ func (p Partner) generateSecret(inp *model.AddPartnerRequest, pass *string) (*st
 }
 
 func (p Partner) ciamRegistration(data *model.Partner, pass *string) (*model.CiamUserResponse, *model.BusinessError) {
-	resp, ex := p.Ciam.OnboardPartner(model.CiamOnboardPartnerRequest{
+	resp, ex := p.CiamWatcher.OnboardPartner(model.CiamOnboardPartnerRequest{
 		Email:       data.Email.String,
 		PhoneNumber: data.Msisdn.String,
 		Username:    data.Code.String,
