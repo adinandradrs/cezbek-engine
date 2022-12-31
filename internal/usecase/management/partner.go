@@ -77,6 +77,7 @@ func (p Partner) ciamRegistration(data *model.Partner, pass *string) (*model.Cia
 func (p Partner) Add(inp *model.AddPartnerRequest) (*model.TransactionResponse, *model.BusinessError) {
 	tid := apps.TransactionId(inp.Code + apps.DefaultTrxId)
 	data := model.Partner{
+		Address: sql.NullString{String: inp.Address, Valid: true},
 		Officer: sql.NullString{String: inp.Officer, Valid: true},
 		Partner: sql.NullString{String: inp.Partner, Valid: true},
 		Code:    sql.NullString{String: inp.Code, Valid: true},
