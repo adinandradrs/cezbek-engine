@@ -47,7 +47,7 @@ type (
 
 	ClientAuthenticationRequest struct {
 		ApiKey string `swaggerignore:"true"`
-		Code   string `json:"code" example:"LAJADA"`
+		Code   string `json:"code" example:"LAJADA" validate:"required"`
 	}
 
 	OfficerAuthenticationRequest struct {
