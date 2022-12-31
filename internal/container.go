@@ -156,12 +156,12 @@ func (c *Container) RegisterUsecase(infra Infra, rds storage.Cacher) Usecase {
 	path := c.Viper.GetString("aws.s3.path")
 	return Usecase{
 		PartnerManager: management.NewPartner(management.Partner{
-			Dao:       dao,
-			Ciam:      infra.CiamPartner,
-			S3Watcher: infra.S3Watcher,
-			CDN:       cdn,
-			PathS3:    path,
-			Logger:    c.Logger,
+			Dao:         dao,
+			CiamWatcher: infra.CiamPartner,
+			S3Watcher:   infra.S3Watcher,
+			CDN:         cdn,
+			PathS3:      path,
+			Logger:      c.Logger,
 		}),
 	}
 }
