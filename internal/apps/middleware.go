@@ -34,6 +34,14 @@ func Authenticator(m Middleware) fiber.Handler {
 		}
 
 		if isSign {
+			if ctx.Get(HeaderClientChannel) != ChannelB2BClient {
+				return ctx.Status(fiber.StatusUnauthorized).JSON(model.Response{
+					Meta: model.Meta{
+						Code:    ErrCodeInvalidChannel,
+						Message: ErrMsgInvalidChannel,
+					},
+				})
+			}
 			b := struct {
 				Code string `json:"code"`
 			}{}
