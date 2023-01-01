@@ -16,7 +16,8 @@ import (
 func TestPartner_Add(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	logger, pool, tx := apps.NewLog(false), pgxpoolmock.NewMockPgxIface(ctrl),
+	logger, _ := apps.NewLog(false)
+	pool, tx := pgxpoolmock.NewMockPgxIface(ctrl),
 		pgxpoolmock.NewMockPgxIface(ctrl)
 	data := model.Partner{
 		Partner: sql.NullString{String: "PT. LinkSaja Indonesia", Valid: true},
@@ -109,7 +110,8 @@ func TestPartner_Add(t *testing.T) {
 func TestPartner_CountByIdentifier(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	logger, pool := apps.NewLog(false), pgxpoolmock.NewMockPgxIface(ctrl)
+	logger, _ := apps.NewLog(false)
+	pool := pgxpoolmock.NewMockPgxIface(ctrl)
 	data := model.Partner{
 		Code:   sql.NullString{String: "LINKSAJA"},
 		Email:  sql.NullString{String: "someone@linksaja.id"},
@@ -155,7 +157,8 @@ func TestPartner_CountByIdentifier(t *testing.T) {
 func TestPartner_FindActiveByCodeAndApiKey(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	logger, pool := apps.NewLog(false), pgxpoolmock.NewMockPgxIface(ctrl)
+	logger, _ := apps.NewLog(false)
+	pool := pgxpoolmock.NewMockPgxIface(ctrl)
 	code, key := "LINKSAJA", "api-key-123-abc-456"
 	ctx := context.Background()
 	persister := NewPartner(Partner{
@@ -210,7 +213,8 @@ func TestPartner_FindActiveByCodeAndApiKey(t *testing.T) {
 func TestPartner_FindActiveByEmail(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	logger, pool := apps.NewLog(false), pgxpoolmock.NewMockPgxIface(ctrl)
+	logger, _ := apps.NewLog(false)
+	pool := pgxpoolmock.NewMockPgxIface(ctrl)
 	email := "someone@email.net"
 	ctx := context.Background()
 	persister := NewPartner(Partner{
