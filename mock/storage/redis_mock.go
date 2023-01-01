@@ -64,6 +64,35 @@ func (mr *MockCacherMockRecorder) Get(k, p interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockCacher)(nil).Get), k, p)
 }
 
+// Hget mocks base method.
+func (m *MockCacher) Hget(k, p string) (string, *model.TechnicalError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Hget", k, p)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(*model.TechnicalError)
+	return ret0, ret1
+}
+
+// Hget indicates an expected call of Hget.
+func (mr *MockCacherMockRecorder) Hget(k, p interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hget", reflect.TypeOf((*MockCacher)(nil).Hget), k, p)
+}
+
+// Hset mocks base method.
+func (m *MockCacher) Hset(k, p string, v interface{}) *model.TechnicalError {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Hset", k, p, v)
+	ret0, _ := ret[0].(*model.TechnicalError)
+	return ret0
+}
+
+// Hset indicates an expected call of Hset.
+func (mr *MockCacherMockRecorder) Hset(k, p, v interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hset", reflect.TypeOf((*MockCacher)(nil).Hset), k, p, v)
+}
+
 // Set mocks base method.
 func (m *MockCacher) Set(k, p string, v interface{}, d time.Duration) *model.TechnicalError {
 	m.ctrl.T.Helper()
