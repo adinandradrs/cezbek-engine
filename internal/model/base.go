@@ -1,6 +1,8 @@
 package model
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 type BaseEntity struct {
 	IsDeleted   bool          `json:"is_deleted"`

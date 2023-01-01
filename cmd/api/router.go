@@ -29,19 +29,19 @@ func main() {
 	redis := c.LoadRedis()
 	ucase := c.RegisterUsecase(infra, redis)
 
+	m := apps.Middleware{Logger: c.Logger}
+	authenticator := apps.Authenticator(m)
+
 	app := fiber.New()
 	app.Get(env.ContextPath+"/swagger/*", swagger.WrapHandler)
 	handler.DefaultHandler(app, env.ContextPath)
 
-	m := apps.Middleware{Logger: c.Logger}
-	authenticator := apps.Authenticator(m)
-
-	authorization := app.Group("/api/v1/authorization").Use(authenticator)
+	authorization := app.Group("/api/v1/authorization").Use(c.HttpLogger, authenticator)
 	handler.AuthorizationHandler(authorization, handler.Authorization{
 		OnboardManager: ucase.OnboardManager,
 	})
 
-	partners := app.Group("/api/v1/partners")
+	partners := app.Group("/api/v1/partners").Use(c.HttpLogger)
 	handler.PartnerHandler(partners, handler.Partner{
 		PartnerManager: ucase.PartnerManager,
 	})

@@ -13,6 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	cognito "github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/gofiber/fiber/v2"
 	"github.com/shopspring/decimal"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -21,9 +22,10 @@ import (
 
 type (
 	Container struct {
-		Logger *zap.Logger
-		Viper  *viper.Viper
-		app    string
+		Logger     *zap.Logger
+		HttpLogger fiber.Handler
+		Viper      *viper.Viper
+		app        string
 	}
 
 	Env struct {
@@ -63,15 +65,16 @@ func svcRegister(c *Container) Container {
 
 func NewContainer(app string) Container {
 	decimal.MarshalJSONWithoutQuotes = true
-	logger := apps.NewLog(false)
+	logger, httpLogger := apps.NewLog(false)
 	conf, err := apps.NewEnv(logger)
 	if err != nil {
 		logger.Panic("error to load config", zap.Any("", &err))
 	}
 	return svcRegister(&Container{
-		Logger: logger,
-		Viper:  conf,
-		app:    app,
+		Logger:     logger,
+		HttpLogger: httpLogger,
+		Viper:      conf,
+		app:        app,
 	})
 }
 

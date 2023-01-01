@@ -68,15 +68,14 @@ type (
 	}
 
 	ContextRequest struct {
-		Channel       string `json:"channel" swaggerignore:"true"`
-		OS            string `json:"os" swaggerignore:"true"`
-		Version       string `json:"version" swaggerignore:"true"`
-		Language      string `json:"language" swaggerignore:"true"`
-		DeviceId      string `json:"device_id" swaggerignore:"true"`
-		Authorization string `json:"authorization" swaggerignore:"true"`
-		AuthSignature string `json:"auth_signature" swaggerignore:"true"`
-		RefreshToken  string `json:"refresh_token" swaggerignore:"true"`
-		TransactionId string `json:"transaction_id" swaggerignore:"true"`
-		ApiKey        string `json:"api_key" swaggerignore:"true"`
+		Channel       string `json:"channel,omitempty" swaggerignore:"true"`
+		OS            string `json:"os,omitempty" swaggerignore:"true"`
+		Version       string `json:"version,omitempty" swaggerignore:"true"`
+		DeviceId      string `json:"device_id,omitempty" swaggerignore:"true"`
+		Authorization string `json:"authorization,omitempty" swaggerignore:"true"`
+		AuthSignature string `json:"auth_signature,omitempty" swaggerignore:"true"`
+		RefreshToken  string `json:"refresh_token,omitempty" swaggerignore:"true"`
+		TransactionId string `json:"transaction_id,omitempty" swaggerignore:"true"`
+		ApiKey        string `json:"api_key,omitempty" swaggerignore:"true"`
 	}
 )
