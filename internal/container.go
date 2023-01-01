@@ -159,6 +159,7 @@ func (c *Container) RegisterUsecase(infra Infra, rds storage.Cacher) Usecase {
 	dao := c.registerRepository()
 	cdn := c.Viper.GetString("aws.cdn_base")
 	path := c.Viper.GetString("aws.s3.path")
+	otpTtl := c.Viper.GetDuration("ttl.otp")
 	return Usecase{
 		PartnerManager: management.NewPartner(management.Partner{
 			Dao:         dao.PartnerPersister,
@@ -172,6 +173,7 @@ func (c *Container) RegisterUsecase(infra Infra, rds storage.Cacher) Usecase {
 			Dao:           dao.PartnerPersister,
 			Cacher:        rds,
 			ClientAuthTTL: c.Viper.GetDuration("ttl.client_auth"),
+			OtpTTL:        otpTtl,
 			CiamWatcher:   infra.CiamPartner,
 			Logger:        c.Logger,
 		}),

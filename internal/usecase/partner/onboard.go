@@ -8,6 +8,7 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/repository"
 	"github.com/adinandradrs/cezbek-engine/internal/storage"
 	"go.uber.org/zap"
+	"strings"
 	"time"
 )
 
@@ -17,6 +18,7 @@ type Onboard struct {
 	Cacher        storage.Cacher
 	Logger        *zap.Logger
 	ClientAuthTTL time.Duration
+	OtpTTL        time.Duration
 }
 
 type OnboardManager interface {
@@ -83,21 +85,62 @@ func (o Onboard) AuthenticateClient(inp *model.ClientAuthenticationRequest) (*mo
 			Expired:      &auth.ExpiresIn,
 		},
 	}
-	json, err := json.Marshal(resp)
+	cache, err := json.Marshal(resp)
 	if err != nil {
 		return nil, &model.BusinessError{
 			ErrorCode:    apps.ErrCodeSomethingWrong,
 			ErrorMessage: apps.ErrMsgSomethingWrong,
 		}
 	}
-	o.Cacher.Set("CLIENTSESSION", p.Code.String, json, o.ClientAuthTTL)
+	o.Cacher.Set("CLIENTSESSION", p.Code.String, cache, o.ClientAuthTTL)
 
 	return &resp, nil
 }
 
 func (o Onboard) AuthenticateOfficer(inp *model.OfficerAuthenticationRequest) (*model.OfficerAuthenticationResponse, *model.BusinessError) {
-	//TODO implement me
-	panic("implement me")
+	p, ex := o.Dao.FindActiveByEmail(inp.Email)
+	if ex != nil {
+		return nil, &model.BusinessError{
+			ErrorCode:    apps.ErrCodeUnauthorized,
+			ErrorMessage: apps.ErrMsgUnauthorized,
+		}
+	}
+	otp, err := apps.RandomOtp(6)
+	if err != nil {
+		return nil, &model.BusinessError{
+			ErrorCode:    apps.ErrCodeSomethingWrong,
+			ErrorMessage: apps.ErrMsgSomethingWrong,
+		}
+	}
+
+	trx := apps.TransactionId(apps.DefaultTrxId)
+	ttl, _ := o.Cacher.Ttl("OTPB2B", p.Email.String)
+	if ttl.Seconds() > 0 {
+		trx, _ = o.Cacher.Get("OTPB2B", p.Email.String)
+		return &model.OfficerAuthenticationResponse{
+			RemainingSeconds: ttl.Seconds(),
+			TransactionResponse: model.TransactionResponse{
+				TransactionId:        strings.Split(trx, "#")[1],
+				TransactionTimestamp: time.Now().Unix(),
+			},
+		}, nil
+	}
+	o.Cacher.Set("OTPB2B", p.Email.String, otp+"#"+trx, o.OtpTTL)
+	cache, err := json.Marshal(p)
+	if err != nil {
+		return nil, &model.BusinessError{
+			ErrorCode:    apps.ErrCodeSomethingWrong,
+			ErrorMessage: apps.ErrMsgSomethingWrong,
+		}
+	}
+	o.Cacher.Set("OTPB2B:"+trx, otp, cache, o.OtpTTL)
+	return &model.OfficerAuthenticationResponse{
+		RemainingSeconds: o.OtpTTL.Seconds(),
+		TransactionResponse: model.TransactionResponse{
+			TransactionId:        trx,
+			TransactionTimestamp: time.Now().Unix(),
+		},
+	}, nil
 }
 
 func (o Onboard) ValidateAuthOfficer(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError) {

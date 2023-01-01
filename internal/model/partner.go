@@ -55,7 +55,7 @@ type (
 	}
 
 	OfficerValidationRequest struct {
-		TransactionId string `json:"transaction_id"`
+		TransactionId string `swaggerignore:"true"`
 		Otp           string `json:"otp"`
 	}
 )
@@ -68,7 +68,7 @@ type (
 	}
 
 	OfficerAuthenticationResponse struct {
-		RemainingSeconds int `json:"remaining_seconds"`
+		RemainingSeconds float64 `json:"remaining_seconds"`
 		TransactionResponse
 	}
 
