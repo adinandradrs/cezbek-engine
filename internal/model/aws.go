@@ -22,6 +22,12 @@ type (
 		Source      io.Reader
 		Destination string
 	}
+
+	SendEmailRequest struct {
+		Destination string
+		Subject     string
+		Content     string
+	}
 )
 
 type (
