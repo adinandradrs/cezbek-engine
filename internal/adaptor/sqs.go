@@ -12,7 +12,7 @@ type SQS struct {
 type SQSAdapter interface {
 	GetMessages(q string) *sqs.Message
 	DeleteMessages(q string, h string) *sqs.DeleteMessageOutput
-	SendMessage(q string, h string) error
+	SendMessage(q string, msg string) error
 }
 
 func NewSQS(c SQS) SQSAdapter {
@@ -39,10 +39,10 @@ func (s *SQS) DeleteMessages(q string, h string) *sqs.DeleteMessageOutput {
 	return msgs
 }
 
-func (s *SQS) SendMessage(q string, h string) error {
+func (s *SQS) SendMessage(q string, msg string) error {
 	_, err := s.SQS.SendMessage(&sqs.SendMessageInput{
 		QueueUrl:    &q,
-		MessageBody: &h,
+		MessageBody: &msg,
 	})
 	if err != nil {
 		return err

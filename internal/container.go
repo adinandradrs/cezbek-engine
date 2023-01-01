@@ -171,6 +171,7 @@ func (c *Container) RegisterUsecase(infra Infra, cacher storage.Cacher) Usecase 
 	cdn := c.Viper.GetString("aws.cdn_base")
 	path := c.Viper.GetString("aws.s3.path")
 	otpTtl := c.Viper.GetDuration("ttl.otp")
+	qNotificationEmailOtp := c.Viper.GetString("aws.sqs.topic.notification_email_otp")
 	return Usecase{
 		PartnerManager: management.NewPartner(management.Partner{
 			Dao:         dao.PartnerPersister,
@@ -186,12 +187,14 @@ func (c *Container) RegisterUsecase(infra Infra, cacher storage.Cacher) Usecase 
 			Logger: c.Logger,
 		}),
 		OnboardManager: partner.NewOnboard(partner.Onboard{
-			Dao:           dao.PartnerPersister,
-			Cacher:        cacher,
-			ClientAuthTTL: c.Viper.GetDuration("ttl.client_auth"),
-			OtpTTL:        otpTtl,
-			CiamWatcher:   infra.CiamPartner,
-			Logger:        c.Logger,
+			Dao:                       dao.PartnerPersister,
+			Cacher:                    cacher,
+			SqsAdapter:                infra.SQSAdapter,
+			ClientAuthTTL:             c.Viper.GetDuration("ttl.client_auth"),
+			OtpTTL:                    otpTtl,
+			CiamWatcher:               infra.CiamPartner,
+			QueueNotificationEmailOtp: &qNotificationEmailOtp,
+			Logger:                    c.Logger,
 		}),
 	}
 }

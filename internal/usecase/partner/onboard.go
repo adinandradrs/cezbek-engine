@@ -13,12 +13,14 @@ import (
 )
 
 type Onboard struct {
-	Dao           repository.PartnerPersister
-	CiamWatcher   adaptor.CiamWatcher
-	Cacher        storage.Cacher
-	Logger        *zap.Logger
-	ClientAuthTTL time.Duration
-	OtpTTL        time.Duration
+	Dao                       repository.PartnerPersister
+	CiamWatcher               adaptor.CiamWatcher
+	SqsAdapter                adaptor.SQSAdapter
+	Cacher                    storage.Cacher
+	Logger                    *zap.Logger
+	ClientAuthTTL             time.Duration
+	OtpTTL                    time.Duration
+	QueueNotificationEmailOtp *string
 }
 
 type OnboardManager interface {
@@ -134,6 +136,10 @@ func (o Onboard) AuthenticateOfficer(inp *model.OfficerAuthenticationRequest) (*
 		}
 	}
 	o.Cacher.Set("OTPB2B:"+trx, otp, cache, o.OtpTTL)
+	bx := o.queueEmailOtp(otp, p)
+	if bx != nil {
+		return nil, bx
+	}
 	return &model.OfficerAuthenticationResponse{
 		RemainingSeconds: o.OtpTTL.Seconds(),
 		TransactionResponse: model.TransactionResponse{
@@ -141,6 +147,33 @@ func (o Onboard) AuthenticateOfficer(inp *model.OfficerAuthenticationRequest) (*
 			TransactionTimestamp: time.Now().Unix(),
 		},
 	}, nil
+}
+
+func (o Onboard) queueEmailOtp(otp string, p *model.Partner) *model.BusinessError {
+	sbj, _ := o.Cacher.Hget("EMAIL_SUBJECT", "OTP")
+	tmpl, _ := o.Cacher.Hget("EMAIL_TEMPLATE", "OTP")
+	content := strings.ReplaceAll(tmpl, "${otp}", otp)
+	content = strings.ReplaceAll(content, "${partner}", p.Partner.String)
+	msg, err := json.Marshal(model.SendEmailRequest{
+		Content:     content,
+		Subject:     sbj,
+		Destination: p.Email.String,
+	})
+	if err != nil {
+		return &model.BusinessError{
+			ErrorCode:    apps.ErrCodeSomethingWrong,
+			ErrorMessage: apps.ErrMsgSomethingWrong,
+		}
+	}
+	err = o.SqsAdapter.SendMessage(*o.QueueNotificationEmailOtp, string(msg))
+	if err != nil {
+		return &model.BusinessError{
+			ErrorCode:    apps.ErrCodeSomethingWrong,
+			ErrorMessage: apps.ErrMsgSomethingWrong,
+		}
+	}
+	return nil
+
 }
 
 func (o Onboard) ValidateAuthOfficer(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError) {
