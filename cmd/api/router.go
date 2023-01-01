@@ -5,8 +5,10 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	_ "github.com/adinandradrs/cezbek-engine/internal/docs"
 	"github.com/adinandradrs/cezbek-engine/internal/handler"
+	"github.com/adinandradrs/cezbek-engine/internal/usecase/management"
 	"github.com/gofiber/fiber/v2"
 	swagger "github.com/swaggo/fiber-swagger"
+	"go.uber.org/zap"
 )
 
 // @title Kezbek - Cashback Engine Sandbox
@@ -46,5 +48,29 @@ func main() {
 		PartnerManager: ucase.PartnerManager,
 	})
 
+	loadParameterCache(ucase.ParamManager, c.Logger)
 	_ = app.Listen(env.HttpPort)
+}
+
+func loadParameterCache(pmgr management.ParamManager, logger *zap.Logger) {
+	go func() {
+		ex := pmgr.CacheEmailSubjects()
+		if ex != nil {
+			logger.Panic("failed to load email subjects")
+		}
+	}()
+
+	go func() {
+		ex := pmgr.CacheEmailTemplates()
+		if ex != nil {
+			logger.Panic("failed to load email templates")
+		}
+	}()
+
+	go func() {
+		ex := pmgr.CacheWallets()
+		if ex != nil {
+			logger.Panic("failed to load wallet codes")
+		}
+	}()
 }
