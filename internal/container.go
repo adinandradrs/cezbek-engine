@@ -40,10 +40,12 @@ type (
 
 	Dao struct {
 		repository.PartnerPersister
+		repository.ParamPersister
 	}
 
 	Usecase struct {
 		management.PartnerManager
+		management.ParamManager
 		partner.OnboardManager
 	}
 )
@@ -95,6 +97,7 @@ func (c *Container) registerRepository() Dao {
 	p := c.loadPool()
 	return Dao{
 		PartnerPersister: repository.NewPartner(repository.Partner{Logger: c.Logger, Pool: p.Pool}),
+		ParamPersister:   repository.NewParameter(repository.Parameter{Logger: c.Logger, Pool: p.Pool}),
 	}
 }
 
@@ -155,7 +158,7 @@ func (c *Container) LoadRedis() (rds storage.Cacher) {
 	return rds
 }
 
-func (c *Container) RegisterUsecase(infra Infra, rds storage.Cacher) Usecase {
+func (c *Container) RegisterUsecase(infra Infra, cacher storage.Cacher) Usecase {
 	dao := c.registerRepository()
 	cdn := c.Viper.GetString("aws.cdn_base")
 	path := c.Viper.GetString("aws.s3.path")
@@ -169,9 +172,14 @@ func (c *Container) RegisterUsecase(infra Infra, rds storage.Cacher) Usecase {
 			PathS3:      path,
 			Logger:      c.Logger,
 		}),
+		ParamManager: management.NewParameter(management.Parameter{
+			Dao:    dao.ParamPersister,
+			Cacher: cacher,
+			Logger: c.Logger,
+		}),
 		OnboardManager: partner.NewOnboard(partner.Onboard{
 			Dao:           dao.PartnerPersister,
-			Cacher:        rds,
+			Cacher:        cacher,
 			ClientAuthTTL: c.Viper.GetDuration("ttl.client_auth"),
 			OtpTTL:        otpTtl,
 			CiamWatcher:   infra.CiamPartner,
