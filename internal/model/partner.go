@@ -51,7 +51,7 @@ type (
 	}
 
 	OfficerAuthenticationRequest struct {
-		Email string `json:"email"`
+		Email string `json:"email" example:"john.doe@lajada.id"`
 	}
 
 	OfficerValidationRequest struct {

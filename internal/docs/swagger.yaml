@@ -11,6 +11,7 @@ definitions:
   model.OfficerAuthenticationRequest:
     properties:
       email:
+        example: john.doe@lajada.id
         type: string
     type: object
 info:
@@ -51,7 +52,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: This API is to authorize B2B partner's officer account
+      description: This API is to authorize B2B officer account
       parameters:
       - description: Client Channel
         enum:
@@ -81,9 +82,8 @@ paths:
       - description: Client Original Timestamp in UNIX format (EPOCH)
         in: header
         name: x-client-timestamp
-        required: true
         type: string
-      - description: B2B Partner Authentication Payload
+      - description: B2B Officer Authentication Payload
         in: body
         name: request
         required: true
@@ -98,7 +98,7 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-      summary: B2B Partner Authorization API
+      summary: B2B Authorization API
       tags:
       - Authorization APIs
   /v1/authorization/client:

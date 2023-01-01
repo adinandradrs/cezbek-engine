@@ -61,24 +61,24 @@ func (a *Authorization) clientAuth(ctx *fiber.Ctx) error {
 }
 
 // @Tags Authorization APIs
-// Client Authorization API
-// @Summary B2B Partner Authorization API
-// @Description This API is to authorize B2B partner's officer account
+// B2B Authorization API
+// @Summary B2B Authorization API
+// @Description This API is to authorize B2B officer account
 // @Schemes
 // @Accept json
 // @Param x-client-channel header string true "Client Channel" Enums(EBIZKEZBEK, B2BCLIENT)
 // @Param x-client-os  header string true "Client OS or Browser Agent" default(android 10)
 // @Param x-client-device  header string true "Client Device ID"
 // @Param x-client-version  header string true "Client Platform Version" default(1.0.0)
-// @Param x-client-timestamp  header string true "Client Original Timestamp in UNIX format (EPOCH)"
-// @Param request body model.OfficerAuthenticationRequest true "B2B Partner Authentication Payload"
+// @Param x-client-timestamp  header string false "Client Original Timestamp in UNIX format (EPOCH)"
+// @Param request body model.OfficerAuthenticationRequest true "B2B Officer Authentication Payload"
 // @Success 200
 // @Failure 400
 // @Failure 401
 // @Failure 500
 // @Router /v1/authorization/b2b [post]
 func (a *Authorization) b2bAuth(ctx *fiber.Ctx) error {
-	inp := model.ClientAuthenticationRequest{}
+	inp := model.OfficerAuthenticationRequest{}
 	if err := ctx.BodyParser(&inp); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(err)
 	}
@@ -86,8 +86,7 @@ func (a *Authorization) b2bAuth(ctx *fiber.Ctx) error {
 	if bad != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bad)
 	}
-	inp.ApiKey = ctx.Get(apps.HeaderApiKey)
-	v, ex := a.AuthenticateClient(&inp)
+	v, ex := a.AuthenticateOfficer(&inp)
 	if ex != nil && ex.ErrorCode == apps.ErrCodeUnauthorized {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(apps.BusinessErrorResponse(ex))
 	}

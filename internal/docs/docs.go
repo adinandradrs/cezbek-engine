@@ -56,14 +56,14 @@ const docTemplate = `{
         },
         "/v1/authorization/b2b": {
             "post": {
-                "description": "This API is to authorize B2B partner's officer account",
+                "description": "This API is to authorize B2B officer account",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "Authorization APIs"
                 ],
-                "summary": "B2B Partner Authorization API",
+                "summary": "B2B Authorization API",
                 "parameters": [
                     {
                         "enum": [
@@ -103,11 +103,10 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Client Original Timestamp in UNIX format (EPOCH)",
                         "name": "x-client-timestamp",
-                        "in": "header",
-                        "required": true
+                        "in": "header"
                     },
                     {
-                        "description": "B2B Partner Authentication Payload",
+                        "description": "B2B Officer Authentication Payload",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -378,7 +377,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john.doe@lajada.id"
                 }
             }
         }
