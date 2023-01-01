@@ -6,6 +6,7 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/repository"
 	"github.com/adinandradrs/cezbek-engine/internal/storage"
+	"github.com/adinandradrs/cezbek-engine/internal/usecase/job"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/management"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/partner"
 	"github.com/aws/aws-sdk-go/aws"
@@ -50,7 +51,8 @@ type (
 	Usecase struct {
 		management.PartnerManager
 		management.ParamManager
-		partner.OnboardManager
+		PartnerOnboardManager partner.OnboardManager
+		JobOnboardManager     job.OnboardManager
 	}
 )
 
@@ -109,6 +111,7 @@ func (c *Container) LoadInfra() Infra {
 	kid, skey := c.Viper.GetString("aws.keyid"), c.Viper.GetString("aws.keysecret")
 	jwkb, _ := json.Marshal(c.Viper.Get("aws.ciam.partner.jwk"))
 	jwk := string(jwkb)
+	sender := c.Viper.GetString("aws.ses.sender")
 	sjkt, _ := session.NewSession(&aws.Config{
 		Region:      aws.String(c.Viper.GetString("aws.region.jkt")),
 		Credentials: credentials.NewStaticCredentials(kid, skey, ""),
@@ -123,7 +126,9 @@ func (c *Container) LoadInfra() Infra {
 			SQS: sqs.New(sjkt),
 		}),
 		SESAdapter: adaptor.NewSES(adaptor.SES{
-			SES: sesv2.New(sjkt),
+			SES:    sesv2.New(sjkt),
+			Sender: &sender,
+			Logger: c.Logger,
 		}),
 		CiamPartner: adaptor.NewCognito(adaptor.Cognito{
 			Provider: c.LoadCognito(c.Viper.GetString("aws.region.sgp")),
@@ -186,7 +191,7 @@ func (c *Container) RegisterUsecase(infra Infra, cacher storage.Cacher) Usecase 
 			Cacher: cacher,
 			Logger: c.Logger,
 		}),
-		OnboardManager: partner.NewOnboard(partner.Onboard{
+		PartnerOnboardManager: partner.NewOnboard(partner.Onboard{
 			Dao:                       dao.PartnerPersister,
 			Cacher:                    cacher,
 			SqsAdapter:                infra.SQSAdapter,
@@ -195,6 +200,12 @@ func (c *Container) RegisterUsecase(infra Infra, cacher storage.Cacher) Usecase 
 			CiamWatcher:               infra.CiamPartner,
 			QueueNotificationEmailOtp: &qNotificationEmailOtp,
 			Logger:                    c.Logger,
+		}),
+		JobOnboardManager: job.NewOnboard(job.Onboard{
+			Logger:                    c.Logger,
+			QueueNotificationEmailOtp: &qNotificationEmailOtp,
+			SqsAdapter:                infra.SQSAdapter,
+			SesAdapter:                infra.SESAdapter,
 		}),
 	}
 }
