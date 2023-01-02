@@ -21,7 +21,7 @@ func NewS3(b S3Bucket) S3Watcher {
 	return &b
 }
 
-func (b S3Bucket) Upload(req *model.S3UploadRequest) (*s3manager.UploadOutput, *model.TechnicalError) {
+func (b *S3Bucket) Upload(req *model.S3UploadRequest) (*s3manager.UploadOutput, *model.TechnicalError) {
 	v, err := b.Uploader.Upload(&s3manager.UploadInput{
 		Bucket:      &b.Bucket,
 		Key:         &req.Destination,
