@@ -34,7 +34,7 @@ func NewOnboard(o Onboard) OnboardManager {
 	return &o
 }
 
-func (o Onboard) ciamAuthenticate(p model.Partner) (*model.CiamAuthenticationResponse, *model.BusinessError) {
+func (o *Onboard) ciamAuthenticate(p model.Partner) (*model.CiamAuthenticationResponse, *model.BusinessError) {
 	secret, bx := o.decryptedSecret(p.Secret, p.Salt.String)
 	if bx != nil {
 		return nil, bx
@@ -53,7 +53,7 @@ func (o Onboard) ciamAuthenticate(p model.Partner) (*model.CiamAuthenticationRes
 	return auth, nil
 }
 
-func (o Onboard) decryptedSecret(secret []byte, salt string) (*string, *model.BusinessError) {
+func (o *Onboard) decryptedSecret(secret []byte, salt string) (*string, *model.BusinessError) {
 	d, ex := apps.Decrypt(secret, salt, o.Logger)
 	if ex != nil {
 		return nil, &model.BusinessError{
@@ -64,7 +64,7 @@ func (o Onboard) decryptedSecret(secret []byte, salt string) (*string, *model.Bu
 	return &d, nil
 }
 
-func (o Onboard) AuthenticateClient(inp *model.ClientAuthenticationRequest) (*model.ClientAuthenticationResponse, *model.BusinessError) {
+func (o *Onboard) AuthenticateClient(inp *model.ClientAuthenticationRequest) (*model.ClientAuthenticationResponse, *model.BusinessError) {
 	p, ex := o.Dao.FindActiveByCodeAndApiKey(inp.Code, inp.ApiKey)
 	if ex != nil {
 		return nil, &model.BusinessError{
@@ -100,7 +100,7 @@ func (o Onboard) AuthenticateClient(inp *model.ClientAuthenticationRequest) (*mo
 	return &resp, nil
 }
 
-func (o Onboard) AuthenticateOfficer(inp *model.OfficerAuthenticationRequest) (*model.OfficerAuthenticationResponse, *model.BusinessError) {
+func (o *Onboard) AuthenticateOfficer(inp *model.OfficerAuthenticationRequest) (*model.OfficerAuthenticationResponse, *model.BusinessError) {
 	p, ex := o.Dao.FindActiveByEmail(inp.Email)
 	if ex != nil {
 		return nil, &model.BusinessError{
@@ -150,7 +150,7 @@ func (o Onboard) AuthenticateOfficer(inp *model.OfficerAuthenticationRequest) (*
 	}, nil
 }
 
-func (o Onboard) queueEmailOtp(otp string, p *model.Partner) *model.BusinessError {
+func (o *Onboard) queueEmailOtp(otp string, p *model.Partner) *model.BusinessError {
 	sbj, _ := o.Cacher.Hget("EMAIL_SUBJECT", "OTP")
 	tmpl, _ := o.Cacher.Hget("EMAIL_TEMPLATE", "OTP")
 	tmpl = strings.ReplaceAll(tmpl, "${otp}", otp)
@@ -176,10 +176,9 @@ func (o Onboard) queueEmailOtp(otp string, p *model.Partner) *model.BusinessErro
 		}
 	}
 	return nil
-
 }
 
-func (o Onboard) ValidateAuthOfficer(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError) {
+func (o *Onboard) ValidateAuthOfficer(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError) {
 	cp, ex := o.Cacher.Get("OTPB2B:"+inp.TransactionId, inp.Otp)
 	if ex != nil {
 		return nil, &model.BusinessError{

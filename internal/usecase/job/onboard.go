@@ -23,7 +23,7 @@ func NewOnboard(o Onboard) OnboardManager {
 	return &o
 }
 
-func (o Onboard) SendOtpEmail() *model.BusinessError {
+func (o *Onboard) SendOtpEmail() *model.BusinessError {
 	msg := o.SqsAdapter.GetMessages(*o.QueueNotificationEmailOtp)
 	if msg != nil {
 		inp := model.SendEmailRequest{}

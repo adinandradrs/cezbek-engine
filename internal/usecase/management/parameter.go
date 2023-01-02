@@ -23,7 +23,7 @@ func NewParameter(p Parameter) ParamManager {
 	return &p
 }
 
-func (p Parameter) groupFetchCache(group string) *model.TechnicalError {
+func (p *Parameter) groupFetchCache(group string) *model.TechnicalError {
 	v, ex := p.Dao.FindByParamGroup(group)
 	if ex != nil {
 		return ex
@@ -37,14 +37,14 @@ func (p Parameter) groupFetchCache(group string) *model.TechnicalError {
 	return nil
 }
 
-func (p Parameter) CacheWallets() *model.TechnicalError {
+func (p *Parameter) CacheWallets() *model.TechnicalError {
 	return p.groupFetchCache("WALLET_CODE")
 }
 
-func (p Parameter) CacheEmailTemplates() *model.TechnicalError {
+func (p *Parameter) CacheEmailTemplates() *model.TechnicalError {
 	return p.groupFetchCache("EMAIL_TEMPLATE")
 }
 
-func (p Parameter) CacheEmailSubjects() *model.TechnicalError {
+func (p *Parameter) CacheEmailSubjects() *model.TechnicalError {
 	return p.groupFetchCache("EMAIL_SUBJECT")
 }

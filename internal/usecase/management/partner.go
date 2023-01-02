@@ -30,7 +30,7 @@ func NewPartner(p Partner) PartnerManager {
 	return &p
 }
 
-func (p Partner) uploadLogo(tid string, logo multipart.FileHeader) (*string, *model.TechnicalError) {
+func (p *Partner) uploadLogo(tid string, logo multipart.FileHeader) (*string, *model.TechnicalError) {
 	fname, nsplit := tid, strings.Split(logo.Filename, ".")
 	fext := nsplit[len(nsplit)-1]
 	floc := *p.PathS3 + "logo/" + fname + "." + fext
@@ -46,7 +46,7 @@ func (p Partner) uploadLogo(tid string, logo multipart.FileHeader) (*string, *mo
 	return &floc, nil
 }
 
-func (p Partner) generateSecret(inp *model.AddPartnerRequest, pass *string) (*string, []byte, *model.TechnicalError) {
+func (p *Partner) generateSecret(inp *model.AddPartnerRequest, pass *string) (*string, []byte, *model.TechnicalError) {
 	salt := apps.Hash(inp.Code + ":" + uuid.NewString())
 	secret, ex := apps.Encrypt(*pass, salt, p.Logger)
 	if ex != nil {
@@ -55,7 +55,7 @@ func (p Partner) generateSecret(inp *model.AddPartnerRequest, pass *string) (*st
 	return &salt, secret, nil
 }
 
-func (p Partner) ciamRegistration(data *model.Partner, pass *string) (*model.CiamUserResponse, *model.BusinessError) {
+func (p *Partner) ciamRegistration(data *model.Partner, pass *string) (*model.CiamUserResponse, *model.BusinessError) {
 	resp, ex := p.CiamWatcher.OnboardPartner(model.CiamOnboardPartnerRequest{
 		Email:       data.Email.String,
 		PhoneNumber: data.Msisdn.String,
@@ -73,7 +73,7 @@ func (p Partner) ciamRegistration(data *model.Partner, pass *string) (*model.Cia
 	return resp, nil
 }
 
-func (p Partner) Add(inp *model.AddPartnerRequest) (*model.TransactionResponse, *model.BusinessError) {
+func (p *Partner) Add(inp *model.AddPartnerRequest) (*model.TransactionResponse, *model.BusinessError) {
 	tid := apps.TransactionId(inp.Code + apps.DefaultTrxId)
 	data := model.Partner{
 		Address: sql.NullString{String: inp.Address, Valid: true},
