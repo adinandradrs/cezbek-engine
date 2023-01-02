@@ -15,100 +15,12 @@ import (
 	"time"
 )
 
-func TestOnboard_AuthenticateClient(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	logger, _ := apps.NewLog(false)
-
-	clientAuthTTL, _ := time.ParseDuration("1s")
-	otpTTL, _ := time.ParseDuration("1s")
-	dao, ciamWatcher, sqsAdapter, cacher, q, cdn := repository.NewMockPartnerPersister(ctrl),
-		adaptor.NewMockCiamWatcher(ctrl), adaptor.NewMockSQSAdapter(ctrl), storage.NewMockCacher(ctrl),
-		"mock-queue", "https://cdn-mock.id"
-	manager := NewOnboard(Onboard{
-		Logger:                    logger,
-		Cacher:                    cacher,
-		SqsAdapter:                sqsAdapter,
-		QueueNotificationEmailOtp: &q,
-		CDN:                       &cdn,
-		Dao:                       dao,
-		CiamWatcher:               ciamWatcher,
-		OtpTTL:                    otpTTL,
-		ClientAuthTTL:             clientAuthTTL,
-	})
-	inp := &model.ClientAuthenticationRequest{
-		Code:   "DUMMY-CODE",
-		ApiKey: "api-123-456",
-	}
-
-	gpass, _ := apps.RandomPassword(12, 5, 3, logger)
-	salt := apps.Hash(inp.Code + ":" + uuid.NewString())
-	secret, _ := apps.Encrypt(gpass, salt, logger)
-	p := &model.Partner{
-		Id:      int64(1),
-		Partner: sql.NullString{String: "PT. Partner A", Valid: true},
-		Code:    sql.NullString{String: "DUMMY-CODE", Valid: true},
-		ApiKey:  sql.NullString{String: "api-123-456", Valid: true},
-		Salt:    sql.NullString{String: salt, Valid: true},
-		Secret:  secret,
-		Email:   sql.NullString{String: "someone@email.id", Valid: true},
-		Msisdn:  sql.NullString{String: "628123456789", Valid: true},
-	}
-	t.Run("should success", func(t *testing.T) {
-		dao.EXPECT().FindActiveByCodeAndApiKey(inp.Code, inp.ApiKey).
-			Return(p, nil)
-		ciamWatcher.EXPECT().Authenticate(gomock.Any()).Return(&model.CiamAuthenticationResponse{
-			Token:        "token-abc",
-			ExpiresIn:    int64(1),
-			AccessToken:  "access-token-abc",
-			RefreshToken: "ref-token-abc",
-		}, nil)
-		cacher.EXPECT().Set("CLIENTSESSION", p.Code.String, gomock.Any(), clientAuthTTL)
-		v, ex := manager.AuthenticateClient(inp)
-		assert.Nil(t, ex)
-		assert.NotNil(t, v)
-	})
-	t.Run("should return exception on failed to decrypt", func(t *testing.T) {
-		invPartner := *p
-		invPartner.Salt = sql.NullString{String: "invalid-salt", Valid: true}
-		dao.EXPECT().FindActiveByCodeAndApiKey(inp.Code, inp.ApiKey).
-			Return(&invPartner, nil)
-		v, ex := manager.AuthenticateClient(inp)
-		assert.NotNil(t, ex)
-		assert.Nil(t, v)
-	})
-	t.Run("should return exception on ciam to sign-in", func(t *testing.T) {
-		dao.EXPECT().FindActiveByCodeAndApiKey(inp.Code, inp.ApiKey).
-			Return(p, nil)
-		ciamWatcher.EXPECT().Authenticate(gomock.Any()).Return(nil,
-			&model.TechnicalError{
-				Exception: "something went wrong",
-				Occurred:  time.Now().Unix(),
-				Ticket:    "ERR-001",
-			})
-		v, ex := manager.AuthenticateClient(inp)
-		assert.NotNil(t, ex)
-		assert.Nil(t, v)
-	})
-	t.Run("should return exception on dao to find data", func(t *testing.T) {
-		dao.EXPECT().FindActiveByCodeAndApiKey(inp.Code, inp.ApiKey).
-			Return(nil, &model.TechnicalError{
-				Exception: "something went wrong",
-				Occurred:  time.Now().Unix(),
-				Ticket:    "ERR-001",
-			})
-		v, ex := manager.AuthenticateClient(inp)
-		assert.NotNil(t, ex)
-		assert.Nil(t, v)
-	})
-}
-
 func TestOnboard_AuthenticateOfficer(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger, _ := apps.NewLog(false)
 
-	clientAuthTTL, _ := time.ParseDuration("1s")
+	authTTL, _ := time.ParseDuration("1s")
 	otpTTL, _ := time.ParseDuration("1s")
 	dao, ciamWatcher, sqsAdapter, cacher, q, cdn := repository.NewMockPartnerPersister(ctrl),
 		adaptor.NewMockCiamWatcher(ctrl), adaptor.NewMockSQSAdapter(ctrl), storage.NewMockCacher(ctrl),
@@ -122,7 +34,7 @@ func TestOnboard_AuthenticateOfficer(t *testing.T) {
 		Dao:                       dao,
 		CiamWatcher:               ciamWatcher,
 		OtpTTL:                    otpTTL,
-		ClientAuthTTL:             clientAuthTTL,
+		AuthTTL:                   authTTL,
 	})
 	inp := &model.OfficerAuthenticationRequest{
 		Email: "someone@email.net",
@@ -147,7 +59,7 @@ func TestOnboard_AuthenticateOfficer(t *testing.T) {
 		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
 		cacher.EXPECT().Hget(gomock.Any(), gomock.Any()).Times(2).Return("subject", nil)
 		sqsAdapter.EXPECT().SendMessage(gomock.Any(), gomock.Any()).Return(nil)
-		v, ex := manager.AuthenticateOfficer(inp)
+		v, ex := manager.Authenticate(inp)
 		assert.Nil(t, ex)
 		assert.NotNil(t, v)
 	})
@@ -156,7 +68,7 @@ func TestOnboard_AuthenticateOfficer(t *testing.T) {
 		dao.EXPECT().FindActiveByEmail(inp.Email).Return(p, nil)
 		cacher.EXPECT().Ttl("OTPB2B", p.Email.String).Return(ttl, nil)
 		cacher.EXPECT().Get(gomock.Any(), gomock.Any()).Return("1#1", nil)
-		v, ex := manager.AuthenticateOfficer(inp)
+		v, ex := manager.Authenticate(inp)
 		assert.Nil(t, ex)
 		assert.NotNil(t, v)
 	})
@@ -167,7 +79,7 @@ func TestOnboard_AuthenticateOfficer(t *testing.T) {
 		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
 		cacher.EXPECT().Hget(gomock.Any(), gomock.Any()).Times(2).Return("subject", nil)
 		sqsAdapter.EXPECT().SendMessage(gomock.Any(), gomock.Any()).Return(fmt.Errorf("something went wrong"))
-		v, ex := manager.AuthenticateOfficer(inp)
+		v, ex := manager.Authenticate(inp)
 		assert.NotNil(t, ex)
 		assert.Nil(t, v)
 	})

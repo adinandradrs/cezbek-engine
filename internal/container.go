@@ -6,6 +6,7 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/repository"
 	"github.com/adinandradrs/cezbek-engine/internal/storage"
+	"github.com/adinandradrs/cezbek-engine/internal/usecase/client"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/job"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/management"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/partner"
@@ -54,6 +55,7 @@ type (
 		management.ParamManager
 		management.H2HManager
 		PartnerOnboardManager partner.OnboardManager
+		ClientOnboardManager  client.OnboardManager
 		JobOnboardManager     job.OnboardManager
 	}
 )
@@ -197,12 +199,19 @@ func (c *Container) RegisterUsecase(infra Infra, cacher storage.Cacher) Usecase 
 			Dao:                       dao.PartnerPersister,
 			Cacher:                    cacher,
 			SqsAdapter:                infra.SQSAdapter,
-			ClientAuthTTL:             c.Viper.GetDuration("ttl.client_auth"),
+			AuthTTL:                   c.Viper.GetDuration("ttl.client_auth"),
 			CDN:                       &cdn,
 			OtpTTL:                    otpTtl,
 			CiamWatcher:               infra.CiamPartner,
 			QueueNotificationEmailOtp: &qNotificationEmailOtp,
 			Logger:                    c.Logger,
+		}),
+		ClientOnboardManager: client.NewOnboard(client.Onboard{
+			Dao:         dao.PartnerPersister,
+			Cacher:      cacher,
+			AuthTTL:     c.Viper.GetDuration("ttl.client_auth"),
+			CiamWatcher: infra.CiamPartner,
+			Logger:      c.Logger,
 		}),
 		JobOnboardManager: job.NewOnboard(job.Onboard{
 			Logger:                    c.Logger,

@@ -18,23 +18,22 @@ type Onboard struct {
 	SqsAdapter                adaptor.SQSAdapter
 	Cacher                    storage.Cacher
 	Logger                    *zap.Logger
-	ClientAuthTTL             time.Duration
+	AuthTTL                   time.Duration
 	OtpTTL                    time.Duration
 	QueueNotificationEmailOtp *string
 	CDN                       *string
 }
 
 type OnboardManager interface {
-	AuthenticateClient(inp *model.ClientAuthenticationRequest) (*model.ClientAuthenticationResponse, *model.BusinessError)
-	AuthenticateOfficer(inp *model.OfficerAuthenticationRequest) (*model.OfficerAuthenticationResponse, *model.BusinessError)
-	ValidateAuthOfficer(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError)
+	Authenticate(inp *model.OfficerAuthenticationRequest) (*model.OfficerAuthenticationResponse, *model.BusinessError)
+	ValidateAuth(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError)
 }
 
 func NewOnboard(o Onboard) OnboardManager {
 	return &o
 }
 
-func (o *Onboard) ciamAuthenticate(p model.Partner) (*model.CiamAuthenticationResponse, *model.BusinessError) {
+func (o *Onboard) authenticate(p model.Partner) (*model.CiamAuthenticationResponse, *model.BusinessError) {
 	secret, bx := o.decryptedSecret(p.Secret, p.Salt.String)
 	if bx != nil {
 		return nil, bx
@@ -64,43 +63,7 @@ func (o *Onboard) decryptedSecret(secret []byte, salt string) (*string, *model.B
 	return &d, nil
 }
 
-func (o *Onboard) AuthenticateClient(inp *model.ClientAuthenticationRequest) (*model.ClientAuthenticationResponse, *model.BusinessError) {
-	p, ex := o.Dao.FindActiveByCodeAndApiKey(inp.Code, inp.ApiKey)
-	if ex != nil {
-		return nil, &model.BusinessError{
-			ErrorCode:    apps.ErrCodeUnauthorized,
-			ErrorMessage: apps.ErrMsgUnauthorized,
-		}
-	}
-
-	auth, bx := o.ciamAuthenticate(*p)
-	if bx != nil {
-		return nil, bx
-	}
-
-	resp := model.ClientAuthenticationResponse{
-		Code:    p.Code.String,
-		Company: p.Partner.String,
-		SessionResponse: model.SessionResponse{
-			RefreshToken: auth.RefreshToken,
-			Token:        auth.Token,
-			AccessToken:  auth.AccessToken,
-			Expired:      &auth.ExpiresIn,
-		},
-	}
-	cache, err := json.Marshal(resp)
-	if err != nil {
-		return nil, &model.BusinessError{
-			ErrorCode:    apps.ErrCodeSomethingWrong,
-			ErrorMessage: apps.ErrMsgSomethingWrong,
-		}
-	}
-	o.Cacher.Set("CLIENTSESSION", p.Code.String, cache, o.ClientAuthTTL)
-
-	return &resp, nil
-}
-
-func (o *Onboard) AuthenticateOfficer(inp *model.OfficerAuthenticationRequest) (*model.OfficerAuthenticationResponse, *model.BusinessError) {
+func (o *Onboard) Authenticate(inp *model.OfficerAuthenticationRequest) (*model.OfficerAuthenticationResponse, *model.BusinessError) {
 	p, ex := o.Dao.FindActiveByEmail(inp.Email)
 	if ex != nil {
 		return nil, &model.BusinessError{
@@ -178,7 +141,7 @@ func (o *Onboard) queueEmailOtp(otp string, p *model.Partner) *model.BusinessErr
 	return nil
 }
 
-func (o *Onboard) ValidateAuthOfficer(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError) {
+func (o *Onboard) ValidateAuth(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError) {
 	cp, ex := o.Cacher.Get("OTPB2B:"+inp.TransactionId, inp.Otp)
 	if ex != nil {
 		return nil, &model.BusinessError{
@@ -195,7 +158,7 @@ func (o *Onboard) ValidateAuthOfficer(inp *model.OfficerValidationRequest) (*mod
 		}
 	}
 
-	auth, bx := o.ciamAuthenticate(p)
+	auth, bx := o.authenticate(p)
 	if bx != nil {
 		return nil, bx
 	}
@@ -220,7 +183,7 @@ func (o *Onboard) ValidateAuthOfficer(inp *model.OfficerValidationRequest) (*mod
 			ErrorMessage: apps.ErrMsgSomethingWrong,
 		}
 	}
-	o.Cacher.Set("B2BSESSION", p.Email.String, cache, o.ClientAuthTTL)
+	o.Cacher.Set("B2BSESSION", p.Email.String, cache, o.AuthTTL)
 
 	return &resp, nil
 }

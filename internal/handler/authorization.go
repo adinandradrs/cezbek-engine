@@ -3,12 +3,14 @@ package handler
 import (
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
+	"github.com/adinandradrs/cezbek-engine/internal/usecase/client"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/partner"
 	"github.com/gofiber/fiber/v2"
 )
 
 type Authorization struct {
-	partner.OnboardManager
+	PartnerOnboardManager partner.OnboardManager
+	ClientOnboardManager  client.OnboardManager
 }
 
 func newAuthorizationResource(a Authorization) *Authorization {
@@ -51,7 +53,7 @@ func (a *Authorization) clientAuth(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bad)
 	}
 	inp.ApiKey = ctx.Get(apps.HeaderApiKey)
-	v, ex := a.AuthenticateClient(&inp)
+	v, ex := a.ClientOnboardManager.Authenticate(&inp)
 	if ex != nil && ex.ErrorCode == apps.ErrCodeUnauthorized {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(apps.BusinessErrorResponse(ex))
 	}
@@ -87,7 +89,7 @@ func (a *Authorization) b2bAuth(ctx *fiber.Ctx) error {
 	if bad != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bad)
 	}
-	v, ex := a.AuthenticateOfficer(&inp)
+	v, ex := a.PartnerOnboardManager.Authenticate(&inp)
 	if ex != nil && ex.ErrorCode == apps.ErrCodeUnauthorized {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(apps.BusinessErrorResponse(ex))
 	}
@@ -125,7 +127,7 @@ func (a *Authorization) otpAuth(ctx *fiber.Ctx) error {
 	if bad != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bad)
 	}
-	v, ex := a.ValidateAuthOfficer(&inp)
+	v, ex := a.PartnerOnboardManager.ValidateAuth(&inp)
 	if ex != nil && ex.ErrorCode == apps.ErrCodeBussPartnerOTPInvalid {
 		return ctx.Status(fiber.StatusBadRequest).JSON(apps.BusinessErrorResponse(ex))
 	}
