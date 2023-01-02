@@ -81,7 +81,7 @@ func (r *clusterRedis) Set(k string, p string, v interface{}, d time.Duration) *
 }
 
 func (r *clusterRedis) Hset(k string, p string, v interface{}) *model.TechnicalError {
-	r.cache.Del(k + ":" + p)
+	r.cache.HDel(k + ":" + p)
 	_, err := r.cache.HSet(k, p, v).Result()
 	if err != nil {
 		return apps.Exception("failed on cluster hset ops", err, zap.String("keypair", k+":"+p), r.logger)
@@ -163,7 +163,7 @@ func (r *singleRedis) Ttl(k string, p string) (t time.Duration, e *model.Technic
 }
 
 func (r *singleRedis) Hset(k string, p string, v interface{}) *model.TechnicalError {
-	r.cache.Del(k + ":" + p)
+	r.cache.HDel(k + ":" + p)
 	_, err := r.cache.HSet(k, p, v).Result()
 	if err != nil {
 		return apps.Exception("failed on single hset ops", err, zap.String("keypair", k+":"+p), r.logger)
