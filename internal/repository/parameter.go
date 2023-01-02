@@ -22,7 +22,7 @@ func NewParameter(p Parameter) ParamPersister {
 	return &p
 }
 
-func (p Parameter) FindByParamGroup(g string) ([]*model.Parameter, *model.TechnicalError) {
+func (p *Parameter) FindByParamGroup(g string) ([]*model.Parameter, *model.TechnicalError) {
 	var params []*model.Parameter
 	rows, err := p.Pool.Query(context.Background(),
 		"SELECT id, param_group, param_name, param_value from parameters where param_group = $1", g)

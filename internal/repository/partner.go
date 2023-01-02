@@ -26,7 +26,7 @@ func NewPartner(p Partner) PartnerPersister {
 	return &p
 }
 
-func (p Partner) Add(data model.Partner) *model.TechnicalError {
+func (p *Partner) Add(data model.Partner) *model.TechnicalError {
 	tx, err := p.Pool.BeginTx(context.Background(), pgx.TxOptions{IsoLevel: pgx.Serializable})
 	var pid int64
 	if err != nil {
@@ -52,7 +52,7 @@ func (p Partner) Add(data model.Partner) *model.TechnicalError {
 	return nil
 }
 
-func (p Partner) CountByIdentifier(data model.Partner) (*int, *model.TechnicalError) {
+func (p *Partner) CountByIdentifier(data model.Partner) (*int, *model.TechnicalError) {
 	total := 0
 	rows, err := p.Pool.Query(context.Background(), `select count(id) as total_to_add from partners where 
 		(code=$1 or email = $2 or msisdn = $3) AND is_deleted=false`, data.Code.String, data.Email.String,
@@ -73,7 +73,7 @@ func (p Partner) CountByIdentifier(data model.Partner) (*int, *model.TechnicalEr
 	return &total, nil
 }
 
-func (p Partner) FindActiveByCodeAndApiKey(code string, key string) (*model.Partner, *model.TechnicalError) {
+func (p *Partner) FindActiveByCodeAndApiKey(code string, key string) (*model.Partner, *model.TechnicalError) {
 	d := model.Partner{}
 	query, err := p.Pool.Query(context.Background(), ` select id, partner, code, api_key, salt, secret,
 			email, msisdn from partners where code = $1 and api_key = $2 
@@ -90,7 +90,7 @@ func (p Partner) FindActiveByCodeAndApiKey(code string, key string) (*model.Part
 	return &d, nil
 }
 
-func (p Partner) FindActiveByEmail(email string) (*model.Partner, *model.TechnicalError) {
+func (p *Partner) FindActiveByEmail(email string) (*model.Partner, *model.TechnicalError) {
 	d := model.Partner{}
 	query, err := p.Pool.Query(context.Background(), ` select id, partner, code, 
 			api_key, salt, secret, email, msisdn, logo, 
