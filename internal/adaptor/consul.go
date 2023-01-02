@@ -27,7 +27,7 @@ func NewConsul(c Consul) ConsulWatcher {
 	return &c
 }
 
-func (c Consul) Register() *model.TechnicalError {
+func (c *Consul) Register() *model.TechnicalError {
 	client, err := consul.NewClient(&consul.Config{
 		Address: c.Host + ":" + strconv.Itoa(c.Port),
 	})
