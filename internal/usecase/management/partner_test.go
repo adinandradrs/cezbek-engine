@@ -3,7 +3,7 @@ package management
 import (
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
-	adaptor2 "github.com/adinandradrs/cezbek-engine/mock/adaptor"
+	"github.com/adinandradrs/cezbek-engine/mock/adaptor"
 	"github.com/adinandradrs/cezbek-engine/mock/repository"
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -18,8 +18,8 @@ func TestPartner_Add(t *testing.T) {
 	defer ctrl.Finish()
 	logger, _ := apps.NewLog(false)
 	dao, ciamWatcher, s3Watcher, pathS3 :=
-		repository.NewMockPartnerPersister(ctrl), adaptor2.NewMockCiamWatcher(ctrl),
-		adaptor2.NewMockS3Watcher(ctrl), "/main"
+		repository.NewMockPartnerPersister(ctrl), adaptor.NewMockCiamWatcher(ctrl),
+		adaptor.NewMockS3Watcher(ctrl), "/main"
 	manager := NewPartner(Partner{
 		Dao:         dao,
 		CiamWatcher: ciamWatcher,
