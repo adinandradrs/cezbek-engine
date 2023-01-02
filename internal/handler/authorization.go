@@ -19,6 +19,7 @@ func AuthorizationHandler(r fiber.Router, a Authorization) {
 	h := newAuthorizationResource(a)
 	r.Post("/client", h.clientAuth)
 	r.Post("/b2b", h.b2bAuth)
+	r.Post("/otp", h.otpAuth)
 }
 
 // @Tags Authorization APIs
@@ -89,6 +90,44 @@ func (a *Authorization) b2bAuth(ctx *fiber.Ctx) error {
 	v, ex := a.AuthenticateOfficer(&inp)
 	if ex != nil && ex.ErrorCode == apps.ErrCodeUnauthorized {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(apps.BusinessErrorResponse(ex))
+	}
+	if ex != nil && ex.ErrorCode == apps.ErrCodeSomethingWrong {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(apps.BusinessErrorResponse(ex))
+	}
+	return ctx.JSON(apps.DefaultSuccessResponse(apps.SuccessMsgSubmit, v))
+}
+
+// @Tags Authorization APIs
+// B2B Validation API
+// @Summary B2B OTP Validation API
+// @Description This API is to validate B2B officer account OTP
+// @Schemes
+// @Accept json
+// @Param x-client-channel header string true "Client Channel" Enums(EBIZKEZBEK, B2BCLIENT)
+// @Param x-client-os  header string true "Client OS or Browser Agent" default(android 10)
+// @Param x-client-device  header string true "Client Device ID"
+// @Param x-client-version  header string true "Client Platform Version" default(1.0.0)
+// @Param x-client-timestamp  header string false "Client Original Timestamp in UNIX format (EPOCH)"
+// @Param x-client-trxid  header string true "Client Transaction ID"
+// @Param request body model.OfficerValidationRequest true "B2B Officer Authentication Payload"
+// @Success 200
+// @Failure 400
+// @Failure 401
+// @Failure 500
+// @Router /v1/authorization/otp [post]
+func (a *Authorization) otpAuth(ctx *fiber.Ctx) error {
+	inp := model.OfficerValidationRequest{}
+	if err := ctx.BodyParser(&inp); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(err)
+	}
+	inp.TransactionId = ctx.Get(apps.HeaderClientTrxId)
+	bad := apps.ValidateStruct(checker.Struct(inp))
+	if bad != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(bad)
+	}
+	v, ex := a.ValidateAuthOfficer(&inp)
+	if ex != nil && ex.ErrorCode == apps.ErrCodeBussPartnerOTPInvalid {
+		return ctx.Status(fiber.StatusBadRequest).JSON(apps.BusinessErrorResponse(ex))
 	}
 	if ex != nil && ex.ErrorCode == apps.ErrCodeSomethingWrong {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(apps.BusinessErrorResponse(ex))

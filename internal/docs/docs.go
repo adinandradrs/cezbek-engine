@@ -223,6 +223,90 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/authorization/otp": {
+            "post": {
+                "description": "This API is to validate B2B officer account OTP",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization APIs"
+                ],
+                "summary": "B2B OTP Validation API",
+                "parameters": [
+                    {
+                        "enum": [
+                            "EBIZKEZBEK",
+                            "B2BCLIENT"
+                        ],
+                        "type": "string",
+                        "description": "Client Channel",
+                        "name": "x-client-channel",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "android 10",
+                        "description": "Client OS or Browser Agent",
+                        "name": "x-client-os",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Device ID",
+                        "name": "x-client-device",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "1.0.0",
+                        "description": "Client Platform Version",
+                        "name": "x-client-version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Original Timestamp in UNIX format (EPOCH)",
+                        "name": "x-client-timestamp",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Transaction ID",
+                        "name": "x-client-trxid",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "B2B Officer Authentication Payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.OfficerValidationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/v1/partners": {
             "post": {
                 "description": "This API is to register a new B2B Partner data as user and client",
@@ -379,6 +463,18 @@ const docTemplate = `{
                 "email": {
                     "type": "string",
                     "example": "john.doe@lajada.id"
+                }
+            }
+        },
+        "model.OfficerValidationRequest": {
+            "type": "object",
+            "required": [
+                "otp"
+            ],
+            "properties": {
+                "otp": {
+                    "type": "string",
+                    "example": "123456"
                 }
             }
         }

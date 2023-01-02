@@ -21,6 +21,7 @@ type Onboard struct {
 	ClientAuthTTL             time.Duration
 	OtpTTL                    time.Duration
 	QueueNotificationEmailOtp *string
+	CDN                       string
 }
 
 type OnboardManager interface {
@@ -127,7 +128,6 @@ func (o Onboard) AuthenticateOfficer(inp *model.OfficerAuthenticationRequest) (*
 			},
 		}, nil
 	}
-	o.Cacher.Set("OTPB2B", p.Email.String, otp+"#"+trx, o.OtpTTL)
 	cache, err := json.Marshal(p)
 	if err != nil {
 		return nil, &model.BusinessError{
@@ -179,6 +179,48 @@ func (o Onboard) queueEmailOtp(otp string, p *model.Partner) *model.BusinessErro
 }
 
 func (o Onboard) ValidateAuthOfficer(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError) {
-	//TODO implement me
-	panic("implement me")
+	cp, ex := o.Cacher.Get("OTPB2B:"+inp.TransactionId, inp.Otp)
+	if ex != nil {
+		return nil, &model.BusinessError{
+			ErrorCode:    apps.ErrCodeBussPartnerOTPInvalid,
+			ErrorMessage: apps.ErrMsgBussPartnerOTPInvalid,
+		}
+	}
+	var p model.Partner
+	err := json.Unmarshal([]byte(cp), &p)
+	if err != nil {
+		return nil, &model.BusinessError{
+			ErrorCode:    apps.ErrCodeSomethingWrong,
+			ErrorMessage: apps.ErrMsgSomethingWrong,
+		}
+	}
+
+	auth, bx := o.ciamAuthenticate(p)
+	if bx != nil {
+		return nil, bx
+	}
+	resp := model.OfficerValidationResponse{
+		UrlLogo: o.CDN + p.Logo.String,
+		Company: p.Partner.String,
+		Email:   p.Email.String,
+		Msisdn:  p.Msisdn.String,
+		Code:    p.Code.String,
+		SessionResponse: model.SessionResponse{
+			RefreshToken: auth.RefreshToken,
+			Token:        auth.Token,
+			AccessToken:  auth.AccessToken,
+			Expired:      &auth.ExpiresIn,
+		},
+	}
+
+	cache, err := json.Marshal(resp)
+	if err != nil {
+		return nil, &model.BusinessError{
+			ErrorCode:    apps.ErrCodeSomethingWrong,
+			ErrorMessage: apps.ErrMsgSomethingWrong,
+		}
+	}
+	o.Cacher.Set("B2BSESSION", p.Email.String, cache, o.ClientAuthTTL)
+
+	return &resp, nil
 }

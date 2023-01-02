@@ -55,8 +55,8 @@ type (
 	}
 
 	OfficerValidationRequest struct {
-		TransactionId string `swaggerignore:"true"`
-		Otp           string `json:"otp"`
+		TransactionId string `swaggerignore:"true" validate:"required"`
+		Otp           string `json:"otp" example:"123456" validate:"required"`
 	}
 )
 

@@ -25,6 +25,8 @@ const ErrCodeInvalidChannel = "9009"
 
 const ErrCodeBussPartnerExists = "BR-01"
 const ErrMsgBussPartnerExists = "The given partner data is exists on system"
+const ErrCodeBussPartnerOTPInvalid = "BR-02"
+const ErrMsgBussPartnerOTPInvalid = "The given OTP and Transaction ID is invalid"
 
 const HeaderClientTrxId = "x-client-trxid"
 const HeaderClientChannel = "x-client-channel"
