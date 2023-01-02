@@ -49,26 +49,43 @@ func main() {
 	})
 
 	loadParameterCache(ucase.ParamManager, c.Logger)
+	loadH2HCache(ucase.H2HManager, c.Logger)
 	_ = app.Listen(env.HttpPort)
 }
 
-func loadParameterCache(pmgr management.ParamManager, logger *zap.Logger) {
+func loadH2HCache(h management.H2HManager, logger *zap.Logger) {
 	go func() {
-		ex := pmgr.CacheEmailSubjects()
+		ex := h.CacheProviders()
+		if ex != nil {
+			logger.Panic("failed to load h2h providers")
+		}
+	}()
+
+	go func() {
+		ex := h.CachePricelists()
+		if ex != nil {
+			logger.Panic("failed to load h2h pricelists")
+		}
+	}()
+}
+
+func loadParameterCache(p management.ParamManager, logger *zap.Logger) {
+	go func() {
+		ex := p.CacheEmailSubjects()
 		if ex != nil {
 			logger.Panic("failed to load email subjects")
 		}
 	}()
 
 	go func() {
-		ex := pmgr.CacheEmailTemplates()
+		ex := p.CacheEmailTemplates()
 		if ex != nil {
 			logger.Panic("failed to load email templates")
 		}
 	}()
 
 	go func() {
-		ex := pmgr.CacheWallets()
+		ex := p.CacheWallets()
 		if ex != nil {
 			logger.Panic("failed to load wallet codes")
 		}
