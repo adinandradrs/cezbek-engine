@@ -46,11 +46,13 @@ type (
 	Dao struct {
 		repository.PartnerPersister
 		repository.ParamPersister
+		repository.H2HPersister
 	}
 
 	Usecase struct {
 		management.PartnerManager
 		management.ParamManager
+		management.H2HManager
 		PartnerOnboardManager partner.OnboardManager
 		JobOnboardManager     job.OnboardManager
 	}
@@ -104,6 +106,7 @@ func (c *Container) registerRepository() Dao {
 	return Dao{
 		PartnerPersister: repository.NewPartner(repository.Partner{Logger: c.Logger, Pool: p.Pool}),
 		ParamPersister:   repository.NewParameter(repository.Parameter{Logger: c.Logger, Pool: p.Pool}),
+		H2HPersister:     repository.NewH2H(repository.H2H{Logger: c.Logger, Pool: p.Pool}),
 	}
 }
 
@@ -206,6 +209,11 @@ func (c *Container) RegisterUsecase(infra Infra, cacher storage.Cacher) Usecase 
 			QueueNotificationEmailOtp: &qNotificationEmailOtp,
 			SqsAdapter:                infra.SQSAdapter,
 			SesAdapter:                infra.SESAdapter,
+		}),
+		H2HManager: management.NewH2H(management.H2H{
+			Logger: c.Logger,
+			Dao:    dao.H2HPersister,
+			Cacher: cacher,
 		}),
 	}
 }
