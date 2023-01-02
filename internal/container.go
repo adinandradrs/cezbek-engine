@@ -182,8 +182,7 @@ func (c *Container) RegisterUsecase(infra Infra, cacher storage.Cacher) Usecase 
 			Dao:         dao.PartnerPersister,
 			CiamWatcher: infra.CiamPartner,
 			S3Watcher:   infra.S3Watcher,
-			CDN:         cdn,
-			PathS3:      path,
+			PathS3:      &path,
 			Logger:      c.Logger,
 		}),
 		ParamManager: management.NewParameter(management.Parameter{
@@ -196,6 +195,7 @@ func (c *Container) RegisterUsecase(infra Infra, cacher storage.Cacher) Usecase 
 			Cacher:                    cacher,
 			SqsAdapter:                infra.SQSAdapter,
 			ClientAuthTTL:             c.Viper.GetDuration("ttl.client_auth"),
+			CDN:                       &cdn,
 			OtpTTL:                    otpTtl,
 			CiamWatcher:               infra.CiamPartner,
 			QueueNotificationEmailOtp: &qNotificationEmailOtp,

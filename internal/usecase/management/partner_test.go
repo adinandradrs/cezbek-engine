@@ -17,15 +17,14 @@ func TestPartner_Add(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger, _ := apps.NewLog(false)
-	dao, ciamWatcher, s3Watcher, cdn, pathS3 :=
+	dao, ciamWatcher, s3Watcher, pathS3 :=
 		repository.NewMockPartnerPersister(ctrl), adaptor2.NewMockCiamWatcher(ctrl),
-		adaptor2.NewMockS3Watcher(ctrl), "https://mock-cdn.co.id", "/main"
+		adaptor2.NewMockS3Watcher(ctrl), "/main"
 	manager := NewPartner(Partner{
 		Dao:         dao,
 		CiamWatcher: ciamWatcher,
 		S3Watcher:   s3Watcher,
-		CDN:         cdn,
-		PathS3:      pathS3,
+		PathS3:      &pathS3,
 		Logger:      logger,
 	})
 	inp := model.AddPartnerRequest{

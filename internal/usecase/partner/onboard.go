@@ -21,7 +21,7 @@ type Onboard struct {
 	ClientAuthTTL             time.Duration
 	OtpTTL                    time.Duration
 	QueueNotificationEmailOtp *string
-	CDN                       string
+	CDN                       *string
 }
 
 type OnboardManager interface {
@@ -200,7 +200,7 @@ func (o Onboard) ValidateAuthOfficer(inp *model.OfficerValidationRequest) (*mode
 		return nil, bx
 	}
 	resp := model.OfficerValidationResponse{
-		UrlLogo: o.CDN + p.Logo.String,
+		UrlLogo: *o.CDN + p.Logo.String,
 		Company: p.Partner.String,
 		Email:   p.Email.String,
 		Msisdn:  p.Msisdn.String,

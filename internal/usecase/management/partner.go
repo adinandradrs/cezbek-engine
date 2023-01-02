@@ -18,8 +18,7 @@ type Partner struct {
 	Dao         repository.PartnerPersister
 	CiamWatcher adaptor.CiamWatcher
 	S3Watcher   adaptor.S3Watcher
-	CDN         string
-	PathS3      string
+	PathS3      *string
 	Logger      *zap.Logger
 }
 
@@ -34,7 +33,7 @@ func NewPartner(p Partner) PartnerManager {
 func (p Partner) uploadLogo(tid string, logo multipart.FileHeader) (*string, *model.TechnicalError) {
 	fname, nsplit := tid, strings.Split(logo.Filename, ".")
 	fext := nsplit[len(nsplit)-1]
-	floc := p.PathS3 + "logo/" + fname + "." + fext
+	floc := *p.PathS3 + "logo/" + fname + "." + fext
 	f, _ := logo.Open()
 	_, err := p.S3Watcher.Upload(&model.S3UploadRequest{
 		Destination: floc,
