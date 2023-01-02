@@ -38,7 +38,7 @@ func NewCognito(c Cognito) CiamWatcher {
 	return &c
 }
 
-func pubKey(token *jwt.Token, url string) (pkey interface{}, err error) {
+func (c *Cognito) pubKey(token *jwt.Token, url string) (pkey interface{}, err error) {
 	kid, exists := token.Header["kid"].(string)
 	if !exists {
 		return nil, errors.New("kid header does not exists")
@@ -55,22 +55,22 @@ func pubKey(token *jwt.Token, url string) (pkey interface{}, err error) {
 	return pkey, nil
 }
 
-func (c Cognito) parseToken(t string) (*jwt.Token, error) {
+func (c *Cognito) parseToken(t string) (*jwt.Token, error) {
 	return jwt.Parse(t, func(token *jwt.Token) (interface{}, error) {
 		if _, result := token.Method.(*jwt.SigningMethodRSA); !result {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return pubKey(token, c.JWK)
+		return c.pubKey(token, c.JWK)
 	})
 }
 
-func (c Cognito) secretHash(u string) string {
+func (c *Cognito) secretHash(u string) string {
 	mac := hmac.New(sha256.New, []byte(c.Scrt))
 	mac.Write([]byte(u + c.ClientId))
 	return base64.StdEncoding.EncodeToString(mac.Sum(nil))
 }
 
-func (c Cognito) JwtInfo(t string) (map[string]interface{}, *model.TechnicalError) {
+func (c *Cognito) JwtInfo(t string) (map[string]interface{}, *model.TechnicalError) {
 	token, err := c.parseToken(t)
 	if err != nil {
 		return nil, apps.Exception("failed to get JWT Info from token", err, zap.String("token", t), c.Logger)
@@ -82,7 +82,7 @@ func (c Cognito) JwtInfo(t string) (map[string]interface{}, *model.TechnicalErro
 	return nil, apps.Exception("bad JWT claim", fmt.Errorf("failed to claim JWT"), zap.String("token", t), c.Logger)
 }
 
-func (c Cognito) OnboardPartner(m model.CiamOnboardPartnerRequest) (*model.CiamUserResponse, *model.TechnicalError) {
+func (c *Cognito) OnboardPartner(m model.CiamOnboardPartnerRequest) (*model.CiamUserResponse, *model.TechnicalError) {
 	inp := &cognito.SignUpInput{
 		Username:   aws.String(m.Username),
 		Password:   aws.String(m.Password),
@@ -118,7 +118,7 @@ func (c Cognito) OnboardPartner(m model.CiamOnboardPartnerRequest) (*model.CiamU
 	}, nil
 }
 
-func (c Cognito) Authenticate(m model.CiamAuthenticationRequest) (*model.CiamAuthenticationResponse, *model.TechnicalError) {
+func (c *Cognito) Authenticate(m model.CiamAuthenticationRequest) (*model.CiamAuthenticationResponse, *model.TechnicalError) {
 	inp := &cognito.InitiateAuthInput{
 		AuthFlow: aws.String(cognito.AuthFlowTypeUserPasswordAuth),
 		AuthParameters: map[string]*string{
