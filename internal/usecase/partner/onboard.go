@@ -135,6 +135,7 @@ func (o Onboard) AuthenticateOfficer(inp *model.OfficerAuthenticationRequest) (*
 			ErrorMessage: apps.ErrMsgSomethingWrong,
 		}
 	}
+	o.Cacher.Set("OTPB2B", p.Email.String, otp+"#"+trx, o.OtpTTL)
 	o.Cacher.Set("OTPB2B:"+trx, otp, cache, o.OtpTTL)
 	bx := o.queueEmailOtp(otp, p)
 	if bx != nil {
