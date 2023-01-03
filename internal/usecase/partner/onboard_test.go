@@ -2,6 +2,7 @@ package partner
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
@@ -15,7 +16,7 @@ import (
 	"time"
 )
 
-func TestOnboard_AuthenticateOfficer(t *testing.T) {
+func TestOnboard_Authenticate(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger, _ := apps.NewLog(false)
@@ -80,6 +81,93 @@ func TestOnboard_AuthenticateOfficer(t *testing.T) {
 		cacher.EXPECT().Hget(gomock.Any(), gomock.Any()).Times(2).Return("subject", nil)
 		sqsAdapter.EXPECT().SendMessage(gomock.Any(), gomock.Any()).Return(fmt.Errorf("something went wrong"))
 		v, ex := svc.Authenticate(inp)
+		assert.NotNil(t, ex)
+		assert.Nil(t, v)
+	})
+}
+
+func TestOnboard_Validate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	logger, _ := apps.NewLog(false)
+
+	authTTL, _ := time.ParseDuration("1s")
+	otpTTL, _ := time.ParseDuration("1s")
+	dao, ciamWatcher, sqsAdapter, cacher, q, cdn := repository.NewMockPartnerPersister(ctrl),
+		adaptor.NewMockCiamWatcher(ctrl), adaptor.NewMockSQSAdapter(ctrl), storage.NewMockCacher(ctrl),
+		"mock-queue", "https://cdn-mock.id"
+	svc := NewOnboard(Onboard{
+		Logger:                    logger,
+		Cacher:                    cacher,
+		SqsAdapter:                sqsAdapter,
+		QueueNotificationEmailOtp: &q,
+		CDN:                       &cdn,
+		Dao:                       dao,
+		CiamWatcher:               ciamWatcher,
+		OtpTTL:                    otpTTL,
+		AuthTTL:                   authTTL,
+	})
+	inp := &model.OfficerValidationRequest{
+		TransactionId: "TX-001",
+		Otp:           "123456",
+	}
+	gpass, _ := apps.RandomPassword(12, 5, 3, logger)
+	salt := apps.Hash("CODE_A:" + uuid.NewString())
+	secret, _ := apps.Encrypt(gpass, salt, logger)
+	t.Run("should success", func(t *testing.T) {
+		p := model.Partner{
+			Id:      int64(1),
+			Partner: sql.NullString{String: "Partner A", Valid: true},
+			Code:    sql.NullString{String: "CODE_A", Valid: true},
+			Msisdn:  sql.NullString{String: "628123456789", Valid: true},
+			Email:   sql.NullString{String: "someone@email.net", Valid: true},
+			Secret:  secret,
+			Salt:    sql.NullString{String: salt, Valid: true},
+		}
+		cache, _ := json.Marshal(p)
+		cacher.EXPECT().Get("OTPB2B:"+inp.TransactionId, inp.Otp).
+			Return(string(cache), nil)
+		cacher.EXPECT().Set("B2BSESSION", p.Email.String, gomock.Any(), authTTL)
+		ciamWatcher.EXPECT().Authenticate(gomock.Any()).Return(&model.CiamAuthenticationResponse{
+			Token:        "token-abc",
+			ExpiresIn:    int64(1),
+			AccessToken:  "access-token-abc",
+			RefreshToken: "ref-token-abc",
+		}, nil)
+		v, ex := svc.Validate(inp)
+		assert.Nil(t, ex)
+		assert.NotNil(t, v)
+	})
+	t.Run("should return exception on wrong OTP", func(t *testing.T) {
+		cacher.EXPECT().Get("OTPB2B:"+inp.TransactionId, inp.Otp).
+			Return("", &model.TechnicalError{
+				Exception: "something went wrong",
+				Occurred:  time.Now().Unix(),
+				Ticket:    "ERR-001",
+			})
+		v, ex := svc.Validate(inp)
+		assert.NotNil(t, ex)
+		assert.Nil(t, v)
+	})
+	t.Run("should return exception on CIAM failure", func(t *testing.T) {
+		p := model.Partner{
+			Id:      int64(1),
+			Partner: sql.NullString{String: "Partner A", Valid: true},
+			Code:    sql.NullString{String: "CODE_A", Valid: true},
+			Msisdn:  sql.NullString{String: "628123456789", Valid: true},
+			Email:   sql.NullString{String: "someone@email.net", Valid: true},
+			Secret:  secret,
+			Salt:    sql.NullString{String: salt, Valid: true},
+		}
+		cache, _ := json.Marshal(p)
+		cacher.EXPECT().Get("OTPB2B:"+inp.TransactionId, inp.Otp).
+			Return(string(cache), nil)
+		ciamWatcher.EXPECT().Authenticate(gomock.Any()).Return(nil, &model.TechnicalError{
+			Exception: "something went wrong",
+			Occurred:  time.Now().Unix(),
+			Ticket:    "ERR-001",
+		})
+		v, ex := svc.Validate(inp)
 		assert.NotNil(t, ex)
 		assert.Nil(t, v)
 	})
