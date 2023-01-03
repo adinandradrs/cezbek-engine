@@ -30,5 +30,6 @@ type (
 		Email                string          `json:"email" example:"john.doe@gmailxyz.com"`
 		WalletCode           string          `json:"wallet_code" example:"LSAJA,GPAID,JOSVO"`
 		TransactionReference string          `json:"transaction_reference" example:"INV001-GOFOOD-ABC"`
+		SessionRequest
 	}
 )

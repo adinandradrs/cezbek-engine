@@ -19,15 +19,15 @@ func TestOnboard_AuthenticateClient(t *testing.T) {
 	defer ctrl.Finish()
 	logger, _ := apps.NewLog(false)
 
-	clientAuthTTL, _ := time.ParseDuration("1s")
+	authTTL, _ := time.ParseDuration("1s")
 	dao, ciamWatcher, cacher := repository.NewMockPartnerPersister(ctrl),
 		adaptor.NewMockCiamWatcher(ctrl), storage.NewMockCacher(ctrl)
-	manager := NewOnboard(Onboard{
+	svc := NewOnboard(Onboard{
 		Logger:      logger,
 		Cacher:      cacher,
 		Dao:         dao,
 		CiamWatcher: ciamWatcher,
-		AuthTTL:     clientAuthTTL,
+		AuthTTL:     authTTL,
 	})
 	inp := &model.ClientAuthenticationRequest{
 		Code:   "DUMMY-CODE",
@@ -56,8 +56,8 @@ func TestOnboard_AuthenticateClient(t *testing.T) {
 			AccessToken:  "access-token-abc",
 			RefreshToken: "ref-token-abc",
 		}, nil)
-		cacher.EXPECT().Set("CLIENTSESSION", p.Code.String, gomock.Any(), clientAuthTTL)
-		v, ex := manager.Authenticate(inp)
+		cacher.EXPECT().Set("CLIENTSESSION", p.Code.String, gomock.Any(), authTTL)
+		v, ex := svc.Authenticate(inp)
 		assert.Nil(t, ex)
 		assert.NotNil(t, v)
 	})
@@ -66,7 +66,7 @@ func TestOnboard_AuthenticateClient(t *testing.T) {
 		invPartner.Salt = sql.NullString{String: "invalid-salt", Valid: true}
 		dao.EXPECT().FindActiveByCodeAndApiKey(inp.Code, inp.ApiKey).
 			Return(&invPartner, nil)
-		v, ex := manager.Authenticate(inp)
+		v, ex := svc.Authenticate(inp)
 		assert.NotNil(t, ex)
 		assert.Nil(t, v)
 	})
@@ -79,7 +79,7 @@ func TestOnboard_AuthenticateClient(t *testing.T) {
 				Occurred:  time.Now().Unix(),
 				Ticket:    "ERR-001",
 			})
-		v, ex := manager.Authenticate(inp)
+		v, ex := svc.Authenticate(inp)
 		assert.NotNil(t, ex)
 		assert.Nil(t, v)
 	})
@@ -90,7 +90,7 @@ func TestOnboard_AuthenticateClient(t *testing.T) {
 				Occurred:  time.Now().Unix(),
 				Ticket:    "ERR-001",
 			})
-		v, ex := manager.Authenticate(inp)
+		v, ex := svc.Authenticate(inp)
 		assert.NotNil(t, ex)
 		assert.Nil(t, v)
 	})
