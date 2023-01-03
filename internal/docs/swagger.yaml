@@ -40,7 +40,7 @@ definitions:
         example: 2
         type: integer
       transaction_reference:
-        example: INV001-GOFOOD-ABC
+        example: INV/001/002
         type: string
     required:
     - amount
@@ -266,6 +266,7 @@ paths:
         description: Your Token to Access
         in: header
         name: Authorization
+        required: true
         type: string
       - description: Client Channel
         enum:

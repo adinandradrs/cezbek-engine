@@ -323,7 +323,8 @@ const docTemplate = `{
                         "default": "Bearer",
                         "description": "Your Token to Access",
                         "name": "Authorization",
-                        "in": "header"
+                        "in": "header",
+                        "required": true
                     },
                     {
                         "enum": [
@@ -686,7 +687,7 @@ const docTemplate = `{
                 },
                 "transaction_reference": {
                     "type": "string",
-                    "example": "INV001-GOFOOD-ABC"
+                    "example": "INV/001/002"
                 }
             }
         }
