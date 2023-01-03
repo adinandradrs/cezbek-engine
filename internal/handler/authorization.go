@@ -26,9 +26,9 @@ func AuthorizationHandler(router fiber.Router, auth Authorization) {
 }
 
 // @Tags Authorization APIs
-// Client Authorization API
-// @Summary Client Authorization API
-// @Description This API is to authorize client's signature and code
+// API Client Authorization
+// @Summary API Client Authorization
+// @Description API to authorize client's signature and code
 // @Schemes
 // @Accept json
 // @Param x-client-signature header string true "Client signature using HMAC SHA256, signature formula is <b>HEX(HMAC(SHA256(UPPER(HTTP-METHOD):UPPER(CODE):UNIX-EPOCH:UPPER(API-KEY))))</b>"
@@ -65,9 +65,9 @@ func (a *Authorization) clientAuth(ctx *fiber.Ctx) error {
 }
 
 // @Tags Authorization APIs
-// B2B Authorization API
-// @Summary B2B Authorization API
-// @Description This API is to authorize B2B officer account
+// API B2B Authorization
+// @Summary API B2B Authorization
+// @Description API to authorize B2B officer account
 // @Schemes
 // @Accept json
 // @Param x-client-channel header string true "Client Channel" Enums(EBIZKEZBEK, B2BCLIENT)
@@ -101,9 +101,9 @@ func (a *Authorization) b2bAuth(ctx *fiber.Ctx) error {
 }
 
 // @Tags Authorization APIs
-// B2B Validation API
-// @Summary B2B OTP Validation API
-// @Description This API is to validate B2B officer account OTP
+// API B2B Validation
+// @Summary API B2B OTP Validation
+// @Description API to validate B2B officer account OTP
 // @Schemes
 // @Accept json
 // @Param x-client-channel header string true "Client Channel" Enums(EBIZKEZBEK, B2BCLIENT)

@@ -22,6 +22,31 @@ definitions:
     required:
     - otp
     type: object
+  model.TransactionRequest:
+    properties:
+      amount:
+        example: 750000
+        type: number
+      email:
+        example: john.doe@gmailxyz.com
+        type: string
+      merchant_code:
+        example: LSAJA,GPAID,JOSVO
+        type: string
+      msisdn:
+        example: "62812345678"
+        type: string
+      quantity:
+        example: 2
+        type: integer
+      transaction_reference:
+        example: INV001-GOFOOD-ABC
+        type: string
+    required:
+    - amount
+    - msisdn
+    - quantity
+    type: object
 info:
   contact:
     email: developer@kezbek.id
@@ -35,7 +60,7 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
   title: Kezbek - Cashback Engine Sandbox
-  version: "1.0"
+  version: 1.0-Beta
 paths:
   /ping:
     get:
@@ -60,7 +85,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: This API is to authorize B2B officer account
+      description: API to authorize B2B officer account
       parameters:
       - description: Client Channel
         enum:
@@ -106,14 +131,14 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-      summary: B2B Authorization API
+      summary: API B2B Authorization
       tags:
       - Authorization APIs
   /v1/authorization/client:
     post:
       consumes:
       - application/json
-      description: This API is to authorize client's signature and code
+      description: API to authorize client's signature and code
       parameters:
       - description: Client signature using HMAC SHA256, signature formula is <b>HEX(HMAC(SHA256(UPPER(HTTP-METHOD):UPPER(CODE):UNIX-EPOCH:UPPER(API-KEY))))</b>
         in: header
@@ -170,14 +195,14 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-      summary: Client Authorization API
+      summary: API Client Authorization
       tags:
       - Authorization APIs
   /v1/authorization/otp:
     post:
       consumes:
       - application/json
-      description: This API is to validate B2B officer account OTP
+      description: API to validate B2B officer account OTP
       parameters:
       - description: Client Channel
         enum:
@@ -228,14 +253,138 @@ paths:
           description: Unauthorized
         "500":
           description: Internal Server Error
-      summary: B2B OTP Validation API
+      summary: API B2B OTP Validation
       tags:
       - Authorization APIs
+  /v1/cashbacks:
+    post:
+      consumes:
+      - application/json
+      description: API to apply cashback on client's transaction
+      parameters:
+      - default: Bearer
+        description: Your Token to Access
+        in: header
+        name: Authorization
+        type: string
+      - description: Client Channel
+        enum:
+        - EBIZKEZBEK
+        - B2BCLIENT
+        in: header
+        name: x-client-channel
+        required: true
+        type: string
+      - default: android 10
+        description: Client OS or Browser Agent
+        in: header
+        name: x-client-os
+        required: true
+        type: string
+      - description: Client Device ID
+        in: header
+        name: x-client-device
+        required: true
+        type: string
+      - default: 1.0.0
+        description: Client Platform Version
+        in: header
+        name: x-client-version
+        required: true
+        type: string
+      - description: Client Original Timestamp in UNIX format (EPOCH)
+        in: header
+        name: x-client-timestamp
+        type: string
+      - description: Transaction Payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TransactionRequest'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+        "503":
+          description: Service Unavailable
+      summary: API Apply Cashback
+      tags:
+      - Client Cashback APIs
+  /v1/cashbacks/{trxId}:
+    post:
+      consumes:
+      - application/json
+      description: API to view detail of applied cashback based on the given Kezbek
+        transaction reference
+      parameters:
+      - default: Bearer
+        description: Your Token to Access
+        in: header
+        name: Authorization
+        type: string
+      - description: Client Channel
+        enum:
+        - EBIZKEZBEK
+        - B2BCLIENT
+        in: header
+        name: x-client-channel
+        required: true
+        type: string
+      - default: android 10
+        description: Client OS or Browser Agent
+        in: header
+        name: x-client-os
+        required: true
+        type: string
+      - description: Client Device ID
+        in: header
+        name: x-client-device
+        required: true
+        type: string
+      - default: 1.0.0
+        description: Client Platform Version
+        in: header
+        name: x-client-version
+        required: true
+        type: string
+      - description: Client Original Timestamp in UNIX format (EPOCH)
+        in: header
+        name: x-client-timestamp
+        type: string
+      - description: Kezbek Transaction Reference
+        in: path
+        name: trxId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "500":
+          description: Internal Server Error
+        "503":
+          description: Service Unavailable
+      summary: API Detail Applied Cashback
+      tags:
+      - Client Cashback APIs
   /v1/partners:
     post:
       consumes:
       - application/json
-      description: This API is to register a new B2B Partner data as user and client
+      description: API to register a new B2B Partner data as user and client
       parameters:
       - default: Bearer
         description: Your Token to Access
@@ -325,7 +474,7 @@ paths:
           description: Internal Server Error
         "503":
           description: Service Unavailable
-      summary: Add Partner API
+      summary: API Add Partner
       tags:
       - Partner Management APIs
 swagger: "2.0"

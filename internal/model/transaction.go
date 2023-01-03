@@ -28,7 +28,7 @@ type (
 		Amount               decimal.Decimal `json:"amount" example:"750000" validate:"required"`
 		Msisdn               string          `json:"msisdn" example:"62812345678" validate:"required"`
 		Email                string          `json:"email" example:"john.doe@gmailxyz.com"`
-		WalletCode           string          `json:"wallet_code" example:"LSAJA,GPAID,JOSVO"`
+		MerchantCode         string          `json:"merchant_code" example:"LSAJA,GPAID,JOSVO"`
 		TransactionReference string          `json:"transaction_reference" example:"INV001-GOFOOD-ABC"`
 		SessionRequest
 	}

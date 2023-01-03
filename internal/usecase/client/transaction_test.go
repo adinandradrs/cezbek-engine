@@ -23,7 +23,7 @@ func TestTransaction_Add(t *testing.T) {
 		Dao:    dao,
 	})
 	inp := model.TransactionRequest{
-		WalletCode:           "WCODE_A",
+		MerchantCode:         "WCODE_A",
 		Email:                "someone@email.net",
 		TransactionReference: "INV/001/002/003",
 		Amount:               decimal.New(150000, 10),
@@ -37,7 +37,7 @@ func TestTransaction_Add(t *testing.T) {
 		},
 	}
 	t.Run("should success", func(t *testing.T) {
-		cacher.EXPECT().Hget("WALLET_CODE", inp.WalletCode).Return("WCODE_A", nil)
+		cacher.EXPECT().Hget("WALLET_CODE", inp.MerchantCode).Return("WCODE_A", nil)
 		dao.EXPECT().Add(gomock.Any()).Return(nil)
 		v, ex := svc.Add(&inp)
 		assert.Nil(t, ex)
@@ -45,7 +45,7 @@ func TestTransaction_Add(t *testing.T) {
 	})
 
 	t.Run("should error on data access failed to insert", func(t *testing.T) {
-		cacher.EXPECT().Hget("WALLET_CODE", inp.WalletCode).Return("WCODE_A", nil)
+		cacher.EXPECT().Hget("WALLET_CODE", inp.MerchantCode).Return("WCODE_A", nil)
 		dao.EXPECT().Add(gomock.Any()).Return(&model.TechnicalError{
 			Exception: "something went wrong",
 			Occurred:  time.Now().Unix(),
@@ -58,7 +58,7 @@ func TestTransaction_Add(t *testing.T) {
 	})
 
 	t.Run("should return exception on wallet is not found", func(t *testing.T) {
-		cacher.EXPECT().Hget("WALLET_CODE", inp.WalletCode).Return("", &model.TechnicalError{
+		cacher.EXPECT().Hget("WALLET_CODE", inp.MerchantCode).Return("", &model.TechnicalError{
 			Exception: "something went wrong",
 			Occurred:  time.Now().Unix(),
 			Ticket:    "ERR-001",
@@ -66,6 +66,6 @@ func TestTransaction_Add(t *testing.T) {
 		v, ex := svc.Add(&inp)
 		assert.NotNil(t, ex)
 		assert.Nil(t, v)
-		assert.Equal(t, apps.ErrCodeBussWalletCodeInvalid, ex.ErrorCode)
+		assert.Equal(t, apps.ErrCodeBussMerchantCodeInvalid, ex.ErrorCode)
 	})
 }

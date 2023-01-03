@@ -25,18 +25,18 @@ func NewTransaction(t Transaction) TransactionProvider {
 
 func (t *Transaction) Add(inp *model.TransactionRequest) (*model.TransactionResponse, *model.BusinessError) {
 	trx := apps.Transaction(inp.Msisdn)
-	_, ex := t.Cacher.Hget("WALLET_CODE", inp.WalletCode)
+	_, ex := t.Cacher.Hget("WALLET_CODE", inp.MerchantCode)
 	if ex != nil {
 		t.Logger.Error("failed to add transaction - invalid wallet code", zap.Any("tx", inp))
 		return nil, &model.BusinessError{
-			ErrorCode:    apps.ErrCodeBussWalletCodeInvalid,
-			ErrorMessage: apps.ErrMsgBussWalletCodeInvalid,
+			ErrorCode:    apps.ErrCodeBussMerchantCodeInvalid,
+			ErrorMessage: apps.ErrMsgBussMerchantCodeInvalid,
 		}
 	}
 	data := model.Transaction{
 		PartnerId:      inp.SessionRequest.Id,
 		Partner:        sql.NullString{String: inp.SessionRequest.Fullname, Valid: true},
-		WalletCode:     sql.NullString{String: inp.WalletCode, Valid: true},
+		WalletCode:     sql.NullString{String: inp.MerchantCode, Valid: true},
 		Qty:            inp.Qty,
 		Amount:         inp.Amount,
 		Msisdn:         sql.NullString{String: inp.Msisdn, Valid: true},

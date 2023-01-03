@@ -6,10 +6,6 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/repository"
 	"github.com/adinandradrs/cezbek-engine/internal/storage"
-	"github.com/adinandradrs/cezbek-engine/internal/usecase/client"
-	"github.com/adinandradrs/cezbek-engine/internal/usecase/job"
-	"github.com/adinandradrs/cezbek-engine/internal/usecase/management"
-	"github.com/adinandradrs/cezbek-engine/internal/usecase/partner"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -48,18 +44,7 @@ type (
 		repository.PartnerPersister
 		repository.ParamPersister
 		repository.H2HPersister
-	}
-
-	APIUsecase struct {
-		management.PartnerManager
-		management.ParamManager
-		management.H2HManager
-		PartnerOnboardProvider partner.OnboardProvider
-		ClientOnboardProvider  client.OnboardProvider
-	}
-
-	JobUsecase struct {
-		JobOnboardWatcher job.OnboardWatcher
+		repository.TransactionPersister
 	}
 )
 
@@ -109,9 +94,10 @@ func (c *Container) loadPool() *storage.PgPool {
 func (c *Container) registerRepository() Dao {
 	p := c.loadPool()
 	return Dao{
-		PartnerPersister: repository.NewPartner(repository.Partner{Logger: c.Logger, Pool: p.Pool}),
-		ParamPersister:   repository.NewParameter(repository.Parameter{Logger: c.Logger, Pool: p.Pool}),
-		H2HPersister:     repository.NewH2H(repository.H2H{Logger: c.Logger, Pool: p.Pool}),
+		PartnerPersister:     repository.NewPartner(repository.Partner{Logger: c.Logger, Pool: p.Pool}),
+		ParamPersister:       repository.NewParameter(repository.Parameter{Logger: c.Logger, Pool: p.Pool}),
+		H2HPersister:         repository.NewH2H(repository.H2H{Logger: c.Logger, Pool: p.Pool}),
+		TransactionPersister: repository.NewTransaction(repository.Transaction{Logger: c.Logger, Pool: p.Pool}),
 	}
 }
 

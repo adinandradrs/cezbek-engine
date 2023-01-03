@@ -11,19 +11,19 @@ type PartnerManagement struct {
 	management.PartnerManager
 }
 
-func newPartnerResource(p PartnerManagement) *PartnerManagement {
+func newPartnerManagementResource(p PartnerManagement) *PartnerManagement {
 	return &p
 }
 
 func PartnerManagementHandler(router fiber.Router, pm PartnerManagement) {
-	handler := newPartnerResource(pm)
+	handler := newPartnerManagementResource(pm)
 	router.Post("/", handler.add)
 }
 
 // @Tags Partner Management APIs
-// Add Partner API
-// @Summary Add Partner API
-// @Description This API is to register a new B2B Partner data as user and client
+// API Add Partner
+// @Summary API Add Partner
+// @Description API to register a new B2B Partner data as user and client
 // @Schemes
 // @Accept json
 // @Param Authorization header string false "Your Token to Access" default(Bearer )

@@ -7,6 +7,15 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/partner"
 )
 
+type APIUsecase struct {
+	management.PartnerManager
+	management.ParamManager
+	management.H2HManager
+	PartnerOnboardProvider    partner.OnboardProvider
+	ClientOnboardProvider     client.OnboardProvider
+	ClientTransactionProvider client.TransactionProvider
+}
+
 func (c *Container) RegisterAPIUsecase(infra Infra, cacher storage.Cacher) APIUsecase {
 	dao := c.registerRepository()
 	cdn := c.Viper.GetString("aws.cdn_base")
@@ -47,6 +56,11 @@ func (c *Container) RegisterAPIUsecase(infra Infra, cacher storage.Cacher) APIUs
 		H2HManager: management.NewH2H(management.H2H{
 			Logger: c.Logger,
 			Dao:    dao.H2HPersister,
+			Cacher: cacher,
+		}),
+		ClientTransactionProvider: client.NewTransaction(client.Transaction{
+			Dao:    dao.TransactionPersister,
+			Logger: c.Logger,
 			Cacher: cacher,
 		}),
 	}

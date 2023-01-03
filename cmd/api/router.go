@@ -12,7 +12,7 @@ import (
 )
 
 // @title Kezbek - Cashback Engine Sandbox
-// @version 1.0
+// @version 1.0-Beta
 // @description This Cashback Engine Sandbox is only used for test and development purpose. To explore and serve all Kezbek operational APIs as a live data. It is not intended for production usage.
 // @termsOfService http://swagger.io/terms/
 
@@ -60,6 +60,11 @@ func main() {
 	partners := app.Group("/api/v1/partners").Use(c.HttpLogger)
 	handler.PartnerManagementHandler(partners, handler.PartnerManagement{
 		PartnerManager: ucase.PartnerManager,
+	})
+
+	cashbacks := app.Group("/api/v1/cashbacks").Use(c.HttpLogger)
+	handler.CashbackHandler(cashbacks, handler.Cashback{
+		TransactionProvider: ucase.ClientTransactionProvider,
 	})
 
 	_ = app.Listen(env.HttpPort)

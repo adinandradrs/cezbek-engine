@@ -13,7 +13,7 @@
             "name": "Apache 2.0",
             "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
         },
-        "version": "1.0"
+        "version": "1.0-Beta"
     },
     "basePath": "/api",
     "paths": {
@@ -48,14 +48,14 @@
         },
         "/v1/authorization/b2b": {
             "post": {
-                "description": "This API is to authorize B2B officer account",
+                "description": "API to authorize B2B officer account",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "Authorization APIs"
                 ],
-                "summary": "B2B Authorization API",
+                "summary": "API B2B Authorization",
                 "parameters": [
                     {
                         "enum": [
@@ -125,14 +125,14 @@
         },
         "/v1/authorization/client": {
             "post": {
-                "description": "This API is to authorize client's signature and code",
+                "description": "API to authorize client's signature and code",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "Authorization APIs"
                 ],
-                "summary": "Client Authorization API",
+                "summary": "API Client Authorization",
                 "parameters": [
                     {
                         "type": "string",
@@ -217,14 +217,14 @@
         },
         "/v1/authorization/otp": {
             "post": {
-                "description": "This API is to validate B2B officer account OTP",
+                "description": "API to validate B2B officer account OTP",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "Authorization APIs"
                 ],
-                "summary": "B2B OTP Validation API",
+                "summary": "API B2B OTP Validation",
                 "parameters": [
                     {
                         "enum": [
@@ -299,16 +299,194 @@
                 }
             }
         },
+        "/v1/cashbacks": {
+            "post": {
+                "description": "API to apply cashback on client's transaction",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Client Cashback APIs"
+                ],
+                "summary": "API Apply Cashback",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer",
+                        "description": "Your Token to Access",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
+                    {
+                        "enum": [
+                            "EBIZKEZBEK",
+                            "B2BCLIENT"
+                        ],
+                        "type": "string",
+                        "description": "Client Channel",
+                        "name": "x-client-channel",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "android 10",
+                        "description": "Client OS or Browser Agent",
+                        "name": "x-client-os",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Device ID",
+                        "name": "x-client-device",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "1.0.0",
+                        "description": "Client Platform Version",
+                        "name": "x-client-version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Original Timestamp in UNIX format (EPOCH)",
+                        "name": "x-client-timestamp",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Transaction Payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.TransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    },
+                    "503": {
+                        "description": "Service Unavailable"
+                    }
+                }
+            }
+        },
+        "/v1/cashbacks/{trxId}": {
+            "post": {
+                "description": "API to view detail of applied cashback based on the given Kezbek transaction reference",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Client Cashback APIs"
+                ],
+                "summary": "API Detail Applied Cashback",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer",
+                        "description": "Your Token to Access",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
+                    {
+                        "enum": [
+                            "EBIZKEZBEK",
+                            "B2BCLIENT"
+                        ],
+                        "type": "string",
+                        "description": "Client Channel",
+                        "name": "x-client-channel",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "android 10",
+                        "description": "Client OS or Browser Agent",
+                        "name": "x-client-os",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Device ID",
+                        "name": "x-client-device",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "1.0.0",
+                        "description": "Client Platform Version",
+                        "name": "x-client-version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Original Timestamp in UNIX format (EPOCH)",
+                        "name": "x-client-timestamp",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Kezbek Transaction Reference",
+                        "name": "trxId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    },
+                    "503": {
+                        "description": "Service Unavailable"
+                    }
+                }
+            }
+        },
         "/v1/partners": {
             "post": {
-                "description": "This API is to register a new B2B Partner data as user and client",
+                "description": "API to register a new B2B Partner data as user and client",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "Partner Management APIs"
                 ],
-                "summary": "Add Partner API",
+                "summary": "API Add Partner",
                 "parameters": [
                     {
                         "type": "string",
@@ -467,6 +645,40 @@
                 "otp": {
                     "type": "string",
                     "example": "123456"
+                }
+            }
+        },
+        "model.TransactionRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "msisdn",
+                "quantity"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 750000
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@gmailxyz.com"
+                },
+                "merchant_code": {
+                    "type": "string",
+                    "example": "LSAJA,GPAID,JOSVO"
+                },
+                "msisdn": {
+                    "type": "string",
+                    "example": "62812345678"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "transaction_reference": {
+                    "type": "string",
+                    "example": "INV001-GOFOOD-ABC"
                 }
             }
         }
