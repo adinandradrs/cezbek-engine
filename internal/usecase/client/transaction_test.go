@@ -30,10 +30,9 @@ func TestTransaction_Add(t *testing.T) {
 		Qty:                  3,
 		Msisdn:               "6281123456890",
 		SessionRequest: model.SessionRequest{
-			Id:          int64(1),
-			Email:       "corporate@email.xyz",
-			PartnerCode: "CORP_A",
-			Fullname:    "PT. Corporate A",
+			Id:       int64(1),
+			Email:    "corporate@email.xyz",
+			Fullname: "PT. Corporate A",
 		},
 	}
 	t.Run("should success", func(t *testing.T) {

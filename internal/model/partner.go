@@ -62,6 +62,7 @@ type (
 
 type (
 	ClientAuthenticationResponse struct {
+		Id      *int64 `json:"id,omitempty"`
 		Code    string `json:"code"`
 		Company string `json:"company"`
 		SessionResponse

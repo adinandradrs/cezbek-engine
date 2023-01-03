@@ -72,6 +72,7 @@ func (o *Onboard) Authenticate(inp *model.ClientAuthenticationRequest) (*model.C
 	}
 
 	resp := model.ClientAuthenticationResponse{
+		Id:      &p.Id,
 		Code:    p.Code.String,
 		Company: p.Partner.String,
 		SessionResponse: model.SessionResponse{
@@ -89,6 +90,6 @@ func (o *Onboard) Authenticate(inp *model.ClientAuthenticationRequest) (*model.C
 		}
 	}
 	o.Cacher.Set("CLIENTSESSION", p.Code.String, cache, o.AuthTTL)
-
+	resp.Id = nil
 	return &resp, nil
 }

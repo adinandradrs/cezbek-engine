@@ -40,7 +40,7 @@ func (t *Transaction) Add(inp *model.TransactionRequest) (*model.TransactionResp
 		Qty:            inp.Qty,
 		Amount:         inp.Amount,
 		Msisdn:         sql.NullString{String: inp.Msisdn, Valid: true},
-		Email:          sql.NullString{String: inp.SessionRequest.Email, Valid: true},
+		Email:          sql.NullString{String: inp.Email, Valid: true},
 		KezbekRefCode:  sql.NullString{String: trx.TransactionId, Valid: true},
 		PartnerRefCode: sql.NullString{String: inp.TransactionReference, Valid: true},
 		BaseEntity: model.BaseEntity{

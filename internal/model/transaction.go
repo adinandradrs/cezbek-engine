@@ -29,7 +29,7 @@ type (
 		Msisdn               string          `json:"msisdn" example:"62812345678" validate:"required"`
 		Email                string          `json:"email" example:"john.doe@gmailxyz.com"`
 		MerchantCode         string          `json:"merchant_code" example:"LSAJA,GPAID,JOSVO"`
-		TransactionReference string          `json:"transaction_reference" example:"INV001-GOFOOD-ABC"`
+		TransactionReference string          `json:"transaction_reference" example:"INV/001/002"`
 		SessionRequest
 	}
 )

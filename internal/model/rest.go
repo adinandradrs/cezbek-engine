@@ -57,13 +57,12 @@ type (
 	}
 
 	SessionRequest struct {
-		Id          int64  `swaggerignore:"true"`
-		PartnerCode string `swaggerignore:"true"`
-		Username    string `swaggerignore:"true"`
-		Msisdn      string `swaggerignore:"true"`
-		Email       string `swaggerignore:"true"`
-		Role        string `swaggerignore:"true"`
-		Fullname    string `swaggerignore:"true"`
+		Id       int64  `swaggerignore:"true"`
+		Username string `swaggerignore:"true"`
+		Msisdn   string `swaggerignore:"true"`
+		Email    string `swaggerignore:"true"`
+		Role     string `swaggerignore:"true"`
+		Fullname string `swaggerignore:"true"`
 		ContextRequest
 	}
 
