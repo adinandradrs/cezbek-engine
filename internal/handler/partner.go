@@ -7,17 +7,17 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type Partner struct {
+type PartnerManagement struct {
 	management.PartnerManager
 }
 
-func newPartnerResource(p Partner) *Partner {
+func newPartnerResource(p PartnerManagement) *PartnerManagement {
 	return &p
 }
 
-func PartnerHandler(r fiber.Router, p Partner) {
-	h := newPartnerResource(p)
-	r.Post("/", h.add)
+func PartnerManagementHandler(router fiber.Router, pm PartnerManagement) {
+	handler := newPartnerResource(pm)
+	router.Post("/", handler.add)
 }
 
 // @Tags Partner Management APIs
@@ -46,7 +46,7 @@ func PartnerHandler(r fiber.Router, p Partner) {
 // @Failure 500
 // @Failure 503
 // @Router /v1/partners [post]
-func (p *Partner) add(ctx *fiber.Ctx) error {
+func (p *PartnerManagement) add(ctx *fiber.Ctx) error {
 	logo, _ := ctx.FormFile("logo")
 	inp := model.AddPartnerRequest{
 		Partner: ctx.FormValue("partner"),

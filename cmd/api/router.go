@@ -58,7 +58,7 @@ func main() {
 	})
 
 	partners := app.Group("/api/v1/partners").Use(c.HttpLogger)
-	handler.PartnerHandler(partners, handler.Partner{
+	handler.PartnerManagementHandler(partners, handler.PartnerManagement{
 		PartnerManager: ucase.PartnerManager,
 	})
 
