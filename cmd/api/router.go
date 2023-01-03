@@ -37,7 +37,7 @@ func main() {
 	onStartupLoadH2HCache(ucase.H2HManager, c.Logger)
 
 	//app starting
-	app := fiber.New()
+	api := fiber.New()
 
 	//middleware config
 	preAuthenticator := middleware.NewPreAuthenticator(&middleware.PreAuthenticator{
@@ -52,29 +52,29 @@ func main() {
 	jwtAuthClientFilter := jwtAuthenticator.ClientFilter()
 
 	//swagger
-	app.Get(env.ContextPath+"/swagger/*", swagger.WrapHandler)
-	handler.DefaultHandler(app, env.ContextPath)
+	api.Get(env.ContextPath+"/swagger/*", swagger.WrapHandler)
+	handler.DefaultHandler(api, env.ContextPath)
 
 	//APIs
-	authorization := app.Group("/api/v1/authorization").Use(c.HttpLogger)
+	authorization := api.Group("/api/v1/authorization").Use(c.HttpLogger)
 	handler.AuthorizationHandler(authorization, handler.Authorization{
 		PartnerOnboardProvider: ucase.PartnerOnboardProvider,
 		ClientOnboardProvider:  ucase.ClientOnboardProvider,
 		ClientFilter:           preAuthClientFilter,
 	})
 
-	partners := app.Group("/api/v1/partners").Use(c.HttpLogger)
+	partners := api.Group("/api/v1/partners").Use(c.HttpLogger)
 	handler.PartnerManagementHandler(partners, handler.PartnerManagement{
 		PartnerManager: ucase.PartnerManager,
 	})
 
-	cashbacks := app.Group("/api/v1/cashbacks").Use(c.HttpLogger)
+	cashbacks := api.Group("/api/v1/cashbacks").Use(c.HttpLogger)
 	handler.CashbackHandler(cashbacks, handler.Cashback{
 		TransactionProvider: ucase.ClientTransactionProvider,
 		ClientFilter:        jwtAuthClientFilter,
 	})
 
-	_ = app.Listen(env.HttpPort)
+	_ = api.Listen(env.HttpPort)
 }
 
 func onStartupLoadH2HCache(h management.H2HManager, logger *zap.Logger) {
