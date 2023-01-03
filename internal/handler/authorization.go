@@ -11,17 +11,18 @@ import (
 type Authorization struct {
 	PartnerOnboardProvider partner.OnboardProvider
 	ClientOnboardProvider  client.OnboardProvider
+	ClientFilter           fiber.Handler
 }
 
 func newAuthorizationResource(a Authorization) *Authorization {
 	return &a
 }
 
-func AuthorizationHandler(r fiber.Router, a Authorization) {
-	h := newAuthorizationResource(a)
-	r.Post("/client", h.clientAuth)
-	r.Post("/b2b", h.b2bAuth)
-	r.Post("/otp", h.otpAuth)
+func AuthorizationHandler(router fiber.Router, auth Authorization) {
+	handler := newAuthorizationResource(auth)
+	router.Use(auth.ClientFilter).Post("/client", handler.clientAuth)
+	router.Post("/b2b", handler.b2bAuth)
+	router.Post("/otp", handler.otpAuth)
 }
 
 // @Tags Authorization APIs

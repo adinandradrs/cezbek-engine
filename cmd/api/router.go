@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/cdi"
 	_ "github.com/adinandradrs/cezbek-engine/internal/docs"
 	"github.com/adinandradrs/cezbek-engine/internal/handler"
+	"github.com/adinandradrs/cezbek-engine/internal/handler/middleware"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/management"
 	"github.com/gofiber/fiber/v2"
 	swagger "github.com/swaggo/fiber-swagger"
@@ -25,23 +25,36 @@ import (
 
 // @BasePath /api
 func main() {
+	//load Contexts and Dependency Injection (CDI)
 	c := cdi.NewContainer("app_cezbek_api")
 	env := c.LoadEnv()
 	infra := c.LoadInfra()
 	redis := c.LoadRedis()
 	ucase := c.RegisterAPIUsecase(infra, redis)
 
-	m := apps.Middleware{Logger: c.Logger}
-	authenticator := apps.Authenticator(m)
+	//app event(s)
+	onStartupLoadParameterCache(ucase.ParamManager, c.Logger)
+	onStartupLoadH2HCache(ucase.H2HManager, c.Logger)
 
+	//app starting
 	app := fiber.New()
+
+	//middleware config
+	authenticator := middleware.NewAuthenticator(&middleware.Authenticator{
+		Logger: c.Logger,
+	})
+	clientFilter := authenticator.ClientFilter()
+
+	//swagger
 	app.Get(env.ContextPath+"/swagger/*", swagger.WrapHandler)
 	handler.DefaultHandler(app, env.ContextPath)
 
-	authorization := app.Group("/api/v1/authorization").Use(c.HttpLogger, authenticator)
+	//APIs
+	authorization := app.Group("/api/v1/authorization").Use(c.HttpLogger)
 	handler.AuthorizationHandler(authorization, handler.Authorization{
 		PartnerOnboardProvider: ucase.PartnerOnboardProvider,
 		ClientOnboardProvider:  ucase.ClientOnboardProvider,
+		ClientFilter:           clientFilter,
 	})
 
 	partners := app.Group("/api/v1/partners").Use(c.HttpLogger)
@@ -49,12 +62,10 @@ func main() {
 		PartnerManager: ucase.PartnerManager,
 	})
 
-	loadParameterCache(ucase.ParamManager, c.Logger)
-	loadH2HCache(ucase.H2HManager, c.Logger)
 	_ = app.Listen(env.HttpPort)
 }
 
-func loadH2HCache(h management.H2HManager, logger *zap.Logger) {
+func onStartupLoadH2HCache(h management.H2HManager, logger *zap.Logger) {
 	go func() {
 		ex := h.CacheProviders()
 		if ex != nil {
@@ -70,7 +81,7 @@ func loadH2HCache(h management.H2HManager, logger *zap.Logger) {
 	}()
 }
 
-func loadParameterCache(p management.ParamManager, logger *zap.Logger) {
+func onStartupLoadParameterCache(p management.ParamManager, logger *zap.Logger) {
 	go func() {
 		ex := p.CacheEmailSubjects()
 		if ex != nil {
