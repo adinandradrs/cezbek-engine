@@ -35,7 +35,7 @@ func (l *Linksaja) Authorization() (*model.LinksajaAuthorizationResponse, *model
 	}{l.Username, l.Password}, new(bytes.Buffer)
 	err := json.NewEncoder(payload).Encode(inp)
 	if err != nil {
-		return nil, apps.Exception("failed to create linksaja payload", err, zap.Error(err), l.Logger)
+		return nil, apps.Exception("failed to build linksaja payload", err, zap.Error(err), l.Logger)
 	}
 	req, err := http.NewRequest(fiber.MethodPost, l.Host+"/api/v1/thirdparty/authorization", payload)
 	if err != nil {
@@ -64,11 +64,11 @@ func (l *Linksaja) FundTransfer(inp *model.LinksajaFundTransferRequest) (*model.
 	payload := new(bytes.Buffer)
 	err := json.NewEncoder(payload).Encode(*inp)
 	if err != nil {
-		return nil, apps.Exception("failed to create linksaja payload", err, zap.Error(err), l.Logger)
+		return nil, apps.Exception("failed to build linksaja payload", err, zap.Error(err), l.Logger)
 	}
 	req, err := http.NewRequest(fiber.MethodPost, l.Host+"/api/v1/transfer/fund", payload)
 	if err != nil {
-		return nil, apps.Exception("failed to create linksaja auth request", err, zap.Error(err), l.Logger)
+		return nil, apps.Exception("failed to create linksaja fund transfer request", err, zap.Error(err), l.Logger)
 	}
 	req.Header.Add(fiber.HeaderAccept, fiber.MIMEApplicationJSON)
 	req.Header.Add(fiber.HeaderAuthorization, "Bearer "+inp.Bearer)
