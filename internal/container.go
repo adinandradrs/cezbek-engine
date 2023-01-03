@@ -54,9 +54,9 @@ type (
 		management.PartnerManager
 		management.ParamManager
 		management.H2HManager
-		PartnerOnboardManager partner.OnboardManager
-		ClientOnboardManager  client.OnboardManager
-		JobOnboardManager     job.OnboardManager
+		PartnerOnboardProvider partner.OnboardProvider
+		ClientOnboardProvider  client.OnboardProvider
+		JobOnboardWatcher      job.OnboardWatcher
 	}
 )
 
@@ -195,7 +195,7 @@ func (c *Container) RegisterUsecase(infra Infra, cacher storage.Cacher) Usecase 
 			Cacher: cacher,
 			Logger: c.Logger,
 		}),
-		PartnerOnboardManager: partner.NewOnboard(partner.Onboard{
+		PartnerOnboardProvider: partner.NewOnboard(partner.Onboard{
 			Dao:                       dao.PartnerPersister,
 			Cacher:                    cacher,
 			SqsAdapter:                infra.SQSAdapter,
@@ -206,14 +206,14 @@ func (c *Container) RegisterUsecase(infra Infra, cacher storage.Cacher) Usecase 
 			QueueNotificationEmailOtp: &qNotificationEmailOtp,
 			Logger:                    c.Logger,
 		}),
-		ClientOnboardManager: client.NewOnboard(client.Onboard{
+		ClientOnboardProvider: client.NewOnboard(client.Onboard{
 			Dao:         dao.PartnerPersister,
 			Cacher:      cacher,
 			AuthTTL:     c.Viper.GetDuration("ttl.client_auth"),
 			CiamWatcher: infra.CiamPartner,
 			Logger:      c.Logger,
 		}),
-		JobOnboardManager: job.NewOnboard(job.Onboard{
+		JobOnboardWatcher: job.NewOnboard(job.Onboard{
 			Logger:                    c.Logger,
 			QueueNotificationEmailOtp: &qNotificationEmailOtp,
 			SqsAdapter:                infra.SQSAdapter,

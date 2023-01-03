@@ -9,8 +9,8 @@ import (
 )
 
 type Authorization struct {
-	PartnerOnboardManager partner.OnboardManager
-	ClientOnboardManager  client.OnboardManager
+	PartnerOnboardProvider partner.OnboardProvider
+	ClientOnboardProvider  client.OnboardProvider
 }
 
 func newAuthorizationResource(a Authorization) *Authorization {
@@ -53,7 +53,7 @@ func (a *Authorization) clientAuth(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bad)
 	}
 	inp.ApiKey = ctx.Get(apps.HeaderApiKey)
-	v, ex := a.ClientOnboardManager.Authenticate(&inp)
+	v, ex := a.ClientOnboardProvider.Authenticate(&inp)
 	if ex != nil && ex.ErrorCode == apps.ErrCodeUnauthorized {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(apps.BusinessErrorResponse(ex))
 	}
@@ -89,7 +89,7 @@ func (a *Authorization) b2bAuth(ctx *fiber.Ctx) error {
 	if bad != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bad)
 	}
-	v, ex := a.PartnerOnboardManager.Authenticate(&inp)
+	v, ex := a.PartnerOnboardProvider.Authenticate(&inp)
 	if ex != nil && ex.ErrorCode == apps.ErrCodeUnauthorized {
 		return ctx.Status(fiber.StatusUnauthorized).JSON(apps.BusinessErrorResponse(ex))
 	}
@@ -127,7 +127,7 @@ func (a *Authorization) otpAuth(ctx *fiber.Ctx) error {
 	if bad != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bad)
 	}
-	v, ex := a.PartnerOnboardManager.ValidateAuth(&inp)
+	v, ex := a.PartnerOnboardProvider.Validate(&inp)
 	if ex != nil && ex.ErrorCode == apps.ErrCodeBussPartnerOTPInvalid {
 		return ctx.Status(fiber.StatusBadRequest).JSON(apps.BusinessErrorResponse(ex))
 	}

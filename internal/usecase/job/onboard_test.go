@@ -19,7 +19,7 @@ func TestOnboard_SendOtpEmail(t *testing.T) {
 	logger, _ := apps.NewLog(false)
 	sesAdapter, sqsAdapter, q := adaptor.NewMockSESAdapter(ctrl),
 		adaptor.NewMockSQSAdapter(ctrl), "mock-queue"
-	manager := NewOnboard(Onboard{
+	svc := NewOnboard(Onboard{
 		Logger:                    logger,
 		QueueNotificationEmailOtp: &q,
 		SesAdapter:                sesAdapter,
@@ -39,7 +39,7 @@ func TestOnboard_SendOtpEmail(t *testing.T) {
 				TransactionTimestamp: time.Now().Unix(),
 			}, nil)
 		sqsAdapter.EXPECT().DeleteMessages(q, gomock.Any())
-		ex := manager.SendOtpEmail()
+		ex := svc.SendOtpEmail()
 		assert.Nil(t, ex)
 	})
 	t.Run("should return exception on send email", func(t *testing.T) {
@@ -56,7 +56,7 @@ func TestOnboard_SendOtpEmail(t *testing.T) {
 				Occurred:  time.Now().Unix(),
 				Ticket:    "err-001",
 			})
-		ex := manager.SendOtpEmail()
+		ex := svc.SendOtpEmail()
 		assert.NotNil(t, ex)
 	})
 }

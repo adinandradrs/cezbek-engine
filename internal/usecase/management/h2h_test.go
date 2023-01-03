@@ -18,7 +18,7 @@ func TestH2H_CacheProviders(t *testing.T) {
 	defer ctrl.Finish()
 	logger, _ := apps.NewLog(false)
 	dao, cacher := repository.NewMockH2HPersister(ctrl), storage.NewMockCacher(ctrl)
-	manager := NewH2H(H2H{
+	svc := NewH2H(H2H{
 		Logger: logger,
 		Cacher: cacher,
 		Dao:    dao,
@@ -32,7 +32,7 @@ func TestH2H_CacheProviders(t *testing.T) {
 			},
 		}, nil)
 		cacher.EXPECT().Hset(gomock.Any(), gomock.Any(), gomock.Any())
-		ex := manager.CacheProviders()
+		ex := svc.CacheProviders()
 		assert.Nil(t, ex)
 	})
 	t.Run("should return exception on dao error", func(t *testing.T) {
@@ -41,7 +41,7 @@ func TestH2H_CacheProviders(t *testing.T) {
 			Occurred:  time.Now().Unix(),
 			Ticket:    "ERR-001",
 		})
-		ex := manager.CacheProviders()
+		ex := svc.CacheProviders()
 		assert.NotNil(t, ex)
 	})
 }

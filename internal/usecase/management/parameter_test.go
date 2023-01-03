@@ -19,7 +19,7 @@ func TestParameter_CacheWallets(t *testing.T) {
 	logger, _ := apps.NewLog(false)
 	dao, cacher := repository.NewMockParamPersister(ctrl),
 		storage.NewMockCacher(ctrl)
-	manager := NewParameter(Parameter{
+	svc := NewParameter(Parameter{
 		Logger: logger,
 		Cacher: cacher,
 		Dao:    dao,
@@ -33,14 +33,14 @@ func TestParameter_CacheWallets(t *testing.T) {
 		dao.EXPECT().FindByParamGroup("WALLET_CODE").Return(params, nil)
 		cacher.EXPECT().Hset(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil)
-		ex := manager.CacheWallets()
+		ex := svc.CacheWallets()
 		assert.Nil(t, ex)
 	})
 	t.Run("should return exception on DAO failure ops", func(t *testing.T) {
 		dao.EXPECT().FindByParamGroup("WALLET_CODE").Return(nil,
 			apps.Exception("something went wrong",
 				fmt.Errorf("something went wrong"), zap.Any("", ""), logger))
-		ex := manager.CacheWallets()
+		ex := svc.CacheWallets()
 		assert.NotNil(t, ex)
 	})
 	t.Run("should return exception on Redis failure ops", func(t *testing.T) {
@@ -53,7 +53,7 @@ func TestParameter_CacheWallets(t *testing.T) {
 		cacher.EXPECT().Hset(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(apps.Exception("something went wrong",
 				fmt.Errorf("something went wrong"), zap.Any("", ""), logger))
-		ex := manager.CacheWallets()
+		ex := svc.CacheWallets()
 		assert.NotNil(t, ex)
 	})
 }
@@ -64,7 +64,7 @@ func TestParameter_CacheEmailTemplates(t *testing.T) {
 	logger, _ := apps.NewLog(false)
 	dao, cacher := repository.NewMockParamPersister(ctrl),
 		storage.NewMockCacher(ctrl)
-	manager := NewParameter(Parameter{
+	svc := NewParameter(Parameter{
 		Logger: logger,
 		Cacher: cacher,
 		Dao:    dao,
@@ -78,14 +78,14 @@ func TestParameter_CacheEmailTemplates(t *testing.T) {
 		dao.EXPECT().FindByParamGroup("EMAIL_TEMPLATE").Return(params, nil)
 		cacher.EXPECT().Hset(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(nil)
-		ex := manager.CacheEmailTemplates()
+		ex := svc.CacheEmailTemplates()
 		assert.Nil(t, ex)
 	})
 	t.Run("should return exception on DAO failure ops", func(t *testing.T) {
 		dao.EXPECT().FindByParamGroup("EMAIL_TEMPLATE").Return(nil,
 			apps.Exception("something went wrong",
 				fmt.Errorf("something went wrong"), zap.Any("", ""), logger))
-		ex := manager.CacheEmailTemplates()
+		ex := svc.CacheEmailTemplates()
 		assert.NotNil(t, ex)
 	})
 	t.Run("should return exception on Redis failure ops", func(t *testing.T) {
@@ -98,7 +98,7 @@ func TestParameter_CacheEmailTemplates(t *testing.T) {
 		cacher.EXPECT().Hset(gomock.Any(), gomock.Any(), gomock.Any()).
 			Return(apps.Exception("something went wrong",
 				fmt.Errorf("something went wrong"), zap.Any("", ""), logger))
-		ex := manager.CacheEmailTemplates()
+		ex := svc.CacheEmailTemplates()
 		assert.NotNil(t, ex)
 	})
 }

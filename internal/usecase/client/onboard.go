@@ -19,11 +19,11 @@ type Onboard struct {
 	AuthTTL     time.Duration
 }
 
-type OnboardManager interface {
+type OnboardProvider interface {
 	Authenticate(inp *model.ClientAuthenticationRequest) (*model.ClientAuthenticationResponse, *model.BusinessError)
 }
 
-func NewOnboard(o Onboard) OnboardManager {
+func NewOnboard(o Onboard) OnboardProvider {
 	return &o
 }
 

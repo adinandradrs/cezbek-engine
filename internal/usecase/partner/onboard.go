@@ -24,12 +24,12 @@ type Onboard struct {
 	CDN                       *string
 }
 
-type OnboardManager interface {
+type OnboardProvider interface {
 	Authenticate(inp *model.OfficerAuthenticationRequest) (*model.OfficerAuthenticationResponse, *model.BusinessError)
-	ValidateAuth(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError)
+	Validate(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError)
 }
 
-func NewOnboard(o Onboard) OnboardManager {
+func NewOnboard(o Onboard) OnboardProvider {
 	return &o
 }
 
@@ -141,7 +141,7 @@ func (o *Onboard) queueEmailOtp(otp string, p *model.Partner) *model.BusinessErr
 	return nil
 }
 
-func (o *Onboard) ValidateAuth(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError) {
+func (o *Onboard) Validate(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError) {
 	cp, ex := o.Cacher.Get("OTPB2B:"+inp.TransactionId, inp.Otp)
 	if ex != nil {
 		return nil, &model.BusinessError{

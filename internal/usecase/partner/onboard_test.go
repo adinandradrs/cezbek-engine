@@ -25,7 +25,7 @@ func TestOnboard_AuthenticateOfficer(t *testing.T) {
 	dao, ciamWatcher, sqsAdapter, cacher, q, cdn := repository.NewMockPartnerPersister(ctrl),
 		adaptor.NewMockCiamWatcher(ctrl), adaptor.NewMockSQSAdapter(ctrl), storage.NewMockCacher(ctrl),
 		"mock-queue", "https://cdn-mock.id"
-	manager := NewOnboard(Onboard{
+	svc := NewOnboard(Onboard{
 		Logger:                    logger,
 		Cacher:                    cacher,
 		SqsAdapter:                sqsAdapter,
@@ -59,7 +59,7 @@ func TestOnboard_AuthenticateOfficer(t *testing.T) {
 		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
 		cacher.EXPECT().Hget(gomock.Any(), gomock.Any()).Times(2).Return("subject", nil)
 		sqsAdapter.EXPECT().SendMessage(gomock.Any(), gomock.Any()).Return(nil)
-		v, ex := manager.Authenticate(inp)
+		v, ex := svc.Authenticate(inp)
 		assert.Nil(t, ex)
 		assert.NotNil(t, v)
 	})
@@ -68,7 +68,7 @@ func TestOnboard_AuthenticateOfficer(t *testing.T) {
 		dao.EXPECT().FindActiveByEmail(inp.Email).Return(p, nil)
 		cacher.EXPECT().Ttl("OTPB2B", p.Email.String).Return(ttl, nil)
 		cacher.EXPECT().Get(gomock.Any(), gomock.Any()).Return("1#1", nil)
-		v, ex := manager.Authenticate(inp)
+		v, ex := svc.Authenticate(inp)
 		assert.Nil(t, ex)
 		assert.NotNil(t, v)
 	})
@@ -79,7 +79,7 @@ func TestOnboard_AuthenticateOfficer(t *testing.T) {
 		cacher.EXPECT().Set(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Times(2)
 		cacher.EXPECT().Hget(gomock.Any(), gomock.Any()).Times(2).Return("subject", nil)
 		sqsAdapter.EXPECT().SendMessage(gomock.Any(), gomock.Any()).Return(fmt.Errorf("something went wrong"))
-		v, ex := manager.Authenticate(inp)
+		v, ex := svc.Authenticate(inp)
 		assert.NotNil(t, ex)
 		assert.Nil(t, v)
 	})

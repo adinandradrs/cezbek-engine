@@ -40,8 +40,8 @@ func main() {
 
 	authorization := app.Group("/api/v1/authorization").Use(c.HttpLogger, authenticator)
 	handler.AuthorizationHandler(authorization, handler.Authorization{
-		PartnerOnboardManager: ucase.PartnerOnboardManager,
-		ClientOnboardManager:  ucase.ClientOnboardManager,
+		PartnerOnboardProvider: ucase.PartnerOnboardProvider,
+		ClientOnboardProvider:  ucase.ClientOnboardProvider,
 	})
 
 	partners := app.Group("/api/v1/partners").Use(c.HttpLogger)

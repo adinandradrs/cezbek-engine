@@ -15,11 +15,11 @@ type Onboard struct {
 	QueueNotificationEmailOtp *string
 }
 
-type OnboardManager interface {
+type OnboardWatcher interface {
 	SendOtpEmail() *model.BusinessError
 }
 
-func NewOnboard(o Onboard) OnboardManager {
+func NewOnboard(o Onboard) OnboardWatcher {
 	return &o
 }
 

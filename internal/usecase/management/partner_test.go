@@ -20,7 +20,7 @@ func TestPartner_Add(t *testing.T) {
 	dao, ciamWatcher, s3Watcher, pathS3 :=
 		repository.NewMockPartnerPersister(ctrl), adaptor.NewMockCiamWatcher(ctrl),
 		adaptor.NewMockS3Watcher(ctrl), "/main"
-	manager := NewPartner(Partner{
+	svc := NewPartner(Partner{
 		Dao:         dao,
 		CiamWatcher: ciamWatcher,
 		S3Watcher:   s3Watcher,
@@ -46,7 +46,7 @@ func TestPartner_Add(t *testing.T) {
 			TransactionResponse: apps.Transaction(inp.Msisdn),
 		}, nil)
 		dao.EXPECT().Add(gomock.Any()).Return(nil)
-		trx, ex := manager.Add(&inp)
+		trx, ex := svc.Add(&inp)
 		assert.NotNil(t, trx)
 		assert.Nil(t, ex)
 	})
@@ -54,7 +54,7 @@ func TestPartner_Add(t *testing.T) {
 	t.Run("should return exception on identifier exists", func(t *testing.T) {
 		count := 1
 		dao.EXPECT().CountByIdentifier(gomock.Any()).Return(&count, nil)
-		trx, ex := manager.Add(&inp)
+		trx, ex := svc.Add(&inp)
 		assert.Nil(t, trx)
 		assert.NotNil(t, ex)
 	})
@@ -67,7 +67,7 @@ func TestPartner_Add(t *testing.T) {
 			Occurred:  time.Now().Unix(),
 			Ticket:    uuid.NewString(),
 		})
-		trx, ex := manager.Add(&inp)
+		trx, ex := svc.Add(&inp)
 		assert.Nil(t, trx)
 		assert.NotNil(t, ex)
 	})
@@ -81,7 +81,7 @@ func TestPartner_Add(t *testing.T) {
 			Occurred:  time.Now().Unix(),
 			Ticket:    uuid.NewString(),
 		})
-		trx, ex := manager.Add(&inp)
+		trx, ex := svc.Add(&inp)
 		assert.Nil(t, trx)
 		assert.NotNil(t, ex)
 	})
@@ -99,7 +99,7 @@ func TestPartner_Add(t *testing.T) {
 			Occurred:  time.Now().Unix(),
 			Ticket:    uuid.NewString(),
 		})
-		trx, ex := manager.Add(&inp)
+		trx, ex := svc.Add(&inp)
 		assert.Nil(t, trx)
 		assert.NotNil(t, ex)
 	})
