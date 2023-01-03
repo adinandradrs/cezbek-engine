@@ -79,7 +79,7 @@ func (l *Linksaja) FundTransfer(inp *model.LinksajaFundTransferRequest) (*model.
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			l.Logger.Error("failed to close the body stream on linksaja adapter auth", zap.Error(err))
+			l.Logger.Error("failed to close the body stream on linksaja adapter", zap.Error(err))
 		}
 	}(resp.Body)
 	var m model.LinksajaFundTransferResponse

@@ -45,7 +45,7 @@ func (j Josvo) AccountTransfer(inp *model.JosvoAccountTransferRequest) (*model.J
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			j.Logger.Error("failed to close the body stream on josvo adapter auth", zap.Error(err))
+			j.Logger.Error("failed to close the body stream on josvo adapter", zap.Error(err))
 		}
 	}(resp.Body)
 	var m model.JosvoAccountTransferResponse
