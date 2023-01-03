@@ -40,10 +40,16 @@ func main() {
 	app := fiber.New()
 
 	//middleware config
-	authenticator := middleware.NewAuthenticator(&middleware.Authenticator{
+	preAuthenticator := middleware.NewPreAuthenticator(&middleware.PreAuthenticator{
 		Logger: c.Logger,
 	})
-	clientFilter := authenticator.ClientFilter()
+	preAuthClientFilter := preAuthenticator.ClientFilter()
+	jwtAuthenticator := middleware.NewJwtAuthenticator(&middleware.JwtAuthenticator{
+		Logger:      c.Logger,
+		CiamPartner: infra.CiamPartner,
+		Cacher:      redis,
+	})
+	jwtAuthClientFilter := jwtAuthenticator.ClientFilter()
 
 	//swagger
 	app.Get(env.ContextPath+"/swagger/*", swagger.WrapHandler)
@@ -54,7 +60,7 @@ func main() {
 	handler.AuthorizationHandler(authorization, handler.Authorization{
 		PartnerOnboardProvider: ucase.PartnerOnboardProvider,
 		ClientOnboardProvider:  ucase.ClientOnboardProvider,
-		ClientFilter:           clientFilter,
+		ClientFilter:           preAuthClientFilter,
 	})
 
 	partners := app.Group("/api/v1/partners").Use(c.HttpLogger)
@@ -65,6 +71,7 @@ func main() {
 	cashbacks := app.Group("/api/v1/cashbacks").Use(c.HttpLogger)
 	handler.CashbackHandler(cashbacks, handler.Cashback{
 		TransactionProvider: ucase.ClientTransactionProvider,
+		ClientFilter:        jwtAuthClientFilter,
 	})
 
 	_ = app.Listen(env.HttpPort)

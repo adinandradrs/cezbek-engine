@@ -8,8 +8,8 @@ import (
 
 var checker = validator.New()
 
-func DefaultHandler(r fiber.Router, p string) {
-	r.Get(p+"/ping", ping)
+func DefaultHandler(router fiber.Router, path string) {
+	router.Get(path+"/ping", ping)
 }
 
 // Ping godoc

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
+	"github.com/adinandradrs/cezbek-engine/internal/handler/middleware"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/client"
 	"github.com/gofiber/fiber/v2"
@@ -9,6 +10,7 @@ import (
 
 type Cashback struct {
 	client.TransactionProvider
+	ClientFilter fiber.Handler
 }
 
 func newCashback(c Cashback) *Cashback {
@@ -17,6 +19,7 @@ func newCashback(c Cashback) *Cashback {
 
 func CashbackHandler(router fiber.Router, c Cashback) {
 	handler := newCashback(c)
+	router.Use(c.ClientFilter)
 	router.Post("/", handler.add)
 	router.Get("/:trxId", handler.detail)
 }
@@ -27,7 +30,7 @@ func CashbackHandler(router fiber.Router, c Cashback) {
 // @Description API to apply cashback on client's transaction
 // @Schemes
 // @Accept json
-// @Param Authorization header string false "Your Token to Access" default(Bearer )
+// @Param Authorization header string true "Your Token to Access" default(Bearer )
 // @Param x-client-channel header string true "Client Channel" Enums(EBIZKEZBEK, B2BCLIENT)
 // @Param x-client-os  header string true "Client OS or Browser Agent" default(android 10)
 // @Param x-client-device  header string true "Client Device ID"
@@ -47,6 +50,7 @@ func (c *Cashback) add(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(err)
 	}
 	bad := apps.ValidateStruct(checker.Struct(inp))
+	inp.SessionRequest = middleware.ClientSession(ctx)
 	if bad != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bad)
 	}

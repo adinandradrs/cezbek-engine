@@ -40,6 +40,15 @@ const HeaderClientRefToken = "x-client-refresh-token"
 const HeaderClientOs = "x-client-os"
 const HeaderClientTimestamp = "x-client-timestamp"
 const HeaderClientSignature = "x-client-signature"
+
+const HeaderSessionUsername = "x-session-username"
+const HeaderSessionId = "x-session-id"
+const HeaderSessionEmail = "x-session-email"
+const HeaderSessionMsisdn = "x-session-msisdn"
+const HeaderSessionFullname = "x-session-fullname"
+const HeaderSessionRole = "x-session-role"
+
 const HeaderApiKey = "x-api-key"
+
 const ChannelB2BClient = "B2BCLIENT"
 const ChannelEBizKezbek = "EBIZKEZBEK"
