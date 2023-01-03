@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/adinandradrs/cezbek-engine/internal"
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
+	"github.com/adinandradrs/cezbek-engine/internal/cdi"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 	"strconv"
@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	c := internal.NewContainer("app_cezbek_api")
+	c := cdi.NewContainer("app_cezbek_api")
 	epoch := time.Now().Unix()
 
 	d := fiber.MethodPost + ":" + strings.ToUpper("LAJADA") + ":" + strconv.FormatInt(epoch, 10) + ":" +

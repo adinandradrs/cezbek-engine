@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/adinandradrs/cezbek-engine/internal"
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
+	"github.com/adinandradrs/cezbek-engine/internal/cdi"
 	_ "github.com/adinandradrs/cezbek-engine/internal/docs"
 	"github.com/adinandradrs/cezbek-engine/internal/handler"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/management"
@@ -25,11 +25,11 @@ import (
 
 // @BasePath /api
 func main() {
-	c := internal.NewContainer("app_cezbek_api")
+	c := cdi.NewContainer("app_cezbek_api")
 	env := c.LoadEnv()
 	infra := c.LoadInfra()
 	redis := c.LoadRedis()
-	ucase := c.RegisterUsecase(infra, redis)
+	ucase := c.RegisterAPIUsecase(infra, redis)
 
 	m := apps.Middleware{Logger: c.Logger}
 	authenticator := apps.Authenticator(m)

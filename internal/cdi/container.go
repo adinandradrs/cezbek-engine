@@ -1,4 +1,4 @@
-package internal
+package cdi
 
 import (
 	"encoding/json"
@@ -50,13 +50,16 @@ type (
 		repository.H2HPersister
 	}
 
-	Usecase struct {
+	APIUsecase struct {
 		management.PartnerManager
 		management.ParamManager
 		management.H2HManager
 		PartnerOnboardProvider partner.OnboardProvider
 		ClientOnboardProvider  client.OnboardProvider
-		JobOnboardWatcher      job.OnboardWatcher
+	}
+
+	JobUsecase struct {
+		JobOnboardWatcher job.OnboardWatcher
 	}
 )
 
@@ -174,57 +177,6 @@ func (c *Container) LoadRedis() (rds storage.Cacher) {
 		})
 	}
 	return rds
-}
-
-func (c *Container) RegisterUsecase(infra Infra, cacher storage.Cacher) Usecase {
-	dao := c.registerRepository()
-	cdn := c.Viper.GetString("aws.cdn_base")
-	path := c.Viper.GetString("aws.s3.path")
-	otpTtl := c.Viper.GetDuration("ttl.otp")
-	qNotificationEmailOtp := c.Viper.GetString("aws.sqs.topic.notification_email_otp")
-	return Usecase{
-		PartnerManager: management.NewPartner(management.Partner{
-			Dao:         dao.PartnerPersister,
-			CiamWatcher: infra.CiamPartner,
-			S3Watcher:   infra.S3Watcher,
-			PathS3:      &path,
-			Logger:      c.Logger,
-		}),
-		ParamManager: management.NewParameter(management.Parameter{
-			Dao:    dao.ParamPersister,
-			Cacher: cacher,
-			Logger: c.Logger,
-		}),
-		PartnerOnboardProvider: partner.NewOnboard(partner.Onboard{
-			Dao:                       dao.PartnerPersister,
-			Cacher:                    cacher,
-			SqsAdapter:                infra.SQSAdapter,
-			AuthTTL:                   c.Viper.GetDuration("ttl.client_auth"),
-			CDN:                       &cdn,
-			OtpTTL:                    otpTtl,
-			CiamWatcher:               infra.CiamPartner,
-			QueueNotificationEmailOtp: &qNotificationEmailOtp,
-			Logger:                    c.Logger,
-		}),
-		ClientOnboardProvider: client.NewOnboard(client.Onboard{
-			Dao:         dao.PartnerPersister,
-			Cacher:      cacher,
-			AuthTTL:     c.Viper.GetDuration("ttl.client_auth"),
-			CiamWatcher: infra.CiamPartner,
-			Logger:      c.Logger,
-		}),
-		JobOnboardWatcher: job.NewOnboard(job.Onboard{
-			Logger:                    c.Logger,
-			QueueNotificationEmailOtp: &qNotificationEmailOtp,
-			SqsAdapter:                infra.SQSAdapter,
-			SesAdapter:                infra.SESAdapter,
-		}),
-		H2HManager: management.NewH2H(management.H2H{
-			Logger: c.Logger,
-			Dao:    dao.H2HPersister,
-			Cacher: cacher,
-		}),
-	}
 }
 
 func (c *Container) LoadEnv() Env {
