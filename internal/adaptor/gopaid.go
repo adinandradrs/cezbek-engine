@@ -53,5 +53,6 @@ func (g *Gopaid) Topup(inp *model.GopaidTopUpRequest) (*model.GopaidTopupRespons
 	if err != nil {
 		return nil, apps.Exception("failed to map response on gopaid top up balance", err, zap.Error(err), g.Logger)
 	}
+	g.Logger.Info("success response", zap.Any("", m))
 	return &m, nil
 }

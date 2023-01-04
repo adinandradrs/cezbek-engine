@@ -54,5 +54,6 @@ func (mt *Middletrans) WalletTransfer(inp *model.MiddletransWalletTransferReques
 	if err != nil {
 		return nil, apps.Exception("failed to map response on joso account transfer", err, zap.Error(err), mt.Logger)
 	}
+	mt.Logger.Info("success response", zap.Any("", m))
 	return &m, nil
 }

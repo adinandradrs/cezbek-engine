@@ -54,5 +54,6 @@ func (x *Xenit) WalletTopup(inp *model.XenitWalletTopupRequest) (*model.XenitWal
 		return nil, apps.Exception("failed to map response on xenit wallet top-up", err,
 			zap.Error(err), x.Logger)
 	}
+	x.Logger.Info("success response", zap.Any("", m))
 	return &m, nil
 }

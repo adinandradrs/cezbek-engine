@@ -87,5 +87,6 @@ func (l *Linksaja) FundTransfer(inp *model.LinksajaFundTransferRequest) (*model.
 	if err != nil {
 		return nil, apps.Exception("failed to map response on linksaja fund transfer", err, zap.Error(err), l.Logger)
 	}
+	l.Logger.Info("success response", zap.Any("", m))
 	return &m, nil
 }

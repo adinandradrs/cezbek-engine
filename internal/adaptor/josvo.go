@@ -53,5 +53,6 @@ func (j *Josvo) AccountTransfer(inp *model.JosvoAccountTransferRequest) (*model.
 	if err != nil {
 		return nil, apps.Exception("failed to map response on joso account transfer", err, zap.Error(err), j.Logger)
 	}
+	j.Logger.Info("success response", zap.Any("", m))
 	return &m, nil
 }
