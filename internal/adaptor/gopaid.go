@@ -48,6 +48,9 @@ func (g *Gopaid) Topup(inp *model.GopaidTopUpRequest) (*model.GopaidTopupRespons
 			g.Logger.Error("failed to close the body stream on gopaid adapter", zap.Error(err))
 		}
 	}(resp.Body)
+	if resp.StatusCode != fiber.StatusOK {
+		return nil, apps.Exception("bad response on gopaid", err, zap.Any("", resp.Body), g.Logger)
+	}
 	var m model.GopaidTopupResponse
 	_ = json.NewDecoder(resp.Body).Decode(&m)
 	if err != nil {

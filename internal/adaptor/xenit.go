@@ -48,6 +48,9 @@ func (x *Xenit) WalletTopup(inp *model.XenitWalletTopupRequest) (*model.XenitWal
 			x.Logger.Error("failed to close the body stream on xenit adapter", zap.Error(err))
 		}
 	}(resp.Body)
+	if resp.StatusCode != fiber.StatusOK {
+		return nil, apps.Exception("bad response on xenit", err, zap.Any("", resp.Body), x.Logger)
+	}
 	var m model.XenitWalletTopupResponse
 	_ = json.NewDecoder(resp.Body).Decode(&m)
 	if err != nil {

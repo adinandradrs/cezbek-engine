@@ -52,6 +52,9 @@ func (l *Linksaja) Authorization() (*model.LinksajaAuthorizationResponse, *model
 			l.Logger.Error("failed to close the body stream on linksaja adapter auth", zap.Error(err))
 		}
 	}(resp.Body)
+	if resp.StatusCode != fiber.StatusOK {
+		return nil, apps.Exception("bad response on linksaja", err, zap.Any("", resp.Body), l.Logger)
+	}
 	var m model.LinksajaAuthorizationResponse
 	_ = json.NewDecoder(resp.Body).Decode(&m)
 	if err != nil {

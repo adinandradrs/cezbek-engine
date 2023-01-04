@@ -49,6 +49,9 @@ func (mt *Middletrans) WalletTransfer(inp *model.MiddletransWalletTransferReques
 			mt.Logger.Error("failed to close the body stream on middletrans adapter", zap.Error(err))
 		}
 	}(resp.Body)
+	if resp.StatusCode != fiber.StatusOK {
+		return nil, apps.Exception("bad response on middletrans", err, zap.Any("", resp.Body), mt.Logger)
+	}
 	var m model.MiddletransWalletTransferResponse
 	_ = json.NewDecoder(resp.Body).Decode(&m)
 	if err != nil {
