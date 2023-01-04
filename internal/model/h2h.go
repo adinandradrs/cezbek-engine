@@ -36,6 +36,16 @@ type (
 )
 
 type (
+	H2HSendCashbackRequest struct {
+		Amount      decimal.Decimal
+		Destination string
+		Notes       string
+		KezbekRefNo string
+		WalletCode  string
+	}
+)
+
+type (
 	H2HProviderResponse struct {
 		Id       int64  `json:"id,omitempty"`
 		Code     string `json:"code,omitempty"`

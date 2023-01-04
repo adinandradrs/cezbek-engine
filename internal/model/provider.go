@@ -4,10 +4,10 @@ import "github.com/shopspring/decimal"
 
 type (
 	LinksajaFundTransferRequest struct {
-		Bearer string `json:"bearer,omitempty"`
-		Amount string `json:"amount"`
-		Msisdn string `json:"msisdn"`
-		Notes  string `json:"notes"`
+		Bearer string          `json:"bearer,omitempty"`
+		Amount decimal.Decimal `json:"amount"`
+		Msisdn string          `json:"msisdn"`
+		Notes  string          `json:"notes"`
 	}
 
 	GopaidTopUpRequest struct {
@@ -42,9 +42,8 @@ type (
 	}
 
 	LinksajaFundTransferResponse struct {
-		Amount decimal.Decimal `json:"amount"`
-		Msisdn string          `json:"msisdn"`
-		Notes  string          `json:"notes"`
+		TransactionID   string `json:"transactionID"`
+		TransactionTime string `json:"transactionTime"`
 	}
 
 	GopaidTopupResponse struct {
