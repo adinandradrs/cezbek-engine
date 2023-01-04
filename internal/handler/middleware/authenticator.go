@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/adinandradrs/cezbek-engine/internal/adaptor"
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
@@ -57,9 +58,8 @@ func ClientSession(ctx *fiber.Ctx) model.SessionRequest {
 
 func (a *JwtAuthenticator) ClientFilter() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		if ctx.Get(apps.HeaderClientChannel) != apps.ChannelB2BClient {
-			a.Logger.Error("the given channel is not valid", zap.String("signature", ctx.Get(apps.HeaderClientSignature)),
-				zap.String("channel", ctx.Get(apps.HeaderClientChannel)))
+		err := validateClientChannel(ctx)
+		if err != nil {
 			return ctx.Status(fiber.StatusUnauthorized).JSON(model.Response{
 				Meta: model.Meta{
 					Code:    apps.ErrCodeInvalidChannel,
@@ -113,11 +113,17 @@ func (a *JwtAuthenticator) ClientFilter() fiber.Handler {
 	}
 }
 
+func validateClientChannel(ctx *fiber.Ctx) (err error) {
+	if ctx.Get(apps.HeaderClientChannel) != apps.ChannelB2BClient {
+		return fmt.Errorf("invalid channel")
+	}
+	return nil
+}
+
 func (a *PreAuthenticator) ClientFilter() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		if ctx.Get(apps.HeaderClientChannel) != apps.ChannelB2BClient {
-			a.Logger.Error("the given channel is not valid", zap.String("signature", ctx.Get(apps.HeaderClientSignature)),
-				zap.String("channel", ctx.Get(apps.HeaderClientChannel)))
+		err := validateClientChannel(ctx)
+		if err != nil {
 			return ctx.Status(fiber.StatusUnauthorized).JSON(model.Response{
 				Meta: model.Meta{
 					Code:    apps.ErrCodeInvalidChannel,

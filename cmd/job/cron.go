@@ -17,7 +17,14 @@ func main() {
 		_ = ucase.JobOnboardWatcher.SendOtpEmail()
 	})
 	if err != nil {
-		c.Logger.Panic("cezbek cron job is failing to run [JobOnboardManager.SendOtpEmail]")
+		c.Logger.Panic("cezbek cron job is failing to run [JobOnboardWatcher.SendOtpEmail]")
+	}
+
+	_, err = job.Every(c.Viper.GetString("schedule.send_invoice_email")).Do(func() {
+		_ = ucase.JobTransactionWatcher.SendInvoiceEmail()
+	})
+	if err != nil {
+		c.Logger.Panic("cezbek cron job is failing to run [JobTransactionWatcher.SendInvoiceEmail]")
 	}
 
 	job.StartBlocking()

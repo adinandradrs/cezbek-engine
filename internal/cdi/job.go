@@ -7,16 +7,24 @@ import (
 )
 
 type JobUsecase struct {
-	JobOnboardWatcher job.OnboardWatcher
-	H2HFactory        h2h.Factory
+	JobOnboardWatcher     job.OnboardWatcher
+	JobTransactionWatcher job.TransactionWatcher
+	H2HFactory            h2h.Factory
 }
 
 func (c *Container) RegisterJobUsecase(infra Infra, cacher storage.Cacher) JobUsecase {
 	qNotificationEmailOtp := c.Viper.GetString("aws.sqs.topic.notification_email_otp")
+	qNotificationEmailTrx := c.Viper.GetString("aws.sqs.topic.notification_email_invoice")
 	return JobUsecase{
 		JobOnboardWatcher: job.NewOnboard(job.Onboard{
 			Logger:                    c.Logger,
 			QueueNotificationEmailOtp: &qNotificationEmailOtp,
+			SqsAdapter:                infra.SQSAdapter,
+			SesAdapter:                infra.SESAdapter,
+		}),
+		JobTransactionWatcher: job.NewTransaction(job.Transaction{
+			Logger:                    c.Logger,
+			QueueNotificationEmailTrx: &qNotificationEmailTrx,
 			SqsAdapter:                infra.SQSAdapter,
 			SesAdapter:                infra.SESAdapter,
 		}),

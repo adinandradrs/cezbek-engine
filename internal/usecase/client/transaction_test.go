@@ -20,20 +20,23 @@ func TestTransaction_Add(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger, _ := apps.NewLog(false)
-	dao, tierProvider, cashbackProvider, cacher := repository.NewMockTransactionPersister(ctrl),
+	dao, tierProvider, cashbackProvider, cacher, sqsAdapter := repository.NewMockTransactionPersister(ctrl),
 		workflow.NewMockTierProvider(ctrl), workflow.NewMockCashbackProvider(ctrl),
-		storage.NewMockCacher(ctrl)
+		storage.NewMockCacher(ctrl), adaptor.NewMockSQSAdapter(ctrl)
 	josvoAdapter := adaptor.NewMockJosvoAdapter(ctrl)
 	gopaidAdapter := adaptor.NewMockGopaidAdapter(ctrl)
 	linksajaAdapter := adaptor.NewMockLinksajaAdapter(ctrl)
 	mtransAdapter := adaptor.NewMockMiddletransAdapter(ctrl)
 	xenitAdapter := adaptor.NewMockXenitAdapter(ctrl)
+	queueNotificationEmailInvoice := "mock-queue"
 	svc := NewTransaction(Transaction{
-		Logger:           logger,
-		Cacher:           cacher,
-		TierProvider:     tierProvider,
-		CashbackProvider: cashbackProvider,
-		Dao:              dao,
+		Logger:                        logger,
+		Cacher:                        cacher,
+		TierProvider:                  tierProvider,
+		CashbackProvider:              cashbackProvider,
+		SqsAdapter:                    sqsAdapter,
+		QueueNotificationEmailInvoice: &queueNotificationEmailInvoice,
+		Dao:                           dao,
 		Factory: h2h.Factory{
 			Cacher: cacher,
 			Josvo: h2h.Josvo{
@@ -85,6 +88,9 @@ func TestTransaction_Add(t *testing.T) {
 		cacher.EXPECT().Get("H2H:LINKSAJA", "TOKEN").Return("something-abc", nil)
 		cacher.EXPECT().Hget("WALLET_CODE", inp.MerchantCode).Return("WCODE_A", nil)
 		cacher.EXPECT().Hget("PROVIDER_FEE", gomock.Any()).Return(string(b), nil)
+		cacher.EXPECT().Hget("EMAIL_SUBJECT", "INVOICE").Return("A subject", nil)
+		cacher.EXPECT().Hget("EMAIL_TEMPLATE", "INVOICE").Return("The content", nil)
+		sqsAdapter.EXPECT().SendMessage(gomock.Any(), gomock.Any()).Return(nil)
 		tid := int64(1)
 		dao.EXPECT().Add(gomock.Any()).Return(&tid, nil)
 		v, ex := svc.Add(&inp)

@@ -41,7 +41,6 @@ func (h2h *H2H) Providers() ([]model.H2HProvider, *model.TechnicalError) {
 }
 
 func (h2h *H2H) Pricelists() ([]model.H2HPricingsProjection, *model.TechnicalError) {
-	//TODO implement me
 	var pricings []model.H2HPricingsProjection
 	cmd := `select wallet_code, array_to_json(array_agg(DISTINCT jsonb_build_object(
 		'wallet_code', wallet_code,

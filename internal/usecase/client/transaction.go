@@ -2,6 +2,8 @@ package client
 
 import (
 	"database/sql"
+	"encoding/json"
+	"github.com/adinandradrs/cezbek-engine/internal/adaptor"
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
 	"github.com/adinandradrs/cezbek-engine/internal/repository"
@@ -10,6 +12,8 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/workflow"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
+	"strconv"
+	"strings"
 )
 
 type Transaction struct {
@@ -17,8 +21,10 @@ type Transaction struct {
 	workflow.TierProvider
 	workflow.CashbackProvider
 	h2h.Factory
-	Cacher storage.Cacher
-	Logger *zap.Logger
+	SqsAdapter                    adaptor.SQSAdapter
+	Cacher                        storage.Cacher
+	QueueNotificationEmailInvoice *string
+	Logger                        *zap.Logger
 }
 
 type TransactionProvider interface {
@@ -87,8 +93,10 @@ func (t *Transaction) processCashback(data *model.Transaction, inp *model.Transa
 		Qty:    inp.Qty,
 	})
 	t.Logger.Info("", zap.Any("treward", treward), zap.Any("camt", camt))
-	v, bx := t.Factory.SendCashback(t.sendCashbackRequest(treward,
-		camt, *data))
+	pyld := t.sendCashbackRequest(treward,
+		camt, *data)
+	v, bx := t.Factory.SendCashback(pyld)
+	_ = t.queueEmailInvoice(data, *pyld)
 	if bx != nil {
 		return bx
 	}
@@ -113,4 +121,38 @@ func (t *Transaction) sendCashbackRequest(reward *model.WfRewardTierProjection, 
 		WalletCode:  d.WalletCode.String,
 		Destination: d.Msisdn.String,
 	}
+}
+
+func (t *Transaction) queueEmailInvoice(tx *model.Transaction, csb model.H2HSendCashbackRequest) *model.BusinessError {
+	sbj, _ := t.Cacher.Hget("EMAIL_SUBJECT", "INVOICE")
+	tmpl, _ := t.Cacher.Hget("EMAIL_TEMPLATE", "INVOICE")
+	tmpl = strings.ReplaceAll(tmpl, "${reference}", tx.KezbekRefCode.String)
+	tmpl = strings.ReplaceAll(tmpl, "${msisdn}", tx.Msisdn.String)
+	tmpl = strings.ReplaceAll(tmpl, "${email}", tx.Email.String)
+	tmpl = strings.ReplaceAll(tmpl, "${walletCode}", tx.WalletCode.String)
+	tmpl = strings.ReplaceAll(tmpl, "${partner}", tx.Partner.String)
+	tmpl = strings.ReplaceAll(tmpl, "${qty}", strconv.Itoa(tx.Qty))
+	tmpl = strings.ReplaceAll(tmpl, "${transactionAmount}", tx.Amount.String())
+	tmpl = strings.ReplaceAll(tmpl, "${cashbackAmount}", csb.Amount.String())
+	tmpl = strings.ReplaceAll(tmpl, "\n", "")
+	tmpl = strings.ReplaceAll(tmpl, "\t", "")
+	msg, err := json.Marshal(model.SendEmailRequest{
+		Content:     tmpl,
+		Subject:     sbj,
+		Destination: tx.Email.String,
+	})
+	if err != nil {
+		return &model.BusinessError{
+			ErrorCode:    apps.ErrCodeSomethingWrong,
+			ErrorMessage: apps.ErrMsgSomethingWrong,
+		}
+	}
+	err = t.SqsAdapter.SendMessage(*t.QueueNotificationEmailInvoice, string(msg))
+	if err != nil {
+		return &model.BusinessError{
+			ErrorCode:    apps.ErrCodeSomethingWrong,
+			ErrorMessage: apps.ErrMsgSomethingWrong,
+		}
+	}
+	return nil
 }

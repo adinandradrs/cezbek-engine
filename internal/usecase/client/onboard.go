@@ -27,36 +27,6 @@ func NewOnboard(o Onboard) OnboardProvider {
 	return &o
 }
 
-func (o *Onboard) authenticate(p model.Partner) (*model.CiamAuthenticationResponse, *model.BusinessError) {
-	secret, bx := o.decryptedSecret(p.Secret, p.Salt.String)
-	if bx != nil {
-		return nil, bx
-	}
-
-	auth, ex := o.CiamWatcher.Authenticate(model.CiamAuthenticationRequest{
-		Username: p.Code.String,
-		Secret:   *secret,
-	})
-	if ex != nil {
-		return nil, &model.BusinessError{
-			ErrorCode:    apps.ErrCodeUnauthorized,
-			ErrorMessage: apps.ErrMsgUnauthorized,
-		}
-	}
-	return auth, nil
-}
-
-func (o *Onboard) decryptedSecret(secret []byte, salt string) (*string, *model.BusinessError) {
-	d, ex := apps.Decrypt(secret, salt, o.Logger)
-	if ex != nil {
-		return nil, &model.BusinessError{
-			ErrorCode:    apps.ErrCodeUnauthorized,
-			ErrorMessage: apps.ErrMsgUnauthorized,
-		}
-	}
-	return &d, nil
-}
-
 func (o *Onboard) Authenticate(inp *model.ClientAuthenticationRequest) (*model.ClientAuthenticationResponse, *model.BusinessError) {
 	p, ex := o.Dao.FindActiveByCodeAndApiKey(inp.Code, inp.ApiKey)
 	if ex != nil {
@@ -66,9 +36,23 @@ func (o *Onboard) Authenticate(inp *model.ClientAuthenticationRequest) (*model.C
 		}
 	}
 
-	auth, bx := o.authenticate(*p)
-	if bx != nil {
-		return nil, bx
+	d, ex := apps.Decrypt(p.Secret, p.Salt.String, o.Logger)
+	if ex != nil {
+		return nil, &model.BusinessError{
+			ErrorCode:    apps.ErrCodeUnauthorized,
+			ErrorMessage: apps.ErrMsgUnauthorized,
+		}
+	}
+
+	auth, ex := o.CiamWatcher.Authenticate(model.CiamAuthenticationRequest{
+		Username: p.Code.String,
+		Secret:   d,
+	})
+	if ex != nil {
+		return nil, &model.BusinessError{
+			ErrorCode:    apps.ErrCodeUnauthorized,
+			ErrorMessage: apps.ErrMsgUnauthorized,
+		}
 	}
 
 	resp := model.ClientAuthenticationResponse{

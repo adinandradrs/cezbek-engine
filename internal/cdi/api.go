@@ -27,6 +27,7 @@ func (c *Container) RegisterAPIUsecase(infra Infra, cacher storage.Cacher) APIUs
 	path := c.Viper.GetString("aws.s3.path")
 	otpTtl := c.Viper.GetDuration("ttl.otp")
 	qNotificationEmailOtp := c.Viper.GetString("aws.sqs.topic.notification_email_otp")
+	qNotificationEmailInvoice := c.Viper.GetString("aws.sqs.topic.notification_email_invoice")
 	tierProvider := workflow.NewTier(workflow.Tier{
 		Dao:            dao.TierPersister,
 		Logger:         c.Logger,
@@ -95,12 +96,14 @@ func (c *Container) RegisterAPIUsecase(infra Infra, cacher storage.Cacher) APIUs
 			Cacher: cacher,
 		}),
 		ClientTransactionProvider: client.NewTransaction(client.Transaction{
-			Dao:              dao.TransactionPersister,
-			CashbackProvider: cashbackProvider,
-			TierProvider:     tierProvider,
-			Factory:          h2hFactory,
-			Logger:           c.Logger,
-			Cacher:           cacher,
+			Dao:                           dao.TransactionPersister,
+			CashbackProvider:              cashbackProvider,
+			QueueNotificationEmailInvoice: &qNotificationEmailInvoice,
+			TierProvider:                  tierProvider,
+			SqsAdapter:                    infra.SQSAdapter,
+			Factory:                       h2hFactory,
+			Logger:                        c.Logger,
+			Cacher:                        cacher,
 		}),
 	}
 }

@@ -129,11 +129,10 @@ func (r *singleRedis) Set(k string, p string, v interface{}, d time.Duration) *m
 		if err != nil {
 			return apps.Exception("failed on setnx ops", err, zap.String("keypair", k+":"+p), r.logger)
 		}
-	} else {
-		_, err := r.cache.Set(k+":"+p, v, 0).Result()
-		if err != nil {
-			return apps.Exception("failed on set ops", err, zap.String("keypair", k+":"+p), r.logger)
-		}
+	}
+	_, err := r.cache.Set(k+":"+p, v, 0).Result()
+	if err != nil {
+		return apps.Exception("failed on set ops", err, zap.String("keypair", k+":"+p), r.logger)
 	}
 	return nil
 }
