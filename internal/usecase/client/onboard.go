@@ -91,5 +91,6 @@ func (o *Onboard) Authenticate(inp *model.ClientAuthenticationRequest) (*model.C
 	}
 	o.Cacher.Set("CLIENTSESSION", p.Code.String, cache, o.AuthTTL)
 	resp.Id = nil
+	resp.AccessToken = ""
 	return &resp, nil
 }

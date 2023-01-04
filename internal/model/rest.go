@@ -34,9 +34,9 @@ type (
 	}
 
 	SessionResponse struct {
-		Token        string `json:"token"`
-		RefreshToken string `json:"refresh_token"`
-		AccessToken  string `json:"access_token"`
+		Token        string `json:"token,omitempty"`
+		RefreshToken string `json:"refresh_token,omitempty"`
+		AccessToken  string `json:"access_token,omitempty"`
 		Expired      *int64 `json:"expired,omitempty"`
 	}
 )
