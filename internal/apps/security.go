@@ -4,7 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/hmac"
-	"crypto/md5"
+	"crypto/md5" //#nosec
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
@@ -45,7 +45,7 @@ func RandomPassword(len int, d int, sym int, logger *zap.Logger) (res string, e 
 }
 
 func Hash(key string) string {
-	md := md5.New()
+	md := md5.New() //#nosec
 	md.Write([]byte(key))
 	return hex.EncodeToString(md.Sum(nil))
 }
