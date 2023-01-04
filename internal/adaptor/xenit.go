@@ -37,7 +37,7 @@ func (x *Xenit) WalletTopup(inp *model.XenitWalletTopupRequest) (*model.XenitWal
 		return nil, apps.Exception("failed to create xenit top-up wallet request", err, zap.Error(err), x.Logger)
 	}
 	req.Header.Add(fiber.HeaderAccept, fiber.MIMEApplicationJSON)
-	req.Header.Add(apps.HeaderApiKey, "Basic "+x.BasicAuthorization)
+	req.Header.Add(fiber.HeaderAuthorization, "Basic "+x.BasicAuthorization)
 	resp, err := x.Client().Do(req)
 	if err != nil {
 		return nil, apps.Exception("failed to wallet top-up using xenit", err, zap.Error(err), x.Logger)
@@ -48,9 +48,6 @@ func (x *Xenit) WalletTopup(inp *model.XenitWalletTopupRequest) (*model.XenitWal
 			x.Logger.Error("failed to close the body stream on xenit adapter", zap.Error(err))
 		}
 	}(resp.Body)
-	if resp.StatusCode != fiber.StatusOK {
-		return nil, apps.Exception("bad response on xenit", err, zap.Any("", resp.Body), x.Logger)
-	}
 	var m model.XenitWalletTopupResponse
 	_ = json.NewDecoder(resp.Body).Decode(&m)
 	if err != nil {

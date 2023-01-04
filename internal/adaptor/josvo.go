@@ -48,9 +48,6 @@ func (j *Josvo) AccountTransfer(inp *model.JosvoAccountTransferRequest) (*model.
 			j.Logger.Error("failed to close the body stream on josvo adapter", zap.Error(err))
 		}
 	}(resp.Body)
-	if resp.StatusCode != fiber.StatusOK {
-		return nil, apps.Exception("bad response on josvo", err, zap.Any("", resp.Body), j.Logger)
-	}
 	var m model.JosvoAccountTransferResponse
 	_ = json.NewDecoder(resp.Body).Decode(&m)
 	if err != nil {

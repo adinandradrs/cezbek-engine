@@ -62,6 +62,7 @@ func (p *Partner) CountByIdentifier(data model.Partner) (*int, *model.TechnicalE
 			zap.Strings("criteria", []string{data.Code.String, data.Email.String,
 				data.Msisdn.String}), p.Logger)
 	}
+	defer rows.Close()
 
 	err = pgxscan.ScanOne(&total, rows)
 	if err != nil {
@@ -75,14 +76,15 @@ func (p *Partner) CountByIdentifier(data model.Partner) (*int, *model.TechnicalE
 
 func (p *Partner) FindActiveByCodeAndApiKey(code string, key string) (*model.Partner, *model.TechnicalError) {
 	d := model.Partner{}
-	query, err := p.Pool.Query(context.Background(), ` select id, partner, code, api_key, salt, secret,
+	rows, err := p.Pool.Query(context.Background(), ` select id, partner, code, api_key, salt, secret,
 			email, msisdn from partners where code = $1 and api_key = $2 
 			and status = $3 and is_deleted = false `, code, key, apps.StatusActive)
 	if err != nil {
 		return nil, apps.Exception("failed to find active by code and api key", err, zap.Strings("", []string{code, key}), p.Logger)
 	}
+	defer rows.Close()
 
-	err = pgxscan.ScanOne(&d, query)
+	err = pgxscan.ScanOne(&d, rows)
 	if err != nil {
 		return nil, apps.Exception("failed to map active by code and api key", err, zap.Strings("", []string{code, key}), p.Logger)
 	}
@@ -92,15 +94,16 @@ func (p *Partner) FindActiveByCodeAndApiKey(code string, key string) (*model.Par
 
 func (p *Partner) FindActiveByEmail(email string) (*model.Partner, *model.TechnicalError) {
 	d := model.Partner{}
-	query, err := p.Pool.Query(context.Background(), ` select id, partner, code, 
+	rows, err := p.Pool.Query(context.Background(), ` select id, partner, code, 
 			api_key, salt, secret, email, msisdn, logo, 
 			address from partners where email = $1 and status = $2 
 			and is_deleted = false `, email, apps.StatusActive)
 	if err != nil {
 		return nil, apps.Exception("failed to find active by email", err, zap.String("", email), p.Logger)
 	}
+	defer rows.Close()
 
-	err = pgxscan.ScanOne(&d, query)
+	err = pgxscan.ScanOne(&d, rows)
 	if err != nil {
 		return nil, apps.Exception("failed to map active by email", err, zap.String("", email), p.Logger)
 	}

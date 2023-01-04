@@ -35,11 +35,12 @@ func (m *MockTransactionPersister) EXPECT() *MockTransactionPersisterMockRecorde
 }
 
 // Add mocks base method.
-func (m *MockTransactionPersister) Add(trx model.Transaction) *model.TechnicalError {
+func (m *MockTransactionPersister) Add(trx model.Transaction) (*int64, *model.TechnicalError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Add", trx)
-	ret0, _ := ret[0].(*model.TechnicalError)
-	return ret0
+	ret0, _ := ret[0].(*int64)
+	ret1, _ := ret[1].(*model.TechnicalError)
+	return ret0, ret1
 }
 
 // Add indicates an expected call of Add.

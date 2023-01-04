@@ -6,11 +6,17 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/model"
 	"github.com/adinandradrs/cezbek-engine/internal/repository"
 	"github.com/adinandradrs/cezbek-engine/internal/storage"
+	"github.com/adinandradrs/cezbek-engine/internal/usecase/h2h"
+	"github.com/adinandradrs/cezbek-engine/internal/usecase/workflow"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
 type Transaction struct {
-	Dao    repository.TransactionPersister
+	Dao repository.TransactionPersister
+	workflow.TierProvider
+	workflow.CashbackProvider
+	h2h.Factory
 	Cacher storage.Cacher
 	Logger *zap.Logger
 }
@@ -47,7 +53,7 @@ func (t *Transaction) Add(inp *model.TransactionRequest) (*model.TransactionResp
 			CreatedBy: sql.NullInt64{Int64: inp.SessionRequest.Id},
 		},
 	}
-	ex = t.Dao.Add(data)
+	id, ex := t.Dao.Add(data)
 	if ex != nil {
 		t.Logger.Error("failed to add transaction - data access", zap.Any("tx", inp))
 		return nil, &model.BusinessError{
@@ -55,5 +61,56 @@ func (t *Transaction) Add(inp *model.TransactionRequest) (*model.TransactionResp
 			ErrorMessage: apps.ErrMsgBussClientAddTransaction,
 		}
 	}
+	bx := t.processCashback(&data, inp, id)
+	if bx != nil {
+		return nil, bx
+	}
 	return &trx, nil
+}
+
+func (t *Transaction) processCashback(data *model.Transaction, inp *model.TransactionRequest, id *int64) *model.BusinessError {
+	treward, ex := t.TierProvider.Save(&model.TierRequest{
+		PartnerId:     data.PartnerId,
+		Email:         data.Email.String,
+		Msisdn:        data.Msisdn.String,
+		TransactionId: *id,
+	})
+	if ex != nil {
+		t.Logger.Error("failed to save tier", zap.Any("tx", inp))
+		return &model.BusinessError{
+			ErrorCode:    apps.ErrCodeBussRewardFailed,
+			ErrorMessage: apps.ErrMsgBussRewardFailed,
+		}
+	}
+	camt, _ := t.CashbackProvider.FindCashbackAmount(&model.FindCashbackRequest{
+		Amount: inp.Amount,
+		Qty:    inp.Qty,
+	})
+	t.Logger.Info("", zap.Any("treward", treward), zap.Any("camt", camt))
+	v, bx := t.Factory.SendCashback(t.sendCashbackRequest(treward,
+		camt, *data))
+	if bx != nil {
+		return bx
+	}
+	t.Logger.Info("", zap.Any("cashback_resp", v))
+	return nil
+}
+
+func (t *Transaction) sendCashbackRequest(reward *model.WfRewardTierProjection, cashback *model.FindCashbackResponse, d model.Transaction) *model.H2HSendCashbackRequest {
+	subTotal := decimal.Zero
+	if reward != nil {
+		subTotal = subTotal.Add(reward.Reward)
+	}
+	if cashback != nil {
+		subTotal = subTotal.Add(cashback.Amount)
+	}
+	return &model.H2HSendCashbackRequest{
+		Amount: subTotal,
+		Notes: "MSISDN : " + d.Msisdn.String +
+			" PARTNER : " + d.Partner.String +
+			" REF_CODE : " + d.PartnerRefCode.String,
+		KezbekRefNo: d.KezbekRefCode.String,
+		WalletCode:  d.WalletCode.String,
+		Destination: d.Msisdn.String,
+	}
 }

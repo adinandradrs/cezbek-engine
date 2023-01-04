@@ -3,6 +3,7 @@ package h2h
 import (
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
+	"strconv"
 )
 
 func NewGopaid(gopaid Gopaid) FactoryProvider {
@@ -20,8 +21,9 @@ func (g *Gopaid) SendCashback(inp *model.H2HSendCashbackRequest) (*model.Transac
 			ErrorMessage: apps.ErrMsgBussH2HCashbackFailed,
 		}
 	}
+	ts, _ := strconv.ParseInt(v.Timestamp, 10, 64)
 	return &model.TransactionResponse{
 		TransactionId:        v.RefCode,
-		TransactionTimestamp: v.Timestamp,
+		TransactionTimestamp: ts,
 	}, nil
 }

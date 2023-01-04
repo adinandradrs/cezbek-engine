@@ -29,6 +29,8 @@ func (p *Parameter) FindByParamGroup(g string) ([]*model.Parameter, *model.Techn
 	if err != nil {
 		return nil, apps.Exception("failed to find by param group", err, zap.String("group", g), p.Logger)
 	}
+	defer rows.Close()
+
 	err = pgxscan.ScanAll(&params, rows)
 	if err != nil {
 		return nil, apps.Exception("failed to map find by param group", err, zap.String("group", g), p.Logger)

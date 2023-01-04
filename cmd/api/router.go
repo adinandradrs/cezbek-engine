@@ -35,6 +35,7 @@ func main() {
 	//app event(s)
 	onStartupLoadParameterCache(ucase.ParamManager, c.Logger)
 	onStartupLoadH2HCache(ucase.H2HManager, c.Logger)
+	onStartupLoadWorkflowCache(ucase.WorkflowManager, c.Logger)
 
 	//app starting
 	api := fiber.New()
@@ -75,6 +76,15 @@ func main() {
 	})
 
 	_ = api.Listen(env.HttpPort)
+}
+
+func onStartupLoadWorkflowCache(h management.WorkflowManager, logger *zap.Logger) {
+	go func() {
+		ex := h.CacheRewardTiers()
+		if ex != nil {
+			logger.Panic("failed to load reward tiers")
+		}
+	}()
 }
 
 func onStartupLoadH2HCache(h management.H2HManager, logger *zap.Logger) {

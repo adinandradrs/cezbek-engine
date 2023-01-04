@@ -3,6 +3,7 @@ package h2h
 import (
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
+	"strconv"
 )
 
 func NewXenit(xenit Xenit) FactoryProvider {
@@ -23,8 +24,9 @@ func (x *Xenit) SendCashback(inp *model.H2HSendCashbackRequest) (*model.Transact
 			ErrorMessage: apps.ErrMsgBussH2HCashbackFailed,
 		}
 	}
+	ts, _ := strconv.ParseInt(v.TopupTime, 10, 64)
 	return &model.TransactionResponse{
 		TransactionId:        v.TopupRef,
-		TransactionTimestamp: v.TopupTime,
+		TransactionTimestamp: ts,
 	}, nil
 }

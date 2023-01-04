@@ -6,6 +6,7 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/model"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/client"
 	"github.com/gofiber/fiber/v2"
+	"github.com/shopspring/decimal"
 )
 
 type Cashback struct {
@@ -50,6 +51,13 @@ func (c *Cashback) add(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(err)
 	}
 	bad := apps.ValidateStruct(checker.Struct(inp))
+	if inp.Amount.Cmp(decimal.Zero) <= 0 {
+		return ctx.Status(fiber.StatusBadRequest).
+			JSON(apps.BusinessErrorResponse(&model.BusinessError{
+				ErrorCode:    apps.ErrCodeBadPayload,
+				ErrorMessage: apps.ErrMsgBadPayload,
+			}))
+	}
 	inp.SessionRequest = middleware.ClientSession(ctx)
 	if bad != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bad)

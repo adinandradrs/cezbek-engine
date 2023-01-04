@@ -32,6 +32,8 @@ const ErrCodeBussClientAddTransaction = "BR-04"
 const ErrMsgBussClientAddTransaction = "Failed to add transaction based on client request"
 const ErrCodeBussH2HCashbackFailed = "BR-05"
 const ErrMsgBussH2HCashbackFailed = "Failed to contact H2H Provider"
+const ErrCodeBussRewardFailed = "BR-06"
+const ErrMsgBussRewardFailed = "Failed to add reward"
 
 const HeaderClientTrxId = "x-client-trxid"
 const HeaderClientChannel = "x-client-channel"

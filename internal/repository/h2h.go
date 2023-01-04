@@ -27,9 +27,12 @@ func (h2h *H2H) Providers() ([]model.H2HProvider, *model.TechnicalError) {
 	var providers []model.H2HProvider
 	rows, err := h2h.Pool.Query(context.Background(),
 		"SELECT id, code, provider from h2h_providers where status = $1 and is_deleted = false", apps.StatusActive)
+
 	if err != nil {
 		return nil, apps.Exception("failed to fetch providers", err, zap.Error(err), h2h.Logger)
 	}
+	defer rows.Close()
+
 	err = pgxscan.ScanAll(&providers, rows)
 	if err != nil {
 		return nil, apps.Exception("failed to map fetch providers", err, zap.Error(err), h2h.Logger)
@@ -59,6 +62,8 @@ func (h2h *H2H) Pricelists() ([]model.H2HPricingsProjection, *model.TechnicalErr
 	if err != nil {
 		return nil, apps.Exception("failed to fetch price lists", err, zap.Error(err), h2h.Logger)
 	}
+	defer rows.Close()
+
 	err = pgxscan.ScanAll(&pricings, rows)
 	if err != nil {
 		return nil, apps.Exception("failed to map price lists", err, zap.Error(err), h2h.Logger)

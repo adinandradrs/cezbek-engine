@@ -79,6 +79,5 @@ func (f Factory) SendCashback(inp *model.H2HSendCashbackRequest) (*model.Transac
 			ErrorMessage: apps.ErrMsgBadPayload,
 		}
 	}
-	factory = NewJosvo(Josvo{})
 	return factory.SendCashback(inp)
 }

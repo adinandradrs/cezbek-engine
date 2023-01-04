@@ -50,6 +50,9 @@ type (
 		repository.ParamPersister
 		repository.H2HPersister
 		repository.TransactionPersister
+		repository.WorkflowPersister
+		repository.CashbackPersister
+		repository.TierPersister
 	}
 )
 
@@ -103,6 +106,9 @@ func (c *Container) registerRepository() Dao {
 		ParamPersister:       repository.NewParameter(repository.Parameter{Logger: c.Logger, Pool: p.Pool}),
 		H2HPersister:         repository.NewH2H(repository.H2H{Logger: c.Logger, Pool: p.Pool}),
 		TransactionPersister: repository.NewTransaction(repository.Transaction{Logger: c.Logger, Pool: p.Pool}),
+		WorkflowPersister:    repository.NewWorkflow(repository.Workflow{Logger: c.Logger, Pool: p.Pool}),
+		CashbackPersister:    repository.NewCashback(repository.Cashback{Logger: c.Logger, Pool: p.Pool}),
+		TierPersister:        repository.NewTier(repository.Tier{Logger: c.Logger, Pool: p.Pool}),
 	}
 }
 

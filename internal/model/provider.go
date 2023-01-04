@@ -48,7 +48,7 @@ type (
 
 	GopaidTopupResponse struct {
 		RefCode   string `json:"ref_code"`
-		Timestamp int64  `json:"timestamp"`
+		Timestamp string `json:"timestamp"`
 	}
 
 	MiddletransWalletTransferResponse struct {
@@ -60,7 +60,7 @@ type (
 
 	XenitWalletTopupResponse struct {
 		TopupRef     string `json:"topup_ref"`
-		TopupTime    int64  `json:"topup_time"`
+		TopupTime    string `json:"topup_time"`
 		TopupStatus  string `json:"topup_status"`
 		TopupMessage string `json:"topup_message"`
 	}
