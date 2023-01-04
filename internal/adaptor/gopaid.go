@@ -38,7 +38,7 @@ func (g *Gopaid) Topup(inp *model.GopaidTopUpRequest) (*model.GopaidTopupRespons
 	}
 	req.Header.Add(fiber.HeaderAccept, fiber.MIMEApplicationJSON)
 	req.Header.Add(apps.HeaderApiKey, g.ApiKey)
-	resp, err := g.Rest.Client().Do(req)
+	resp, err := g.Client().Do(req)
 	if err != nil {
 		return nil, apps.Exception("failed to top up wallet using gopaid", err, zap.Error(err), g.Logger)
 	}

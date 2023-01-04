@@ -42,7 +42,7 @@ func (l *Linksaja) Authorization() (*model.LinksajaAuthorizationResponse, *model
 		return nil, apps.Exception("failed to create linksaja auth request", err, zap.Error(err), l.Logger)
 	}
 	req.Header.Add(fiber.HeaderAccept, fiber.MIMEApplicationJSON)
-	resp, err := l.Rest.Client().Do(req)
+	resp, err := l.Client().Do(req)
 	if err != nil {
 		return nil, apps.Exception("failed to auth linksaja", err, zap.Error(err), l.Logger)
 	}

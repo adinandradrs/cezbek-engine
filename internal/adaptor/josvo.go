@@ -38,7 +38,7 @@ func (j *Josvo) AccountTransfer(inp *model.JosvoAccountTransferRequest) (*model.
 	}
 	req.Header.Add(fiber.HeaderAccept, fiber.MIMEApplicationJSON)
 	req.Header.Add(apps.HeaderApiKey, j.ApiKey)
-	resp, err := j.Rest.Client().Do(req)
+	resp, err := j.Client().Do(req)
 	if err != nil {
 		return nil, apps.Exception("failed to fund transfer using josvo", err, zap.Error(err), j.Logger)
 	}
