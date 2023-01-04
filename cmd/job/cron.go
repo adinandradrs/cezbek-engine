@@ -9,7 +9,8 @@ import (
 func main() {
 	c := cdi.NewContainer("app_cezbek_job")
 	infra := c.LoadInfra()
-	ucase := c.RegisterJobUsecase(infra)
+	redis := c.LoadRedis()
+	ucase := c.RegisterJobUsecase(infra, redis)
 	job := gocron.NewScheduler(time.UTC)
 	c.Logger.Info("cezbek cron job is running on background...")
 	_, err := job.Every(c.Viper.GetString("schedule.send_otp_email")).Do(func() {

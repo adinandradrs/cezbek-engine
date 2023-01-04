@@ -4,7 +4,6 @@ const DefaultTrxId = "11111"
 const StatusActive = 1
 const StatusInactive = 0
 const SuccessCode = "8000"
-const SuccessMsgOk = "OK"
 const SuccessMsgSubmit = "Data submitted successfully"
 const SuccessMsgDataFound = "Here is your data"
 
@@ -31,6 +30,8 @@ const ErrCodeBussMerchantCodeInvalid = "BR-04"
 const ErrMsgBussMerchantCodeInvalid = "Merchant code is invalid"
 const ErrCodeBussClientAddTransaction = "BR-04"
 const ErrMsgBussClientAddTransaction = "Failed to add transaction based on client request"
+const ErrCodeBussH2HCashbackFailed = "BR-05"
+const ErrMsgBussH2HCashbackFailed = "Failed to contact H2H Provider"
 
 const HeaderClientTrxId = "x-client-trxid"
 const HeaderClientChannel = "x-client-channel"
@@ -52,3 +53,8 @@ const HeaderApiKey = "x-api-key"
 
 const ChannelB2BClient = "B2BCLIENT"
 const ChannelEBizKezbek = "EBIZKEZBEK"
+const H2HJosvo = "JOSVOH2H"
+const H2HGpaid = "GOPAIDH2H"
+const H2HLinksaja = "LSAJAH2H"
+const H2HMidtrans = "MTRANS"
+const H2HXenit = "XENIT"

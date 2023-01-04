@@ -3,6 +3,7 @@ package cdi
 import (
 	"github.com/adinandradrs/cezbek-engine/internal/storage"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/client"
+	"github.com/adinandradrs/cezbek-engine/internal/usecase/h2h"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/management"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/partner"
 )
@@ -14,6 +15,7 @@ type APIUsecase struct {
 	PartnerOnboardProvider    partner.OnboardProvider
 	ClientOnboardProvider     client.OnboardProvider
 	ClientTransactionProvider client.TransactionProvider
+	H2HFactory                h2h.Factory
 }
 
 func (c *Container) RegisterAPIUsecase(infra Infra, cacher storage.Cacher) APIUsecase {
@@ -62,6 +64,18 @@ func (c *Container) RegisterAPIUsecase(infra Infra, cacher storage.Cacher) APIUs
 			Dao:    dao.TransactionPersister,
 			Logger: c.Logger,
 			Cacher: cacher,
+		}),
+		H2HFactory: h2h.NewFactory(h2h.Factory{
+			Cacher: cacher,
+			Gopaid: h2h.Gopaid{GopaidAdapter: infra.GopaidAdapter},
+			Josvo:  h2h.Josvo{JosvoAdapter: infra.JosvoAdapter},
+			Linksaja: h2h.Linksaja{
+				TokenTTL:        c.Viper.GetDuration("ttl.lsaja"),
+				Cacher:          cacher,
+				LinksajaAdapter: infra.LinksajaAdapter,
+			},
+			Xenit:       h2h.Xenit{XenitAdapter: infra.XenitAdapter},
+			Middletrans: h2h.Middletrans{MiddletransAdapter: infra.MiddletransAdapter},
 		}),
 	}
 }

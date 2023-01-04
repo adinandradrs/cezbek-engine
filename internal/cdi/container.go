@@ -38,6 +38,11 @@ type (
 		adaptor.SQSAdapter
 		adaptor.SESAdapter
 		CiamPartner adaptor.CiamWatcher
+		adaptor.XenitAdapter
+		adaptor.GopaidAdapter
+		adaptor.MiddletransAdapter
+		adaptor.LinksajaAdapter
+		adaptor.JosvoAdapter
 	}
 
 	Dao struct {
@@ -110,6 +115,7 @@ func (c *Container) LoadInfra() Infra {
 		Region:      aws.String(c.Viper.GetString("aws.region.jkt")),
 		Credentials: credentials.NewStaticCredentials(kid, skey, ""),
 	})
+
 	return Infra{
 		S3Watcher: adaptor.NewS3(adaptor.S3Bucket{
 			Bucket:   c.Viper.GetString("aws.s3.bucket"),
@@ -132,6 +138,57 @@ func (c *Container) LoadInfra() Infra {
 			Region:   c.Viper.GetString("aws.ciam.region"),
 			JWK:      jwk,
 			Logger:   c.Logger,
+		}),
+		LinksajaAdapter: adaptor.NewLinksaja(adaptor.Linksaja{
+			Logger:   c.Logger,
+			Password: c.Viper.GetString("h2h.linksaja.password"),
+			Username: c.Viper.GetString("h2h.linksaja.username"),
+			Host:     c.Viper.GetString("h2h.linksaja.host"),
+			Rest: adaptor.Rest{
+				Timeout:           c.Viper.GetDuration("h2h.linksaja.timeout"),
+				BackoffInterval:   c.Viper.GetDuration("h2h.linksaja.backoff"),
+				MaxJitterInterval: c.Viper.GetDuration("h2h.linksaja.jitter"),
+			},
+		}),
+		JosvoAdapter: adaptor.NewJosvo(adaptor.Josvo{
+			Logger: c.Logger,
+			Host:   c.Viper.GetString("h2h.josvo.host"),
+			ApiKey: c.Viper.GetString("h2h.josvo.apikey"),
+			Rest: adaptor.Rest{
+				Timeout:           c.Viper.GetDuration("h2h.josvo.timeout"),
+				BackoffInterval:   c.Viper.GetDuration("h2h.josvo.backoff"),
+				MaxJitterInterval: c.Viper.GetDuration("h2h.josvo.jitter"),
+			},
+		}),
+		GopaidAdapter: adaptor.NewGopaid(adaptor.Gopaid{
+			Logger: c.Logger,
+			ApiKey: c.Viper.GetString("h2h.gopaid.apikey"),
+			Host:   c.Viper.GetString("h2h.gopaid.host"),
+			Rest: adaptor.Rest{
+				Timeout:           c.Viper.GetDuration("h2h.gopaid.timeout"),
+				BackoffInterval:   c.Viper.GetDuration("h2h.gopaid.backoff"),
+				MaxJitterInterval: c.Viper.GetDuration("h2h.gopaid.jitter"),
+			},
+		}),
+		MiddletransAdapter: adaptor.NewMiddletrans(adaptor.Middletrans{
+			Logger: c.Logger,
+			Host:   c.Viper.GetString("h2h.mtrans.host"),
+			ApiKey: c.Viper.GetString("h2h.mtrans.apikey"),
+			Rest: adaptor.Rest{
+				Timeout:           c.Viper.GetDuration("h2h.mtrans.timeout"),
+				BackoffInterval:   c.Viper.GetDuration("h2h.mtrans.backoff"),
+				MaxJitterInterval: c.Viper.GetDuration("h2h.mtrans.jitter"),
+			},
+		}),
+		XenitAdapter: adaptor.NewXenit(adaptor.Xenit{
+			Logger:             c.Logger,
+			Host:               c.Viper.GetString("h2h.xenit.host"),
+			BasicAuthorization: c.Viper.GetString("h2h.xenit.auth"),
+			Rest: adaptor.Rest{
+				Timeout:           c.Viper.GetDuration("h2h.xenit.timeout"),
+				BackoffInterval:   c.Viper.GetDuration("h2h.xenit.backoff"),
+				MaxJitterInterval: c.Viper.GetDuration("h2h.xenit.jitter"),
+			},
 		}),
 	}
 }
