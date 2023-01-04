@@ -26,7 +26,7 @@ func NewGopaid(g Gopaid) GopaidAdapter {
 	return &g
 }
 
-func (g Gopaid) Topup(inp *model.GopaidTopUpRequest) (*model.GopaidTopupResponse, *model.TechnicalError) {
+func (g *Gopaid) Topup(inp *model.GopaidTopUpRequest) (*model.GopaidTopupResponse, *model.TechnicalError) {
 	payload := new(bytes.Buffer)
 	err := json.NewEncoder(payload).Encode(*inp)
 	if err != nil {

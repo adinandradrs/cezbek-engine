@@ -26,7 +26,7 @@ func NewJosvo(j Josvo) JosvoAdapter {
 	return &j
 }
 
-func (j Josvo) AccountTransfer(inp *model.JosvoAccountTransferRequest) (*model.JosvoAccountTransferResponse, *model.TechnicalError) {
+func (j *Josvo) AccountTransfer(inp *model.JosvoAccountTransferRequest) (*model.JosvoAccountTransferResponse, *model.TechnicalError) {
 	payload := new(bytes.Buffer)
 	err := json.NewEncoder(payload).Encode(*inp)
 	if err != nil {
