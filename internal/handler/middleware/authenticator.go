@@ -56,6 +56,74 @@ func ClientSession(ctx *fiber.Ctx) model.SessionRequest {
 	}
 }
 
+func (a *JwtAuthenticator) jwtFilter(ctx *fiber.Ctx) error {
+	split := strings.Split(ctx.Get(fiber.HeaderAuthorization), "Bearer ")
+	if len(split) < 2 {
+		return ctx.Status(401).JSON(model.Response{
+			Meta: model.Meta{
+				Code:    apps.ErrCodeUnauthorized,
+				Message: apps.ErrMsgUnauthorized,
+			},
+		})
+	}
+	jwt := split[1]
+
+	res, ex := a.CiamPartner.JwtInfo(jwt)
+	if ex != nil && ex.Exception == "Token is expired" {
+		a.Logger.Error("failed to get expired jwt", zap.Any("", ex))
+		return ctx.Status(401).JSON(model.Response{
+			Meta: model.Meta{
+				Code:    apps.ErrCodeTokenExpired,
+				Message: apps.ErrMsgTokenExpired,
+			},
+		})
+	} else if ex != nil && ex.Exception != "Token is expired" {
+		a.Logger.Error("failed to get result jwt", zap.Any("", ex))
+		return ctx.Status(401).JSON(model.Response{
+			Meta: model.Meta{
+				Code:    apps.ErrCodeUnauthorized,
+				Message: apps.ErrMsgUnauthorized,
+			},
+		})
+	}
+	var v string
+	var uname string
+	if ctx.Get(apps.HeaderClientChannel) != apps.ChannelB2BClient {
+		uname = strings.ToLower(res["email"].(string))
+		v, ex = a.Cacher.Get("B2BSESSION", uname)
+	} else {
+		uname = strings.ToUpper(res["cognito:username"].(string))
+		v, ex = a.Cacher.Get("CLIENTSESSION", uname)
+	}
+
+	if ex != nil {
+		a.Logger.Error("failed to get redis data", zap.Any("", ex))
+		return ctx.Status(fiber.StatusUnauthorized).JSON(model.Response{
+			Meta: model.Meta{
+				Code:    apps.ErrCodeUnauthorized,
+				Message: apps.ErrMsgUnauthorized,
+			},
+		})
+	}
+	a.forwardClientSession(v, ctx)
+	return ctx.Next()
+}
+
+func (a *JwtAuthenticator) PartnerFilter() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		err := validatePartnerChannel(ctx)
+		if err != nil {
+			return ctx.Status(fiber.StatusUnauthorized).JSON(model.Response{
+				Meta: model.Meta{
+					Code:    apps.ErrCodeInvalidChannel,
+					Message: apps.ErrMsgInvalidChannel,
+				},
+			})
+		}
+		return a.jwtFilter(ctx)
+	}
+}
+
 func (a *JwtAuthenticator) ClientFilter() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		err := validateClientChannel(ctx)
@@ -67,54 +135,19 @@ func (a *JwtAuthenticator) ClientFilter() fiber.Handler {
 				},
 			})
 		}
-		split := strings.Split(ctx.Get(fiber.HeaderAuthorization), "Bearer ")
-		if len(split) < 2 {
-			return ctx.Status(401).JSON(model.Response{
-				Meta: model.Meta{
-					Code:    apps.ErrCodeUnauthorized,
-					Message: apps.ErrMsgUnauthorized,
-				},
-			})
-		}
-		jwt := split[1]
-
-		res, ex := a.CiamPartner.JwtInfo(jwt)
-		if ex != nil && ex.Exception == "Token is expired" {
-			a.Logger.Error("failed to get expired jwt", zap.Any("", ex))
-			return ctx.Status(401).JSON(model.Response{
-				Meta: model.Meta{
-					Code:    apps.ErrCodeTokenExpired,
-					Message: apps.ErrMsgTokenExpired,
-				},
-			})
-		} else if ex != nil && ex.Exception != "Token is expired" {
-			a.Logger.Error("failed to get result jwt", zap.Any("", ex))
-			return ctx.Status(401).JSON(model.Response{
-				Meta: model.Meta{
-					Code:    apps.ErrCodeUnauthorized,
-					Message: apps.ErrMsgUnauthorized,
-				},
-			})
-		}
-
-		uname := strings.ToUpper(res["cognito:username"].(string))
-		v, ex := a.Cacher.Get("CLIENTSESSION", uname)
-		if ex != nil {
-			a.Logger.Error("failed to get redis data", zap.Any("", ex))
-			return ctx.Status(fiber.StatusUnauthorized).JSON(model.Response{
-				Meta: model.Meta{
-					Code:    apps.ErrCodeUnauthorized,
-					Message: apps.ErrMsgUnauthorized,
-				},
-			})
-		}
-		a.forwardClientSession(v, ctx)
-		return ctx.Next()
+		return a.jwtFilter(ctx)
 	}
 }
 
 func validateClientChannel(ctx *fiber.Ctx) (err error) {
 	if ctx.Get(apps.HeaderClientChannel) != apps.ChannelB2BClient {
+		return fmt.Errorf("invalid channel")
+	}
+	return nil
+}
+
+func validatePartnerChannel(ctx *fiber.Ctx) (err error) {
+	if ctx.Get(apps.HeaderClientChannel) != apps.ChannelEBizKezbek {
 		return fmt.Errorf("invalid channel")
 	}
 	return nil

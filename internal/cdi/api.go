@@ -15,10 +15,11 @@ type APIUsecase struct {
 	management.H2HManager
 	management.WorkflowManager
 	workflow.CashbackProvider
-	PartnerOnboardProvider    partner.OnboardProvider
-	ClientOnboardProvider     client.OnboardProvider
-	ClientTransactionProvider client.TransactionProvider
-	H2HFactory                h2h.Factory
+	PartnerOnboardProvider     partner.OnboardProvider
+	PartnerTransactionProvider partner.TransactionProvider
+	ClientOnboardProvider      client.OnboardProvider
+	ClientTransactionProvider  client.TransactionProvider
+	H2HFactory                 h2h.Factory
 }
 
 func (c *Container) RegisterAPIUsecase(infra Infra, cacher storage.Cacher) APIUsecase {
@@ -96,7 +97,9 @@ func (c *Container) RegisterAPIUsecase(infra Infra, cacher storage.Cacher) APIUs
 			Cacher: cacher,
 		}),
 		ClientTransactionProvider: client.NewTransaction(client.Transaction{
-			Dao:                           dao.TransactionPersister,
+			TransactionDao:                dao.TransactionPersister,
+			CashbackDao:                   dao.CashbackPersister,
+			TierDao:                       dao.TierPersister,
 			CashbackProvider:              cashbackProvider,
 			QueueNotificationEmailInvoice: &qNotificationEmailInvoice,
 			TierProvider:                  tierProvider,
@@ -104,6 +107,10 @@ func (c *Container) RegisterAPIUsecase(infra Infra, cacher storage.Cacher) APIUs
 			Factory:                       h2hFactory,
 			Logger:                        c.Logger,
 			Cacher:                        cacher,
+		}),
+		PartnerTransactionProvider: partner.NewTransaction(partner.Transaction{
+			Dao:    dao.TransactionPersister,
+			Logger: c.Logger,
 		}),
 	}
 }

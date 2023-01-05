@@ -15,7 +15,7 @@ func DefaultHandler(router fiber.Router, path string) {
 // Ping godoc
 // @Summary Show the status of server.
 // @Description Ping the status of server, should be respond fastly.
-// @Tags Default
+// @Tags Default APIs
 // @Accept */*
 // @Produce json
 // @Success 200

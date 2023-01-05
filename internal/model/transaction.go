@@ -20,6 +20,30 @@ type (
 		KezbekRefCode  sql.NullString  `json:"kezbek_ref_code" db:"kezbek_ref_code"`
 		BaseEntity
 	}
+
+	PartnerTransactionProjection struct {
+		Id          int64           `json:"id" example:"1"`
+		WalletCode  string          `json:"wallet_code,omitempty" example:"LSAJA"`
+		Email       string          `json:"email,omitempty" example:"john.doe@email.net"`
+		Msisdn      string          `json:"msisdn,omitempty" example:"628118770510"`
+		Qty         int             `json:"qty,omitempty" example:"2"`
+		Transaction decimal.Decimal `json:"transaction,omitempty" example:"250000"`
+		Cashback    decimal.Decimal `json:"cashback,omitempty" example:"2500"`
+		Reward      decimal.Decimal `json:"reward,omitempty" example:"13000"`
+	}
+)
+
+type (
+	PartnerTransactionSearchResponse struct {
+		Transactions []PartnerTransactionProjection `json:"transactions,omitempty"`
+		PaginationResponse
+	}
+
+	TransactionTierResponse struct {
+		Tier        string `json:"tier,omitempty" example:"GOLD"`
+		Recurring   int    `json:"recurring,omitempty" example:"3"`
+		DateExpired string `json:"date_expired,omitempty" example:"2022-01-01"`
+	}
 )
 
 type (

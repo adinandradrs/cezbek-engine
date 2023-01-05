@@ -17,7 +17,9 @@ import (
 )
 
 type Transaction struct {
-	Dao repository.TransactionPersister
+	TransactionDao repository.TransactionPersister
+	CashbackDao    repository.CashbackPersister
+	TierDao        repository.TierPersister
 	workflow.TierProvider
 	workflow.CashbackProvider
 	h2h.Factory
@@ -29,10 +31,26 @@ type Transaction struct {
 
 type TransactionProvider interface {
 	Add(inp *model.TransactionRequest) (*model.TransactionResponse, *model.BusinessError)
+	Tier(inp *model.SessionRequest) (*model.TransactionTierResponse, *model.BusinessError)
 }
 
 func NewTransaction(t Transaction) TransactionProvider {
 	return &t
+}
+
+func (t *Transaction) Tier(inp *model.SessionRequest) (*model.TransactionTierResponse, *model.BusinessError) {
+	v, ex := t.TierDao.FindByPartnerMsisdn(inp.Id, inp.Msisdn)
+	if ex != nil || v == nil {
+		return nil, &model.BusinessError{
+			ErrorCode:    apps.ErrCodeNotFound,
+			ErrorMessage: apps.ErrMsgNotFound,
+		}
+	}
+	return &model.TransactionTierResponse{
+		Tier:        v.CurrentTier.String,
+		Recurring:   v.TransactionRecurring,
+		DateExpired: v.ExpiredDate.Time.Format("2006-01-02"),
+	}, nil
 }
 
 func (t *Transaction) Add(inp *model.TransactionRequest) (*model.TransactionResponse, *model.BusinessError) {
@@ -59,7 +77,7 @@ func (t *Transaction) Add(inp *model.TransactionRequest) (*model.TransactionResp
 			CreatedBy: sql.NullInt64{Int64: inp.SessionRequest.Id},
 		},
 	}
-	id, ex := t.Dao.Add(data)
+	id, ex := t.TransactionDao.Add(data)
 	if ex != nil {
 		t.Logger.Error("failed to add transaction - data access", zap.Any("tx", inp))
 		return nil, &model.BusinessError{
@@ -75,6 +93,7 @@ func (t *Transaction) Add(inp *model.TransactionRequest) (*model.TransactionResp
 }
 
 func (t *Transaction) processCashback(data *model.Transaction, inp *model.TransactionRequest, id *int64) *model.BusinessError {
+	reward := decimal.Zero
 	treward, ex := t.TierProvider.Save(&model.TierRequest{
 		PartnerId:     data.PartnerId,
 		Email:         data.Email.String,
@@ -101,6 +120,17 @@ func (t *Transaction) processCashback(data *model.Transaction, inp *model.Transa
 		return bx
 	}
 	t.Logger.Info("", zap.Any("cashback_resp", v))
+	if treward != nil {
+		reward = treward.Reward
+	}
+	_ = t.CashbackDao.Add(model.Cashback{
+		KezbekRefCode: data.KezbekRefCode,
+		WalletCode:    data.WalletCode,
+		Reward:        decimal.NullDecimal{Decimal: reward},
+		Amount:        decimal.NullDecimal{Decimal: camt.Amount},
+		H2HCode:       sql.NullString{String: "N/A"},
+		BaseEntity:    data.BaseEntity,
+	})
 	return nil
 }
 

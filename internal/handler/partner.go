@@ -39,12 +39,12 @@ func PartnerManagementHandler(router fiber.Router, pm PartnerManagement) {
 // @Param officer formData string true "Partner Officer" default(John Doe)
 // @Param address formData string true "Office Address" default(Bintaro Exchange Mall Blok A1)
 // @Param logo formData file true "Logo"
-// @Success 200
-// @Failure 400
-// @Failure 401
-// @Failure 403
-// @Failure 500
-// @Failure 503
+// @Success 200 {object} model.TransactionResponse
+// @Failure 400 {object} model.Meta
+// @Failure 401 {object} model.Meta
+// @Failure 403 {object} model.Meta
+// @Failure 500 {object} model.Meta
+// @Failure 503 {object} model.Meta
 // @Router /v1/partners [post]
 func (p *PartnerManagement) add(ctx *fiber.Ctx) error {
 	logo, _ := ctx.FormFile("logo")

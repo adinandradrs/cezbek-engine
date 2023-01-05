@@ -30,7 +30,7 @@ func (c *Cashback) Add(cashback model.Cashback) *model.TechnicalError {
 	}
 	defer tx.Rollback(context.Background())
 
-	_, err = tx.Exec(context.Background(), `INSERT INTO transactions 
+	_, err = tx.Exec(context.Background(), `INSERT INTO cashbacks 
 		(kezbek_ref_code, amount, reward, wallet_code,
 		h2h_code, status, is_deleted, created_by, created_date)
 		VALUES ($1, $2, $3, $4, $5, $6, FALSE, $7, NOW())`,

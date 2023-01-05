@@ -4,31 +4,31 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/handler/middleware"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
-	"github.com/adinandradrs/cezbek-engine/internal/usecase/client"
+	"github.com/adinandradrs/cezbek-engine/internal/usecase/partner"
 	"github.com/gofiber/fiber/v2"
-	"github.com/shopspring/decimal"
+	"strconv"
 )
 
-type Cashback struct {
-	client.TransactionProvider
-	ClientFilter fiber.Handler
+type PartnerTransaction struct {
+	partner.TransactionProvider
+	PartnerFilter fiber.Handler
 }
 
-func newCashback(c Cashback) *Cashback {
-	return &c
+func newPartnerTransaction(pt PartnerTransaction) *PartnerTransaction {
+	return &pt
 }
 
-func CashbackHandler(router fiber.Router, c Cashback) {
-	handler := newCashback(c)
-	router.Use(c.ClientFilter)
-	router.Post("/", handler.add)
-	router.Get("/:msisdn", handler.info)
+func PartnerTransactionHandler(router fiber.Router, pt PartnerTransaction) {
+	handler := newPartnerTransaction(pt)
+	router.Use(pt.PartnerFilter)
+	router.Get("/", handler.search)
+	router.Get("/:id", handler.detail)
 }
 
-// @Tags Client Cashback APIs
-// API Apply Cashback
-// @Summary API Apply Cashback
-// @Description API to apply cashback on client's transaction
+// @Tags Transaction Partner APIs
+// API Transaction Search
+// @Summary API Transaction Search
+// @Description API to search transaction by partner
 // @Schemes
 // @Accept json
 // @Param Authorization header string true "Your Token to Access" default(Bearer )
@@ -37,47 +37,32 @@ func CashbackHandler(router fiber.Router, c Cashback) {
 // @Param x-client-device  header string true "Client Device ID"
 // @Param x-client-version  header string true "Client Platform Version" default(1.0.0)
 // @Param x-client-timestamp  header string false "Client Original Timestamp in UNIX format (EPOCH)"
-// @Param request body model.TransactionRequest true "Transaction Payload"
-// @Success 200 {object} model.TransactionResponse
+// @Param Payload query model.SearchRequest true "Search Payload"
+// @Success 200 {object} model.PartnerTransactionSearchResponse
 // @Failure 400 {object} model.Meta
 // @Failure 401 {object} model.Meta
 // @Failure 403 {object} model.Meta
 // @Failure 500 {object} model.Meta
 // @Failure 503 {object} model.Meta
-// @Router /v1/cashbacks [post]
-func (c *Cashback) add(ctx *fiber.Ctx) error {
-	inp := model.TransactionRequest{}
-	if err := ctx.BodyParser(&inp); err != nil {
+// @Router /partner/v1/transactions [get]
+func (pt *PartnerTransaction) search(ctx *fiber.Ctx) error {
+	inp := model.SearchRequest{}
+	if err := ctx.QueryParser(&inp); err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(err)
 	}
-	bad := apps.ValidateStruct(checker.Struct(inp))
-	if inp.Amount.Cmp(decimal.Zero) <= 0 {
-		return ctx.Status(fiber.StatusBadRequest).
-			JSON(apps.BusinessErrorResponse(&model.BusinessError{
-				ErrorCode:    apps.ErrCodeBadPayload,
-				ErrorMessage: apps.ErrMsgBadPayload,
-			}))
-	}
 	inp.SessionRequest = middleware.ClientSession(ctx)
-	if bad != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(bad)
-	}
-	v, ex := c.Add(&inp)
-	if ex != nil && ex.ErrorCode == apps.ErrCodeBussMerchantCodeInvalid {
-		return ctx.Status(fiber.StatusBadRequest).
+	v, ex := pt.Search(&inp)
+	if ex != nil && ex.ErrorCode == apps.ErrCodeNotFound {
+		return ctx.Status(fiber.StatusOK).
 			JSON(apps.BusinessErrorResponse(ex))
 	}
-	if ex != nil && ex.ErrorCode == apps.ErrCodeBussClientAddTransaction {
-		return ctx.Status(fiber.StatusInternalServerError).
-			JSON(apps.BusinessErrorResponse(ex))
-	}
-	return ctx.JSON(apps.DefaultSuccessResponse(apps.SuccessMsgSubmit, v))
+	return ctx.JSON(apps.DefaultSuccessResponse(apps.SuccessMsgDataFound, v))
 }
 
-// @Tags Client Cashback APIs
-// API Tier Information
-// @Summary API Tier Information
-// @Description API to retrieve tier information
+// @Tags Transaction Partner APIs
+// API Transaction Detail
+// @Summary API Transaction Detail
+// @Description API to view detail transaction by partner
 // @Schemes
 // @Accept json
 // @Param Authorization header string true "Your Token to Access" default(Bearer )
@@ -86,18 +71,20 @@ func (c *Cashback) add(ctx *fiber.Ctx) error {
 // @Param x-client-device  header string true "Client Device ID"
 // @Param x-client-version  header string true "Client Platform Version" default(1.0.0)
 // @Param x-client-timestamp  header string false "Client Original Timestamp in UNIX format (EPOCH)"
-// @Param msisdn path string true "Customer MSISDN"
-// @Success 200 {object} model.TransactionTierResponse
+// @Param id path int true "Transaction ID"
+// @Success 200 {object} model.PartnerTransactionProjection
 // @Failure 400 {object} model.Meta
 // @Failure 401 {object} model.Meta
 // @Failure 403 {object} model.Meta
 // @Failure 500 {object} model.Meta
 // @Failure 503 {object} model.Meta
-// @Router /v1/cashbacks/{msisdn} [get]
-func (c *Cashback) info(ctx *fiber.Ctx) error {
-	inp := middleware.ClientSession(ctx)
-	inp.Msisdn = ctx.Params("msisdn")
-	v, ex := c.Tier(&inp)
+// @Router /partner/v1/transactions/{id} [get]
+func (pt *PartnerTransaction) detail(ctx *fiber.Ctx) error {
+	id, _ := strconv.ParseInt(ctx.Params("id"), 10, 64)
+	v, ex := pt.Detail(&model.FindByIdRequest{
+		Id:             id,
+		SessionRequest: middleware.ClientSession(ctx),
+	})
 	if ex != nil && ex.ErrorCode == apps.ErrCodeNotFound {
 		return ctx.Status(fiber.StatusOK).
 			JSON(apps.BusinessErrorResponse(ex))

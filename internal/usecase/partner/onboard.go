@@ -163,6 +163,7 @@ func (o *Onboard) Validate(inp *model.OfficerValidationRequest) (*model.OfficerV
 		return nil, bx
 	}
 	resp := model.OfficerValidationResponse{
+		Id:      p.Id,
 		UrlLogo: *o.CDN + p.Logo.String,
 		Company: p.Partner.String,
 		Email:   p.Email.String,
@@ -183,7 +184,9 @@ func (o *Onboard) Validate(inp *model.OfficerValidationRequest) (*model.OfficerV
 			ErrorMessage: apps.ErrMsgSomethingWrong,
 		}
 	}
+	_ = o.Cacher.Delete("OTPB2B:"+inp.TransactionId, inp.Otp)
+	_ = o.Cacher.Delete("OTPB2B", p.Email.String)
 	o.Cacher.Set("B2BSESSION", p.Email.String, cache, o.AuthTTL)
-
+	resp.Id = 0
 	return &resp, nil
 }

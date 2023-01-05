@@ -74,11 +74,12 @@ type (
 	}
 
 	OfficerValidationResponse struct {
-		UrlLogo string `json:"url_logo"`
-		Msisdn  string `json:"msisdn"`
-		Email   string `json:"email"`
-		Code    string `json:"code"`
-		Company string `json:"company"`
+		Id      int64  `json:"id,omitempty" example:"1"`
+		UrlLogo string `json:"url_logo" example:"https://cdn-something.com/bucket/file.png"`
+		Msisdn  string `json:"msisdn" example:"628118770510"`
+		Email   string `json:"email" example:"john.doe@email.net"`
+		Code    string `json:"code" example:"CORPCODE_A"`
+		Company string `json:"company"  example:"Kezbek Indonesia Ltd"`
 		SessionResponse
 	}
 )

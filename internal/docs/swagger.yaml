@@ -8,11 +8,50 @@ definitions:
     required:
     - code
     type: object
+  model.ClientAuthenticationResponse:
+    properties:
+      access_token:
+        example: '**secret**'
+        type: string
+      code:
+        type: string
+      company:
+        type: string
+      expired:
+        example: 11234823643
+        type: integer
+      id:
+        type: integer
+      refresh_token:
+        example: '**secret**'
+        type: string
+      token:
+        example: '**secret**'
+        type: string
+    type: object
+  model.Meta:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
   model.OfficerAuthenticationRequest:
     properties:
       email:
         example: john.doe@lajada.id
         type: string
+    type: object
+  model.OfficerAuthenticationResponse:
+    properties:
+      remaining_seconds:
+        type: number
+      transaction_id:
+        example: TRX0012345678
+        type: string
+      transaction_timestamp:
+        example: 11285736234
+        type: integer
     type: object
   model.OfficerValidationRequest:
     properties:
@@ -21,6 +60,91 @@ definitions:
         type: string
     required:
     - otp
+    type: object
+  model.OfficerValidationResponse:
+    properties:
+      access_token:
+        example: '**secret**'
+        type: string
+      code:
+        example: CORPCODE_A
+        type: string
+      company:
+        example: Kezbek Indonesia Ltd
+        type: string
+      email:
+        example: john.doe@email.net
+        type: string
+      expired:
+        example: 11234823643
+        type: integer
+      id:
+        example: 1
+        type: integer
+      msisdn:
+        example: "628118770510"
+        type: string
+      refresh_token:
+        example: '**secret**'
+        type: string
+      token:
+        example: '**secret**'
+        type: string
+      url_logo:
+        example: https://cdn-something.com/bucket/file.png
+        type: string
+    type: object
+  model.PartnerTransactionProjection:
+    properties:
+      cashback:
+        example: 2500
+        type: number
+      email:
+        example: john.doe@email.net
+        type: string
+      id:
+        example: 1
+        type: integer
+      msisdn:
+        example: "628118770510"
+        type: string
+      qty:
+        example: 2
+        type: integer
+      reward:
+        example: 13000
+        type: number
+      transaction:
+        example: 250000
+        type: number
+      wallet_code:
+        example: LSAJA
+        type: string
+    type: object
+  model.PartnerTransactionSearchResponse:
+    properties:
+      number:
+        example: 1
+        type: integer
+      size:
+        example: 10
+        type: integer
+      sort:
+        example: ASC
+        type: string
+      sort_by:
+        example: id
+        type: string
+      total_elements:
+        example: 100
+        type: integer
+      total_pages:
+        example: 10
+        type: integer
+      transactions:
+        items:
+          $ref: '#/definitions/model.PartnerTransactionProjection'
+        type: array
     type: object
   model.TransactionRequest:
     properties:
@@ -47,6 +171,27 @@ definitions:
     - msisdn
     - quantity
     type: object
+  model.TransactionResponse:
+    properties:
+      transaction_id:
+        example: TRX0012345678
+        type: string
+      transaction_timestamp:
+        example: 11285736234
+        type: integer
+    type: object
+  model.TransactionTierResponse:
+    properties:
+      date_expired:
+        example: "2022-01-01"
+        type: string
+      recurring:
+        example: 3
+        type: integer
+      tier:
+        example: GOLD
+        type: string
+    type: object
 info:
   contact:
     email: developer@kezbek.id
@@ -62,6 +207,171 @@ info:
   title: Kezbek - Cashback Engine Sandbox
   version: 1.0-Beta
 paths:
+  /partner/v1/transactions:
+    get:
+      consumes:
+      - application/json
+      description: API to search transaction by partner
+      parameters:
+      - default: Bearer
+        description: Your Token to Access
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Client Channel
+        enum:
+        - EBIZKEZBEK
+        - B2BCLIENT
+        in: header
+        name: x-client-channel
+        required: true
+        type: string
+      - default: android 10
+        description: Client OS or Browser Agent
+        in: header
+        name: x-client-os
+        required: true
+        type: string
+      - description: Client Device ID
+        in: header
+        name: x-client-device
+        required: true
+        type: string
+      - default: 1.0.0
+        description: Client Platform Version
+        in: header
+        name: x-client-version
+        required: true
+        type: string
+      - description: Client Original Timestamp in UNIX format (EPOCH)
+        in: header
+        name: x-client-timestamp
+        type: string
+      - example: 5
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - enum:
+        - ASC
+        - DESC
+        in: query
+        name: sort
+        type: string
+      - in: query
+        name: sort_by
+        type: string
+      - example: 0
+        in: query
+        name: start
+        required: true
+        type: integer
+      - in: query
+        name: text_search
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.PartnerTransactionSearchResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Meta'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Meta'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.Meta'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Meta'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/model.Meta'
+      summary: API Transaction Search
+      tags:
+      - Transaction Partner APIs
+  /partner/v1/transactions/{id}:
+    get:
+      consumes:
+      - application/json
+      description: API to view detail transaction by partner
+      parameters:
+      - default: Bearer
+        description: Your Token to Access
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Client Channel
+        enum:
+        - EBIZKEZBEK
+        - B2BCLIENT
+        in: header
+        name: x-client-channel
+        required: true
+        type: string
+      - default: android 10
+        description: Client OS or Browser Agent
+        in: header
+        name: x-client-os
+        required: true
+        type: string
+      - description: Client Device ID
+        in: header
+        name: x-client-device
+        required: true
+        type: string
+      - default: 1.0.0
+        description: Client Platform Version
+        in: header
+        name: x-client-version
+        required: true
+        type: string
+      - description: Client Original Timestamp in UNIX format (EPOCH)
+        in: header
+        name: x-client-timestamp
+        type: string
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.PartnerTransactionProjection'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Meta'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Meta'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.Meta'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Meta'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/model.Meta'
+      summary: API Transaction Detail
+      tags:
+      - Transaction Partner APIs
   /ping:
     get:
       consumes:
@@ -80,7 +390,7 @@ paths:
           description: Internal Server Error
       summary: Show the status of server.
       tags:
-      - Default
+      - Default APIs
   /v1/authorization/b2b:
     post:
       consumes:
@@ -125,12 +435,20 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/model.OfficerAuthenticationResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Meta'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Meta'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Meta'
       summary: API B2B Authorization
       tags:
       - Authorization APIs
@@ -189,12 +507,20 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/model.ClientAuthenticationResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Meta'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Meta'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Meta'
       summary: API Client Authorization
       tags:
       - Authorization APIs
@@ -247,12 +573,20 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/model.OfficerValidationResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Meta'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Meta'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Meta'
       summary: API B2B OTP Validation
       tags:
       - Authorization APIs
@@ -306,17 +640,103 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/model.TransactionResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Meta'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Meta'
         "403":
           description: Forbidden
+          schema:
+            $ref: '#/definitions/model.Meta'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Meta'
         "503":
           description: Service Unavailable
+          schema:
+            $ref: '#/definitions/model.Meta'
       summary: API Apply Cashback
+      tags:
+      - Client Cashback APIs
+  /v1/cashbacks/{msisdn}:
+    get:
+      consumes:
+      - application/json
+      description: API to retrieve tier information
+      parameters:
+      - default: Bearer
+        description: Your Token to Access
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Client Channel
+        enum:
+        - EBIZKEZBEK
+        - B2BCLIENT
+        in: header
+        name: x-client-channel
+        required: true
+        type: string
+      - default: android 10
+        description: Client OS or Browser Agent
+        in: header
+        name: x-client-os
+        required: true
+        type: string
+      - description: Client Device ID
+        in: header
+        name: x-client-device
+        required: true
+        type: string
+      - default: 1.0.0
+        description: Client Platform Version
+        in: header
+        name: x-client-version
+        required: true
+        type: string
+      - description: Client Original Timestamp in UNIX format (EPOCH)
+        in: header
+        name: x-client-timestamp
+        type: string
+      - description: Customer MSISDN
+        in: path
+        name: msisdn
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.TransactionTierResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Meta'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Meta'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/model.Meta'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Meta'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/model.Meta'
+      summary: API Tier Information
       tags:
       - Client Cashback APIs
   /v1/partners:
@@ -403,16 +823,28 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            $ref: '#/definitions/model.TransactionResponse'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Meta'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/model.Meta'
         "403":
           description: Forbidden
+          schema:
+            $ref: '#/definitions/model.Meta'
         "500":
           description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Meta'
         "503":
           description: Service Unavailable
+          schema:
+            $ref: '#/definitions/model.Meta'
       summary: API Add Partner
       tags:
       - Partner Management APIs

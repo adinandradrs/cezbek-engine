@@ -51,6 +51,7 @@ func main() {
 		Cacher:      redis,
 	})
 	jwtAuthClientFilter := jwtAuthenticator.ClientFilter()
+	jwtAuthPartnerFilter := jwtAuthenticator.PartnerFilter()
 
 	//swagger
 	api.Get(env.ContextPath+"/swagger/*", swagger.WrapHandler)
@@ -73,6 +74,12 @@ func main() {
 	handler.CashbackHandler(cashbacks, handler.Cashback{
 		TransactionProvider: ucase.ClientTransactionProvider,
 		ClientFilter:        jwtAuthClientFilter,
+	})
+
+	partnerTransactions := api.Group("/api/partner/v1/transactions")
+	handler.PartnerTransactionHandler(partnerTransactions, handler.PartnerTransaction{
+		TransactionProvider: ucase.PartnerTransactionProvider,
+		PartnerFilter:       jwtAuthPartnerFilter,
 	})
 
 	_ = api.Listen(env.HttpPort)

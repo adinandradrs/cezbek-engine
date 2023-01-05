@@ -20,7 +20,8 @@ func TestTransaction_Add(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	logger, _ := apps.NewLog(false)
-	dao, tierProvider, cashbackProvider, cacher, sqsAdapter := repository.NewMockTransactionPersister(ctrl),
+	transactionDao, cashbackDao, tierProvider, cashbackProvider, cacher, sqsAdapter :=
+		repository.NewMockTransactionPersister(ctrl), repository.NewMockCashbackPersister(ctrl),
 		workflow.NewMockTierProvider(ctrl), workflow.NewMockCashbackProvider(ctrl),
 		storage.NewMockCacher(ctrl), adaptor.NewMockSQSAdapter(ctrl)
 	josvoAdapter := adaptor.NewMockJosvoAdapter(ctrl)
@@ -36,7 +37,8 @@ func TestTransaction_Add(t *testing.T) {
 		CashbackProvider:              cashbackProvider,
 		SqsAdapter:                    sqsAdapter,
 		QueueNotificationEmailInvoice: &queueNotificationEmailInvoice,
-		Dao:                           dao,
+		TransactionDao:                transactionDao,
+		CashbackDao:                   cashbackDao,
 		Factory: h2h.Factory{
 			Cacher: cacher,
 			Josvo: h2h.Josvo{
@@ -78,6 +80,7 @@ func TestTransaction_Add(t *testing.T) {
 		}
 		b, _ := json.Marshal(providers)
 		tierProvider.EXPECT().Save(gomock.Any()).Return(&model.WfRewardTierProjection{Reward: decimal.NewFromInt(100)}, nil)
+		cashbackDao.EXPECT().Add(gomock.Any()).Return(nil)
 		cashbackProvider.EXPECT().FindCashbackAmount(gomock.Any()).Return(&model.FindCashbackResponse{
 			Amount: decimal.NewFromInt(200),
 		}, nil)
@@ -92,7 +95,7 @@ func TestTransaction_Add(t *testing.T) {
 		cacher.EXPECT().Hget("EMAIL_TEMPLATE", "INVOICE").Return("The content", nil)
 		sqsAdapter.EXPECT().SendMessage(gomock.Any(), gomock.Any()).Return(nil)
 		tid := int64(1)
-		dao.EXPECT().Add(gomock.Any()).Return(&tid, nil)
+		transactionDao.EXPECT().Add(gomock.Any()).Return(&tid, nil)
 		v, ex := svc.Add(&inp)
 		assert.Nil(t, ex)
 		assert.NotNil(t, v)
@@ -100,7 +103,7 @@ func TestTransaction_Add(t *testing.T) {
 
 	t.Run("should error on data access failed to insert", func(t *testing.T) {
 		cacher.EXPECT().Hget("WALLET_CODE", inp.MerchantCode).Return("WCODE_A", nil)
-		dao.EXPECT().Add(gomock.Any()).Return(nil, &model.TechnicalError{
+		transactionDao.EXPECT().Add(gomock.Any()).Return(nil, &model.TechnicalError{
 			Exception: "something went wrong",
 			Occurred:  time.Now().Unix(),
 			Ticket:    "ERR-001",

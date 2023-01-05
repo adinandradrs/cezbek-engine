@@ -48,3 +48,48 @@ func (mr *MockTransactionPersisterMockRecorder) Add(trx interface{}) *gomock.Cal
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockTransactionPersister)(nil).Add), trx)
 }
+
+// CountByPartner mocks base method.
+func (m *MockTransactionPersister) CountByPartner(inp *model.SearchRequest) (*int, *model.TechnicalError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CountByPartner", inp)
+	ret0, _ := ret[0].(*int)
+	ret1, _ := ret[1].(*model.TechnicalError)
+	return ret0, ret1
+}
+
+// CountByPartner indicates an expected call of CountByPartner.
+func (mr *MockTransactionPersisterMockRecorder) CountByPartner(inp interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CountByPartner", reflect.TypeOf((*MockTransactionPersister)(nil).CountByPartner), inp)
+}
+
+// DetailByPartner mocks base method.
+func (m *MockTransactionPersister) DetailByPartner(inp *model.FindByIdRequest) (*model.PartnerTransactionProjection, *model.TechnicalError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DetailByPartner", inp)
+	ret0, _ := ret[0].(*model.PartnerTransactionProjection)
+	ret1, _ := ret[1].(*model.TechnicalError)
+	return ret0, ret1
+}
+
+// DetailByPartner indicates an expected call of DetailByPartner.
+func (mr *MockTransactionPersisterMockRecorder) DetailByPartner(inp interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetailByPartner", reflect.TypeOf((*MockTransactionPersister)(nil).DetailByPartner), inp)
+}
+
+// SearchByPartner mocks base method.
+func (m *MockTransactionPersister) SearchByPartner(inp *model.SearchRequest) ([]*model.PartnerTransactionProjection, *model.TechnicalError) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchByPartner", inp)
+	ret0, _ := ret[0].([]*model.PartnerTransactionProjection)
+	ret1, _ := ret[1].(*model.TechnicalError)
+	return ret0, ret1
+}
+
+// SearchByPartner indicates an expected call of SearchByPartner.
+func (mr *MockTransactionPersisterMockRecorder) SearchByPartner(inp interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchByPartner", reflect.TypeOf((*MockTransactionPersister)(nil).SearchByPartner), inp)
+}

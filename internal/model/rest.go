@@ -20,24 +20,24 @@ type (
 	}
 
 	PaginationResponse struct {
-		Number        int    `json:"number,omitempty"`
-		Size          int    `json:"size,omitempty"`
-		TotalElements int    `json:"total_elements,omitempty"`
-		TotalPages    int    `json:"total_pages,omitempty"`
-		Sort          string `json:"sort,omitempty"`
-		SortBy        string `json:"sort_by,omitempty"`
+		Number        int    `json:"number,omitempty" example:"1"`
+		Size          int    `json:"size,omitempty" example:"10"`
+		TotalElements int    `json:"total_elements,omitempty" example:"100"`
+		TotalPages    int    `json:"total_pages,omitempty" example:"10"`
+		Sort          string `json:"sort,omitempty" example:"ASC"`
+		SortBy        string `json:"sort_by,omitempty" example:"id"`
 	}
 
 	TransactionResponse struct {
-		TransactionTimestamp int64  `json:"transaction_timestamp"`
-		TransactionId        string `json:"transaction_id"`
+		TransactionTimestamp int64  `json:"transaction_timestamp" example:"11285736234"`
+		TransactionId        string `json:"transaction_id" example:"TRX0012345678"`
 	}
 
 	SessionResponse struct {
-		Token        string `json:"token,omitempty"`
-		RefreshToken string `json:"refresh_token,omitempty"`
-		AccessToken  string `json:"access_token,omitempty"`
-		Expired      *int64 `json:"expired,omitempty"`
+		Token        string `json:"token,omitempty" example:"**secret**"`
+		RefreshToken string `json:"refresh_token,omitempty" example:"**secret**"`
+		AccessToken  string `json:"access_token,omitempty" example:"**secret**"`
+		Expired      *int64 `json:"expired,omitempty" example:"11234823643"`
 	}
 )
 
@@ -49,8 +49,8 @@ type (
 
 	SearchRequest struct {
 		TextSearch string `json:"text_search"`
-		Start      uint   `json:"start" binding:"required" example:"0"`
-		Limit      uint   `json:"limit" binding:"required" example:"5"`
+		Start      int    `json:"start" binding:"required" example:"0"`
+		Limit      int    `json:"limit" binding:"required" example:"5"`
 		SortBy     string `json:"sort_by" `
 		Sort       string `json:"sort" enums:"ASC,DESC"`
 		SessionRequest
@@ -78,3 +78,24 @@ type (
 		ApiKey        string `json:"api_key,omitempty" swaggerignore:"true"`
 	}
 )
+
+func Page(inp *SearchRequest) {
+	if inp.Limit == 0 || inp.Limit > 100 {
+		inp.Limit = 10
+	}
+
+	if inp.Start <= 1 {
+		inp.Start = 0
+	} else {
+		inp.Start = (inp.Start - 1) * inp.Limit
+	}
+}
+
+func Pagination(count int, limit int, start int) PaginationResponse {
+	return PaginationResponse{
+		TotalPages:    (count-1)/int(limit) + 1,
+		TotalElements: count,
+		Size:          int(limit),
+		Number:        int(start),
+	}
+}

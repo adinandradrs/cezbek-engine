@@ -17,6 +17,246 @@
     },
     "basePath": "/api",
     "paths": {
+        "/partner/v1/transactions": {
+            "get": {
+                "description": "API to search transaction by partner",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction Partner APIs"
+                ],
+                "summary": "API Transaction Search",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer",
+                        "description": "Your Token to Access",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "EBIZKEZBEK",
+                            "B2BCLIENT"
+                        ],
+                        "type": "string",
+                        "description": "Client Channel",
+                        "name": "x-client-channel",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "android 10",
+                        "description": "Client OS or Browser Agent",
+                        "name": "x-client-os",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Device ID",
+                        "name": "x-client-device",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "1.0.0",
+                        "description": "Client Platform Version",
+                        "name": "x-client-version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Original Timestamp in UNIX format (EPOCH)",
+                        "name": "x-client-timestamp",
+                        "in": "header"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 5,
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "ASC",
+                            "DESC"
+                        ],
+                        "type": "string",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "example": 0,
+                        "name": "start",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "text_search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.PartnerTransactionSearchResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    }
+                }
+            }
+        },
+        "/partner/v1/transactions/{id}": {
+            "get": {
+                "description": "API to view detail transaction by partner",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Transaction Partner APIs"
+                ],
+                "summary": "API Transaction Detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer",
+                        "description": "Your Token to Access",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "EBIZKEZBEK",
+                            "B2BCLIENT"
+                        ],
+                        "type": "string",
+                        "description": "Client Channel",
+                        "name": "x-client-channel",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "android 10",
+                        "description": "Client OS or Browser Agent",
+                        "name": "x-client-os",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Device ID",
+                        "name": "x-client-device",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "1.0.0",
+                        "description": "Client Platform Version",
+                        "name": "x-client-version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Original Timestamp in UNIX format (EPOCH)",
+                        "name": "x-client-timestamp",
+                        "in": "header"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Transaction ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.PartnerTransactionProjection"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    }
+                }
+            }
+        },
         "/ping": {
             "get": {
                 "description": "Ping the status of server, should be respond fastly.",
@@ -27,7 +267,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Default"
+                    "Default APIs"
                 ],
                 "summary": "Show the status of server.",
                 "responses": {
@@ -109,16 +349,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.OfficerAuthenticationResponse"
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     }
                 }
             }
@@ -201,16 +453,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ClientAuthenticationResponse"
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     }
                 }
             }
@@ -285,16 +549,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.OfficerValidationResponse"
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     }
                 }
             }
@@ -370,22 +646,147 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.TransactionResponse"
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "403": {
-                        "description": "Forbidden"
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "503": {
-                        "description": "Service Unavailable"
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/cashbacks/{msisdn}": {
+            "get": {
+                "description": "API to retrieve tier information",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Client Cashback APIs"
+                ],
+                "summary": "API Tier Information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer",
+                        "description": "Your Token to Access",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "EBIZKEZBEK",
+                            "B2BCLIENT"
+                        ],
+                        "type": "string",
+                        "description": "Client Channel",
+                        "name": "x-client-channel",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "android 10",
+                        "description": "Client OS or Browser Agent",
+                        "name": "x-client-os",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Device ID",
+                        "name": "x-client-device",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "1.0.0",
+                        "description": "Client Platform Version",
+                        "name": "x-client-version",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client Original Timestamp in UNIX format (EPOCH)",
+                        "name": "x-client-timestamp",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Customer MSISDN",
+                        "name": "msisdn",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.TransactionTierResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     }
                 }
             }
@@ -506,22 +907,40 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.TransactionResponse"
+                        }
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "403": {
-                        "description": "Forbidden"
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "500": {
-                        "description": "Internal Server Error"
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     },
                     "503": {
-                        "description": "Service Unavailable"
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/model.Meta"
+                        }
                     }
                 }
             }
@@ -540,12 +959,69 @@
                 }
             }
         },
+        "model.ClientAuthenticationResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string",
+                    "example": "**secret**"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "expired": {
+                    "type": "integer",
+                    "example": 11234823643
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "refresh_token": {
+                    "type": "string",
+                    "example": "**secret**"
+                },
+                "token": {
+                    "type": "string",
+                    "example": "**secret**"
+                }
+            }
+        },
+        "model.Meta": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "model.OfficerAuthenticationRequest": {
             "type": "object",
             "properties": {
                 "email": {
                     "type": "string",
                     "example": "john.doe@lajada.id"
+                }
+            }
+        },
+        "model.OfficerAuthenticationResponse": {
+            "type": "object",
+            "properties": {
+                "remaining_seconds": {
+                    "type": "number"
+                },
+                "transaction_id": {
+                    "type": "string",
+                    "example": "TRX0012345678"
+                },
+                "transaction_timestamp": {
+                    "type": "integer",
+                    "example": 11285736234
                 }
             }
         },
@@ -558,6 +1034,123 @@
                 "otp": {
                     "type": "string",
                     "example": "123456"
+                }
+            }
+        },
+        "model.OfficerValidationResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string",
+                    "example": "**secret**"
+                },
+                "code": {
+                    "type": "string",
+                    "example": "CORPCODE_A"
+                },
+                "company": {
+                    "type": "string",
+                    "example": "Kezbek Indonesia Ltd"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@email.net"
+                },
+                "expired": {
+                    "type": "integer",
+                    "example": 11234823643
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "msisdn": {
+                    "type": "string",
+                    "example": "628118770510"
+                },
+                "refresh_token": {
+                    "type": "string",
+                    "example": "**secret**"
+                },
+                "token": {
+                    "type": "string",
+                    "example": "**secret**"
+                },
+                "url_logo": {
+                    "type": "string",
+                    "example": "https://cdn-something.com/bucket/file.png"
+                }
+            }
+        },
+        "model.PartnerTransactionProjection": {
+            "type": "object",
+            "properties": {
+                "cashback": {
+                    "type": "number",
+                    "example": 2500
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@email.net"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "msisdn": {
+                    "type": "string",
+                    "example": "628118770510"
+                },
+                "qty": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "reward": {
+                    "type": "number",
+                    "example": 13000
+                },
+                "transaction": {
+                    "type": "number",
+                    "example": 250000
+                },
+                "wallet_code": {
+                    "type": "string",
+                    "example": "LSAJA"
+                }
+            }
+        },
+        "model.PartnerTransactionSearchResponse": {
+            "type": "object",
+            "properties": {
+                "number": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "size": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "sort": {
+                    "type": "string",
+                    "example": "ASC"
+                },
+                "sort_by": {
+                    "type": "string",
+                    "example": "id"
+                },
+                "total_elements": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "total_pages": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "transactions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.PartnerTransactionProjection"
+                    }
                 }
             }
         },
@@ -592,6 +1185,36 @@
                 "transaction_reference": {
                     "type": "string",
                     "example": "INV/001/002"
+                }
+            }
+        },
+        "model.TransactionResponse": {
+            "type": "object",
+            "properties": {
+                "transaction_id": {
+                    "type": "string",
+                    "example": "TRX0012345678"
+                },
+                "transaction_timestamp": {
+                    "type": "integer",
+                    "example": 11285736234
+                }
+            }
+        },
+        "model.TransactionTierResponse": {
+            "type": "object",
+            "properties": {
+                "date_expired": {
+                    "type": "string",
+                    "example": "2022-01-01"
+                },
+                "recurring": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "tier": {
+                    "type": "string",
+                    "example": "GOLD"
                 }
             }
         }

@@ -53,8 +53,10 @@ func (t Tier) update(v *model.Tier, inp *model.TierRequest) (*model.WfRewardTier
 	v.TransactionRecurring = v.TransactionRecurring + 1
 	cacher, ex := t.Cacher.Get("WFREWARD:"+v.CurrentTier.String, strconv.Itoa(v.TransactionRecurring))
 	var m model.WfRewardTierProjection
+	currentRecurring := v.TransactionRecurring
 	if ex == nil && cacher != "" {
 		_ = json.Unmarshal([]byte(cacher), &m)
+		t.Logger.Info("workflow tier found", zap.String("msisdn", inp.Msisdn), zap.Any("reward", m.Reward))
 		if m.MaxRecurring == v.TransactionRecurring && m.NextTier.Grade != nil {
 			v.PrevGrade = v.CurrentGrade
 			v.PrevTier = v.CurrentTier
@@ -71,7 +73,8 @@ func (t Tier) update(v *model.Tier, inp *model.TierRequest) (*model.WfRewardTier
 	}
 	v.BaseEntity.UpdatedBy = sql.NullInt64{Int64: inp.PartnerId}
 	ex = t.Dao.Update(*v)
-	if m.MaxRecurring == v.TransactionRecurring {
+	if m.Recurring == currentRecurring ||
+		m.MaxRecurring == currentRecurring {
 		return &m, nil
 	}
 	return nil, ex

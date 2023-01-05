@@ -20,9 +20,9 @@ func newAuthorizationResource(a Authorization) *Authorization {
 
 func AuthorizationHandler(router fiber.Router, auth Authorization) {
 	handler := newAuthorizationResource(auth)
-	router.Use(auth.ClientFilter).Post("/client", handler.clientAuth)
 	router.Post("/b2b", handler.b2bAuth)
 	router.Post("/otp", handler.otpAuth)
+	router.Use(auth.ClientFilter).Post("/client", handler.clientAuth)
 }
 
 // @Tags Authorization APIs
@@ -39,10 +39,10 @@ func AuthorizationHandler(router fiber.Router, auth Authorization) {
 // @Param x-client-version  header string true "Client Platform Version" default(1.0.0)
 // @Param x-client-timestamp  header string true "Client Original Timestamp in UNIX format (EPOCH)"
 // @Param request body model.ClientAuthenticationRequest true "Client Authentication Payload"
-// @Success 200
-// @Failure 400
-// @Failure 401
-// @Failure 500
+// @Success 200 {object} model.ClientAuthenticationResponse
+// @Failure 400 {object} model.Meta
+// @Failure 401 {object} model.Meta
+// @Failure 500 {object} model.Meta
 // @Router /v1/authorization/client [post]
 func (a *Authorization) clientAuth(ctx *fiber.Ctx) error {
 	inp := model.ClientAuthenticationRequest{}
@@ -76,10 +76,10 @@ func (a *Authorization) clientAuth(ctx *fiber.Ctx) error {
 // @Param x-client-version  header string true "Client Platform Version" default(1.0.0)
 // @Param x-client-timestamp  header string false "Client Original Timestamp in UNIX format (EPOCH)"
 // @Param request body model.OfficerAuthenticationRequest true "B2B Officer Authentication Payload"
-// @Success 200
-// @Failure 400
-// @Failure 401
-// @Failure 500
+// @Success 200 {object} model.OfficerAuthenticationResponse
+// @Failure 400 {object} model.Meta
+// @Failure 401 {object} model.Meta
+// @Failure 500 {object} model.Meta
 // @Router /v1/authorization/b2b [post]
 func (a *Authorization) b2bAuth(ctx *fiber.Ctx) error {
 	inp := model.OfficerAuthenticationRequest{}
@@ -113,10 +113,10 @@ func (a *Authorization) b2bAuth(ctx *fiber.Ctx) error {
 // @Param x-client-timestamp  header string false "Client Original Timestamp in UNIX format (EPOCH)"
 // @Param x-client-trxid  header string true "Client Transaction ID"
 // @Param request body model.OfficerValidationRequest true "B2B Officer Authentication Payload"
-// @Success 200
-// @Failure 400
-// @Failure 401
-// @Failure 500
+// @Success 200 {object} model.OfficerValidationResponse
+// @Failure 400 {object} model.Meta
+// @Failure 401 {object} model.Meta
+// @Failure 500 {object} model.Meta
 // @Router /v1/authorization/otp [post]
 func (a *Authorization) otpAuth(ctx *fiber.Ctx) error {
 	inp := model.OfficerValidationRequest{}

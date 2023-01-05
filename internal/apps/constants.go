@@ -9,6 +9,8 @@ const SuccessMsgDataFound = "Here is your data"
 
 const ErrCodeSomethingWrong = "9001"
 const ErrMsgSomethingWrong = "Something went wrong, please contact administrator"
+const ErrCodeNotFound = "9002"
+const ErrMsgNotFound = "Data is not found"
 const ErrMsgESBUnavailable = "The core engines are out of service"
 const ErrCodeESBUnavailable = "9003"
 const ErrMsgUnauthorized = "Unauthorized access, please try again"
