@@ -9,12 +9,15 @@ import (
 type JobUsecase struct {
 	JobOnboardWatcher     job.OnboardWatcher
 	JobTransactionWatcher job.TransactionWatcher
+	JobTierWatcher        job.TierWatcher
 	H2HFactory            h2h.Factory
 }
 
 func (c *Container) RegisterJobUsecase(infra Infra, cacher storage.Cacher) JobUsecase {
+	dao := c.registerRepository()
 	qNotificationEmailOtp := c.Viper.GetString("aws.sqs.topic.notification_email_otp")
 	qNotificationEmailTrx := c.Viper.GetString("aws.sqs.topic.notification_email_invoice")
+	expired := c.Viper.GetDuration("wfreward.expiry_duration")
 	return JobUsecase{
 		JobOnboardWatcher: job.NewOnboard(job.Onboard{
 			Logger:                    c.Logger,
@@ -27,6 +30,11 @@ func (c *Container) RegisterJobUsecase(infra Infra, cacher storage.Cacher) JobUs
 			QueueNotificationEmailTrx: &qNotificationEmailTrx,
 			SqsAdapter:                infra.SQSAdapter,
 			SesAdapter:                infra.SESAdapter,
+		}),
+		JobTierWatcher: job.NewTier(job.Tier{
+			Logger:  c.Logger,
+			Dao:     dao.TierPersister,
+			Expired: &expired,
 		}),
 		H2HFactory: h2h.NewFactory(h2h.Factory{
 			Cacher: cacher,

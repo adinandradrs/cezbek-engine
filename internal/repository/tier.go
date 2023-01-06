@@ -8,6 +8,7 @@ import (
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgx/v4"
 	"go.uber.org/zap"
+	"time"
 )
 
 type Tier struct {
@@ -19,6 +20,8 @@ type TierPersister interface {
 	FindByPartnerMsisdn(pid int64, msisdn string) (*model.Tier, *model.TechnicalError)
 	Add(tier model.Tier) *model.TechnicalError
 	Update(tier model.Tier) *model.TechnicalError
+	Expire(expired time.Time) *model.TechnicalError
+	CountExpire() (*int, *model.TechnicalError)
 }
 
 func NewTier(t Tier) TierPersister {
@@ -127,6 +130,45 @@ func (t *Tier) Add(tier model.Tier) *model.TechnicalError {
 	}
 	if err = tx.Commit(context.Background()); err != nil {
 		t.Logger.Panic("failed to commit add tier", zap.Any("tier", tier))
+	}
+	return nil
+}
+
+func (t *Tier) CountExpire() (*int, *model.TechnicalError) {
+	var count int
+	row := t.Pool.QueryRow(context.Background(), "select count(id) from tiers where expired_date <= now()")
+	err := row.Scan(&count)
+	if err != nil {
+		return nil, apps.Exception("failed to count expire today", err, zap.Time("", time.Now()), t.Logger)
+	}
+	return &count, nil
+}
+
+func (t *Tier) Expire(expired time.Time) *model.TechnicalError {
+	tx, err := t.Pool.BeginTx(context.Background(),
+		pgx.TxOptions{IsoLevel: pgx.Serializable})
+	if err != nil {
+		return apps.Exception("failed to begin expire tier tx", err, zap.Time("", time.Now()), t.Logger)
+	}
+	defer tx.Rollback(context.Background())
+	_, err = tx.Exec(context.Background(), `UPDATE tiers SET
+		current_grade = prev_grade, 
+		current_tier = prev_tier, 
+		prev_grade = null, 
+		prev_tier = null, 
+		expired_date = $1, 
+		transaction_recurring = 1,
+		updated_date = NOW(), 
+		updated_by = 0 
+		WHERE 
+			expired_date <= now()`,
+		expired,
+	)
+	if err != nil {
+		return apps.Exception("failed to expire tier tx", err, zap.Time("", time.Now()), t.Logger)
+	}
+	if err = tx.Commit(context.Background()); err != nil {
+		t.Logger.Panic("failed to commit expire tier", zap.Time("", time.Now()))
 	}
 	return nil
 }
