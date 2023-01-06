@@ -93,7 +93,7 @@ func (t *Transaction) SearchByPartner(inp *model.SearchRequest) ([]model.Partner
 	var data []model.PartnerTransactionProjection
 	where := " AND '1' = $2 "
 	if inp.TextSearch != "" {
-		where = ` AND (t.msisdn like $2 OR t.email like $2 OR t.kezbek_ref_code like $2 ) `
+		where = ` AND (UPPER(t.msisdn) like UPPER($2) OR UPPER(t.email) like UPPER($2) OR UPPER(t.kezbek_ref_code) like UPPER($2) ) `
 	}
 	t.buildOrder(inp)
 	cmd := `select t.id, t.wallet_code, t.email, t.msisdn, 
@@ -105,7 +105,7 @@ func (t *Transaction) SearchByPartner(inp *model.SearchRequest) ([]model.Partner
 	var err error
 	if inp.TextSearch != "" {
 		err = pgxscan.Select(context.Background(), t.Pool, &data,
-			cmd, inp.SessionRequest.Id, inp.TextSearch, inp.Limit, inp.Start)
+			cmd, inp.SessionRequest.Id, "%"+inp.TextSearch+"%", inp.Limit, inp.Start)
 	} else {
 		err = pgxscan.Select(context.Background(), t.Pool, &data,
 			cmd, inp.SessionRequest.Id, "1", inp.Limit, inp.Start)
