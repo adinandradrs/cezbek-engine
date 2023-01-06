@@ -27,7 +27,7 @@ func NewTier(t Tier) TierProvider {
 }
 
 func (t Tier) add(inp *model.TierRequest) *model.TechnicalError {
-	ex := t.Dao.Add(model.Tier{
+	return t.Dao.Add(model.Tier{
 		PartnerId:            inp.PartnerId,
 		Msisdn:               sql.NullString{String: inp.Msisdn},
 		Email:                sql.NullString{String: inp.Email},
@@ -46,7 +46,6 @@ func (t Tier) add(inp *model.TierRequest) *model.TechnicalError {
 			CreatedBy: sql.NullInt64{Int64: inp.PartnerId},
 		},
 	})
-	return ex
 }
 
 func (t Tier) update(v *model.Tier, inp *model.TierRequest) (*model.WfRewardTierProjection, *model.TechnicalError) {
@@ -83,7 +82,8 @@ func (t Tier) update(v *model.Tier, inp *model.TierRequest) (*model.WfRewardTier
 func (t Tier) Save(inp *model.TierRequest) (*model.WfRewardTierProjection, *model.TechnicalError) {
 	v, ex := t.Dao.FindByPartnerMsisdn(inp.PartnerId, inp.Msisdn)
 	if v == nil && ex != nil {
-		return nil, t.add(inp)
+		ex = t.add(inp)
+		return nil, ex
 	} else {
 		return t.update(v, inp)
 	}
