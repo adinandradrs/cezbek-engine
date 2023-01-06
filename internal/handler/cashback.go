@@ -63,11 +63,17 @@ func (c *Cashback) add(ctx *fiber.Ctx) error {
 		return ctx.Status(fiber.StatusBadRequest).JSON(bad)
 	}
 	v, ex := c.Add(&inp)
-	if ex != nil && ex.ErrorCode == apps.ErrCodeBussMerchantCodeInvalid {
+	if ex != nil && (ex.ErrorCode == apps.ErrCodeBussMerchantCodeInvalid ||
+		ex.ErrorCode == apps.ErrCodeBussNoCashback) {
 		return ctx.Status(fiber.StatusBadRequest).
 			JSON(apps.BusinessErrorResponse(ex))
 	}
 	if ex != nil && ex.ErrorCode == apps.ErrCodeBussClientAddTransaction {
+		return ctx.Status(fiber.StatusInternalServerError).
+			JSON(apps.BusinessErrorResponse(ex))
+	}
+	if ex != nil && (ex.ErrorCode == apps.ErrCodeBussH2HCashbackFailed ||
+		ex.ErrorCode == apps.ErrCodeSomethingWrong) {
 		return ctx.Status(fiber.StatusInternalServerError).
 			JSON(apps.BusinessErrorResponse(ex))
 	}

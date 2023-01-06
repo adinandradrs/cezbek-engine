@@ -72,7 +72,8 @@ func (p *PartnerManagement) add(ctx *fiber.Ctx) error {
 	if ex != nil && ex.ErrorCode == apps.ErrCodeESBUnavailable {
 		return ctx.Status(fiber.StatusServiceUnavailable).JSON(apps.BusinessErrorResponse(ex))
 	}
-	if ex != nil && (ex.ErrorCode == apps.ErrCodeSubmitted || ex.ErrorCode == apps.ErrCodeSomethingWrong) {
+	if ex != nil && (ex.ErrorCode == apps.ErrCodeSubmitted ||
+		ex.ErrorCode == apps.ErrCodeSomethingWrong) {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(apps.BusinessErrorResponse(ex))
 	}
 

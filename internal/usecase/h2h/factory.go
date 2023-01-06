@@ -51,7 +51,7 @@ func NewFactory(f Factory) Factory {
 	return f
 }
 
-func (f Factory) SendCashback(inp *model.H2HSendCashbackRequest) (*model.TransactionResponse, *model.BusinessError) {
+func (f Factory) SendCashback(inp *model.H2HSendCashbackRequest) (*model.H2HTransactionResponse, *model.BusinessError) {
 	var factory FactoryProvider
 	w := strings.ToUpper(inp.WalletCode)
 	v, ex := f.Cacher.Hget("PROVIDER_FEE", w)
@@ -79,5 +79,12 @@ func (f Factory) SendCashback(inp *model.H2HSendCashbackRequest) (*model.Transac
 			ErrorMessage: apps.ErrMsgBadPayload,
 		}
 	}
-	return factory.SendCashback(inp)
+	trx, bx := factory.SendCashback(inp)
+	if bx != nil {
+		return nil, bx
+	}
+	return &model.H2HTransactionResponse{
+		TransactionResponse: *trx,
+		HostCode:            providers[0].Code,
+	}, nil
 }

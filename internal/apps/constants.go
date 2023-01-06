@@ -36,6 +36,8 @@ const ErrCodeBussH2HCashbackFailed = "BR-05"
 const ErrMsgBussH2HCashbackFailed = "Failed to contact H2H Provider"
 const ErrCodeBussRewardFailed = "BR-06"
 const ErrMsgBussRewardFailed = "Failed to add reward"
+const ErrCodeBussNoCashback = "BR-07"
+const ErrMsgBussNoCashback = "No cashback available for the given value"
 
 const HeaderClientTrxId = "x-client-trxid"
 const HeaderClientChannel = "x-client-channel"

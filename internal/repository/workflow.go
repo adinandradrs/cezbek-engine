@@ -46,7 +46,7 @@ func (w *Workflow) FindRewardTiers() ([]model.WfRewardTierProjection, *model.Tec
 func (w *Workflow) FindCashbackByTransaction(qty int, trx decimal.Decimal) (*decimal.Decimal, *model.TechnicalError) {
 	d := decimal.Zero
 	rows, err := w.Pool.Query(context.Background(), `select cashback_percentage from wf_cashbacks 
-		where min_qty >= $1 AND 
+		where min_qty >= $1 AND max_qty <= $1 AND
 		($2 >= min_transaction and $2 <= max_transaction) AND
 		is_deleted = false AND status = $3`, qty, trx, apps.StatusActive)
 	if err != nil {

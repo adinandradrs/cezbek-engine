@@ -1,6 +1,7 @@
 package workflow
 
 import (
+	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
 	"github.com/adinandradrs/cezbek-engine/internal/repository"
 	"github.com/shopspring/decimal"
@@ -13,17 +14,20 @@ type Cashback struct {
 }
 
 type CashbackProvider interface {
-	FindCashbackAmount(inp *model.FindCashbackRequest) (*model.FindCashbackResponse, *model.TechnicalError)
+	FindCashbackAmount(inp *model.FindCashbackRequest) (*model.FindCashbackResponse, *model.BusinessError)
 }
 
 func NewCashback(c Cashback) CashbackProvider {
 	return &c
 }
 
-func (c *Cashback) FindCashbackAmount(inp *model.FindCashbackRequest) (*model.FindCashbackResponse, *model.TechnicalError) {
+func (c *Cashback) FindCashbackAmount(inp *model.FindCashbackRequest) (*model.FindCashbackResponse, *model.BusinessError) {
 	d, ex := c.Dao.FindCashbackByTransaction(inp.Qty, inp.Amount)
 	if ex != nil {
-		return nil, ex
+		return nil, &model.BusinessError{
+			ErrorCode:    apps.ErrCodeBussNoCashback,
+			ErrorMessage: apps.ErrMsgBussNoCashback,
+		}
 	}
 	t := inp.Amount.Mul(*d).Div(decimal.NewFromInt(100))
 	return &model.FindCashbackResponse{

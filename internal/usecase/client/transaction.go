@@ -54,6 +54,13 @@ func (t *Transaction) Tier(inp *model.SessionRequest) (*model.TransactionTierRes
 }
 
 func (t *Transaction) Add(inp *model.TransactionRequest) (*model.TransactionResponse, *model.BusinessError) {
+	camt, bx := t.CashbackProvider.FindCashbackAmount(&model.FindCashbackRequest{
+		Amount: inp.Amount,
+		Qty:    inp.Qty,
+	})
+	if bx != nil {
+		return nil, bx
+	}
 	trx := apps.Transaction(inp.Msisdn)
 	_, ex := t.Cacher.Hget("WALLET_CODE", inp.MerchantCode)
 	if ex != nil {
@@ -85,14 +92,14 @@ func (t *Transaction) Add(inp *model.TransactionRequest) (*model.TransactionResp
 			ErrorMessage: apps.ErrMsgBussClientAddTransaction,
 		}
 	}
-	bx := t.processCashback(&data, inp, id)
+	bx = t.processCashback(&data, camt, inp, id)
 	if bx != nil {
 		return nil, bx
 	}
 	return &trx, nil
 }
 
-func (t *Transaction) processCashback(data *model.Transaction, inp *model.TransactionRequest, id *int64) *model.BusinessError {
+func (t *Transaction) processCashback(data *model.Transaction, camt *model.FindCashbackResponse, inp *model.TransactionRequest, id *int64) *model.BusinessError {
 	reward := decimal.Zero
 	treward, ex := t.TierProvider.Save(&model.TierRequest{
 		PartnerId:     data.PartnerId,
@@ -107,18 +114,15 @@ func (t *Transaction) processCashback(data *model.Transaction, inp *model.Transa
 			ErrorMessage: apps.ErrMsgBussRewardFailed,
 		}
 	}
-	camt, _ := t.CashbackProvider.FindCashbackAmount(&model.FindCashbackRequest{
-		Amount: inp.Amount,
-		Qty:    inp.Qty,
-	})
+
 	t.Logger.Info("", zap.Any("treward", treward), zap.Any("camt", camt))
 	pyld := t.sendCashbackRequest(treward,
 		camt, *data)
 	v, bx := t.Factory.SendCashback(pyld)
-	_ = t.queueEmailInvoice(data, *pyld)
 	if bx != nil {
 		return bx
 	}
+	_ = t.queueEmailInvoice(data, *pyld)
 	t.Logger.Info("", zap.Any("cashback_resp", v))
 	if treward != nil {
 		reward = treward.Reward
@@ -128,7 +132,7 @@ func (t *Transaction) processCashback(data *model.Transaction, inp *model.Transa
 		WalletCode:    data.WalletCode,
 		Reward:        decimal.NullDecimal{Decimal: reward},
 		Amount:        decimal.NullDecimal{Decimal: camt.Amount},
-		H2HCode:       sql.NullString{String: "N/A"},
+		H2HCode:       sql.NullString{String: v.HostCode},
 		BaseEntity:    data.BaseEntity,
 	})
 	return nil

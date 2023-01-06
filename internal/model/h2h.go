@@ -37,6 +37,7 @@ type (
 
 type (
 	H2HSendCashbackRequest struct {
+		HostCode    string `json:"host_code,omitempty"`
 		Amount      decimal.Decimal
 		Destination string
 		Notes       string
@@ -50,5 +51,10 @@ type (
 		Id       int64  `json:"id,omitempty"`
 		Code     string `json:"code,omitempty"`
 		Provider string `json:"provider,omitempty"`
+	}
+
+	H2HTransactionResponse struct {
+		HostCode string `json:"host_code" example:"LSAJAH2H"`
+		TransactionResponse
 	}
 )
