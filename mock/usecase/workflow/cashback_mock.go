@@ -35,11 +35,11 @@ func (m *MockCashbackProvider) EXPECT() *MockCashbackProviderMockRecorder {
 }
 
 // FindCashbackAmount mocks base method.
-func (m *MockCashbackProvider) FindCashbackAmount(inp *model.FindCashbackRequest) (*model.FindCashbackResponse, *model.TechnicalError) {
+func (m *MockCashbackProvider) FindCashbackAmount(inp *model.FindCashbackRequest) (*model.FindCashbackResponse, *model.BusinessError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindCashbackAmount", inp)
 	ret0, _ := ret[0].(*model.FindCashbackResponse)
-	ret1, _ := ret[1].(*model.TechnicalError)
+	ret1, _ := ret[1].(*model.BusinessError)
 	return ret0, ret1
 }
 

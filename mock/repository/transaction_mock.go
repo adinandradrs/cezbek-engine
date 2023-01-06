@@ -80,10 +80,10 @@ func (mr *MockTransactionPersisterMockRecorder) DetailByPartner(inp interface{})
 }
 
 // SearchByPartner mocks base method.
-func (m *MockTransactionPersister) SearchByPartner(inp *model.SearchRequest) ([]*model.PartnerTransactionProjection, *model.TechnicalError) {
+func (m *MockTransactionPersister) SearchByPartner(inp *model.SearchRequest) ([]model.PartnerTransactionProjection, *model.TechnicalError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SearchByPartner", inp)
-	ret0, _ := ret[0].([]*model.PartnerTransactionProjection)
+	ret0, _ := ret[0].([]model.PartnerTransactionProjection)
 	ret1, _ := ret[1].(*model.TechnicalError)
 	return ret0, ret1
 }
