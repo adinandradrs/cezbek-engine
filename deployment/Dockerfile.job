@@ -1,0 +1,14 @@
+FROM golang:1.17.12-alpine as builder
+WORKDIR $GOPATH/src/build
+COPY . .
+RUN go mod download && go build -o /build cmd/job/cron.go
+
+FROM golang:1.17.12-alpine
+COPY --from=builder /build /main
+ARG CONSUL_HOST
+ARG CONSUL_PORT
+ARG APP_CEZBEK_JOB
+ENV CONSUL_HOST "$CONSUL_HOST"
+ENV CONSUL_PORT "$CONSUL_PORT"
+ENV APP_CEZBEK_JOB "$APP_CEZBEK_JOB"
+ENTRYPOINT ["/main"]
