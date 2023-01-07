@@ -103,6 +103,12 @@ func TestTransaction_Add(t *testing.T) {
 
 	t.Run("should error on data access failed to insert", func(t *testing.T) {
 		cacher.EXPECT().Hget("WALLET_CODE", inp.MerchantCode).Return("WCODE_A", nil)
+		cashbackProvider.EXPECT().FindCashbackAmount(&model.FindCashbackRequest{
+			Amount: inp.Amount,
+			Qty:    inp.Qty,
+		}).Return(&model.FindCashbackResponse{
+			Amount: decimal.NewFromInt(1000),
+		}, nil)
 		transactionDao.EXPECT().Add(gomock.Any()).Return(nil, &model.TechnicalError{
 			Exception: "something went wrong",
 			Occurred:  time.Now().Unix(),
@@ -115,6 +121,12 @@ func TestTransaction_Add(t *testing.T) {
 	})
 
 	t.Run("should return exception on wallet is not found", func(t *testing.T) {
+		cashbackProvider.EXPECT().FindCashbackAmount(&model.FindCashbackRequest{
+			Amount: inp.Amount,
+			Qty:    inp.Qty,
+		}).Return(&model.FindCashbackResponse{
+			Amount: decimal.NewFromInt(1000),
+		}, nil)
 		cacher.EXPECT().Hget("WALLET_CODE", inp.MerchantCode).Return("", &model.TechnicalError{
 			Exception: "something went wrong",
 			Occurred:  time.Now().Unix(),

@@ -127,6 +127,7 @@ func TestOnboard_Validate(t *testing.T) {
 		cache, _ := json.Marshal(p)
 		cacher.EXPECT().Get("OTPB2B:"+inp.TransactionId, inp.Otp).
 			Return(string(cache), nil)
+		cacher.EXPECT().Delete(gomock.Any(), gomock.Any()).Times(2)
 		cacher.EXPECT().Set("B2BSESSION", p.Email.String, gomock.Any(), authTTL)
 		ciamWatcher.EXPECT().Authenticate(gomock.Any()).Return(&model.CiamAuthenticationResponse{
 			Token:        "token-abc",

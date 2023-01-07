@@ -259,3 +259,93 @@ func TestTier_Add(t *testing.T) {
 		assert.NotNil(t, ex)
 	})
 }
+
+func TestTier_Update(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	logger, _ := apps.NewLog(false)
+	ctx := context.Background()
+	pool, tx := pgxpoolmock.NewMockPgxIface(ctrl), pgxpoolmock.NewMockPgxIface(ctrl)
+	persister := NewTier(Tier{
+		Logger: logger,
+		Pool:   pool,
+	})
+	mcmd := `UPDATE tiers SET 
+		next_grade = $1, 
+		next_tier = $2, 
+		current_grade = $3, 
+		current_tier = $4, 
+		prev_grade = $5, 
+		prev_tier = $6, 
+		expired_date = $7, 
+		transaction_recurring = $8,
+		updated_date = NOW(), 
+		updated_by = $9 
+		WHERE 
+			msisdn = $10 and partner_id = $11`
+	ccmd := `INSERT INTO tier_journeys 
+		(last_transaction_id, current_grade, current_tier, notes, is_deleted, created_by, created_date)
+		VALUES ($1, $2, $3, $4, FALSE, $5, NOW())`
+	tier := model.Tier{
+		PartnerId:            1,
+		Msisdn:               sql.NullString{String: "628118770510"},
+		Email:                sql.NullString{String: "adinandra.dharmasurya@gmail.com"},
+		CurrentGrade:         2,
+		CurrentTier:          sql.NullString{String: "SILVER"},
+		PrevGrade:            1,
+		PrevTier:             sql.NullString{String: "GOLD"},
+		ExpiredDate:          sql.NullTime{Time: time.Now()},
+		TransactionRecurring: 1,
+		BaseEntity: model.BaseEntity{
+			UpdatedBy: sql.NullInt64{Int64: 1},
+		},
+		Journey: model.TierJourney{
+			CurrentGrade: 2,
+			CurrentTier:  sql.NullString{String: "SILVER"},
+			Notes:        sql.NullString{String: "Something"},
+			BaseEntity: model.BaseEntity{
+				CreatedBy: sql.NullInt64{Int64: 1},
+			},
+		},
+	}
+	t.Run("should success", func(t *testing.T) {
+		pool.EXPECT().BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable}).Return(tx, nil)
+		tx.EXPECT().Exec(ctx, mcmd, tier.NextGrade, tier.NextTier.String, tier.CurrentGrade, tier.CurrentTier.String,
+			tier.PrevGrade, tier.PrevTier.String, tier.ExpiredDate.Time, tier.TransactionRecurring,
+			tier.UpdatedBy.Int64, tier.Msisdn.String, tier.PartnerId).Return(nil, nil)
+		tx.EXPECT().Exec(context.Background(), ccmd,
+			tier.Journey.LastTransactionId, tier.Journey.CurrentGrade, tier.Journey.CurrentTier.String,
+			tier.Journey.Notes.String, tier.Journey.CreatedBy.Int64,
+		).Return(nil, nil)
+		tx.EXPECT().Commit(ctx).Times(1).Return(nil)
+		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
+		defer func() {
+			if r := recover(); r != nil {
+				assert.Equal(t, "failed to commit update tier", r)
+			}
+		}()
+		ex := persister.Update(tier)
+		assert.Nil(t, ex)
+	})
+
+	t.Run("should return exception on failed to begin transaction", func(t *testing.T) {
+		pool.EXPECT().BeginTx(context.Background(),
+			pgx.TxOptions{IsoLevel: pgx.Serializable}).Return(nil, fmt.Errorf("something went wrong"))
+		ex := persister.Update(tier)
+		assert.NotNil(t, ex)
+	})
+
+	t.Run("should return exception on failed execute child command", func(t *testing.T) {
+		pool.EXPECT().BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable}).Return(tx, nil)
+		tx.EXPECT().Exec(ctx, mcmd, tier.NextGrade, tier.NextTier.String, tier.CurrentGrade, tier.CurrentTier.String,
+			tier.PrevGrade, tier.PrevTier.String, tier.ExpiredDate.Time, tier.TransactionRecurring,
+			tier.UpdatedBy.Int64, tier.Msisdn.String, tier.PartnerId).Return(nil, nil)
+		tx.EXPECT().Exec(context.Background(), ccmd,
+			tier.Journey.LastTransactionId, tier.Journey.CurrentGrade, tier.Journey.CurrentTier.String,
+			tier.Journey.Notes.String, tier.Journey.CreatedBy.Int64,
+		).Return(nil, fmt.Errorf("something went wrong"))
+		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
+		ex := persister.Update(tier)
+		assert.NotNil(t, ex)
+	})
+}

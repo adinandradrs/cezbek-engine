@@ -37,7 +37,7 @@ func (t Tier) add(inp *model.TierRequest) *model.TechnicalError {
 		PrevTier:             sql.NullString{String: "BRONZE"},
 		TransactionRecurring: 1,
 		ExpiredDate:          sql.NullTime{Time: time.Now().Add(t.ExpiryDuration)},
-		Journey: model.TierJourneys{
+		Journey: model.TierJourney{
 			CurrentTier:       sql.NullString{String: "BRONZE"},
 			CurrentGrade:      1,
 			LastTransactionId: inp.TransactionId,
@@ -65,7 +65,7 @@ func (t Tier) update(v *model.Tier, inp *model.TierRequest) (*model.WfRewardTier
 			v.ExpiredDate = sql.NullTime{Time: time.Now().Add(t.ExpiryDuration)}
 		}
 	}
-	v.Journey = model.TierJourneys{
+	v.Journey = model.TierJourney{
 		CurrentTier:       v.CurrentTier,
 		CurrentGrade:      v.CurrentGrade,
 		LastTransactionId: inp.TransactionId,
