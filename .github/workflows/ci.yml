@@ -42,7 +42,7 @@ jobs:
           args: -exclude-dir=mock -exclude-dir=internal/docs ./...
   delivery:
     name: Package
-    if: "contains(github.head_ref, 'development')"
+    if: "contains(github.head_ref, 'development')" 
     needs: test
     runs-on: ubuntu-latest
 
