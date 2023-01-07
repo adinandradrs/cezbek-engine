@@ -13,7 +13,6 @@ on:
 jobs:
   delivery:
     name: Package
-    needs: test
     runs-on: ubuntu-latest
 
     steps:
