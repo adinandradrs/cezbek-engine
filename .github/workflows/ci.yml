@@ -72,4 +72,4 @@ jobs:
           docker build -f deployment\Dockerfile.job -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG  --build-arg CONSUL_HOST=$CONSUL_HOST --build-arg CONSUL_PORT=$CONSUL_PORT --build-arg APP_CEZBEK_JOB=cezbek-job-dev .
           echo "Pushing cezbek job image to ECR..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" 
