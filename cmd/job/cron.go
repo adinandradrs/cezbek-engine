@@ -28,7 +28,7 @@ func main() {
 	_, err := job.Every(c.Viper.GetString("schedule.send_otp_email")).Do(func() {
 		lock, err := locker.Obtain(ctx, "send_otp_email", c.Viper.GetDuration("lock.send_otp_email"), nil)
 		if err == redislock.ErrNotObtained {
-			c.Logger.Warn("could not obtain lock", zap.String("send_otp_email", "lock.send_otp_email"))
+			c.Logger.Warn("lock obtain failed send_otp_email", zap.String("", "lock.send_otp_email"), zap.Error(err))
 		} else if err != nil {
 			c.Logger.Panic("schedule.send_otp_email error lock", zap.Error(err))
 		}
@@ -42,7 +42,7 @@ func main() {
 	_, err = job.Every(c.Viper.GetString("schedule.send_invoice_email")).Do(func() {
 		lock, err := locker.Obtain(ctx, "send_invoice_email", c.Viper.GetDuration("lock.send_invoice_email"), nil)
 		if err == redislock.ErrNotObtained {
-			c.Logger.Warn("could not obtain lock", zap.String("send_invoice_email", "lock.send_invoice_email"))
+			c.Logger.Warn("lock obtain failed send_invoice_email", zap.String("", "lock.send_invoice_email"), zap.Error(err))
 		} else if err != nil {
 			c.Logger.Panic("schedule.send_invoice_email error lock", zap.Error(err))
 		}
@@ -56,7 +56,7 @@ func main() {
 	_, err = job.Cron(c.Viper.GetString("schedule.expire_tier")).Do(func() {
 		lock, err := locker.Obtain(ctx, "expire_tier", c.Viper.GetDuration("lock.expire_tier"), nil)
 		if err == redislock.ErrNotObtained {
-			c.Logger.Warn("could not obtain lock", zap.String("expire_tier", "lock.expire_tier"))
+			c.Logger.Warn("lock obtain failed expire_tier", zap.String("", "lock.expire_tier"), zap.Error(err))
 		} else if err != nil {
 			c.Logger.Panic("schedule.expire_tier error lock", zap.Error(err))
 		}

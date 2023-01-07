@@ -24,6 +24,9 @@ type Onboard struct {
 	CDN                       *string
 }
 
+const kotp = "OTPB2B:"
+const otpB2B = "OTPB2B"
+
 type OnboardProvider interface {
 	Authenticate(inp *model.OfficerAuthenticationRequest) (*model.OfficerAuthenticationResponse, *model.BusinessError)
 	Validate(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError)
@@ -80,9 +83,9 @@ func (o *Onboard) Authenticate(inp *model.OfficerAuthenticationRequest) (*model.
 	}
 
 	trx := apps.TransactionId(apps.DefaultTrxId)
-	ttl, _ := o.Cacher.Ttl("OTPB2B", p.Email.String)
+	ttl, _ := o.Cacher.Ttl(otpB2B, p.Email.String)
 	if ttl.Seconds() > 0 {
-		trx, _ = o.Cacher.Get("OTPB2B", p.Email.String)
+		trx, _ = o.Cacher.Get(otpB2B, p.Email.String)
 		return &model.OfficerAuthenticationResponse{
 			RemainingSeconds: ttl.Seconds(),
 			TransactionResponse: model.TransactionResponse{
@@ -98,8 +101,8 @@ func (o *Onboard) Authenticate(inp *model.OfficerAuthenticationRequest) (*model.
 			ErrorMessage: apps.ErrMsgSomethingWrong,
 		}
 	}
-	o.Cacher.Set("OTPB2B", p.Email.String, otp+"#"+trx, o.OtpTTL)
-	o.Cacher.Set("OTPB2B:"+trx, otp, cache, o.OtpTTL)
+	o.Cacher.Set(otpB2B, p.Email.String, otp+"#"+trx, o.OtpTTL)
+	o.Cacher.Set(kotp+trx, otp, cache, o.OtpTTL)
 	bx := o.queueEmailOtp(otp, p)
 	if bx != nil {
 		return nil, bx
@@ -142,7 +145,7 @@ func (o *Onboard) queueEmailOtp(otp string, p *model.Partner) *model.BusinessErr
 }
 
 func (o *Onboard) Validate(inp *model.OfficerValidationRequest) (*model.OfficerValidationResponse, *model.BusinessError) {
-	cp, ex := o.Cacher.Get("OTPB2B:"+inp.TransactionId, inp.Otp)
+	cp, ex := o.Cacher.Get(kotp+inp.TransactionId, inp.Otp)
 	if ex != nil {
 		return nil, &model.BusinessError{
 			ErrorCode:    apps.ErrCodeBussPartnerOTPInvalid,
@@ -184,8 +187,8 @@ func (o *Onboard) Validate(inp *model.OfficerValidationRequest) (*model.OfficerV
 			ErrorMessage: apps.ErrMsgSomethingWrong,
 		}
 	}
-	_ = o.Cacher.Delete("OTPB2B:"+inp.TransactionId, inp.Otp)
-	_ = o.Cacher.Delete("OTPB2B", p.Email.String)
+	_ = o.Cacher.Delete(kotp+inp.TransactionId, inp.Otp)
+	_ = o.Cacher.Delete(otpB2B, p.Email.String)
 	o.Cacher.Set("B2BSESSION", p.Email.String, cache, o.AuthTTL)
 	resp.Id = 0
 	return &resp, nil
