@@ -84,6 +84,17 @@ func TestOnboard_Authenticate(t *testing.T) {
 		assert.NotNil(t, ex)
 		assert.Nil(t, v)
 	})
+
+	t.Run("should return exception on email not found", func(t *testing.T) {
+		dao.EXPECT().FindActiveByEmail(inp.Email).Return(nil, &model.TechnicalError{
+			Exception: "data is not found",
+			Occurred:  time.Now().Unix(),
+			Ticket:    "ERR-001",
+		})
+		v, ex := svc.Authenticate(inp)
+		assert.NotNil(t, ex)
+		assert.Nil(t, v)
+	})
 }
 
 func TestOnboard_Validate(t *testing.T) {

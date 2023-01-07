@@ -1,6 +1,7 @@
 package client
 
 import (
+	"database/sql"
 	"encoding/json"
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/adinandradrs/cezbek-engine/internal/model"
@@ -136,5 +137,73 @@ func TestTransaction_Add(t *testing.T) {
 		assert.NotNil(t, ex)
 		assert.Nil(t, v)
 		assert.Equal(t, apps.ErrCodeBussMerchantCodeInvalid, ex.ErrorCode)
+	})
+
+	t.Run("should return exception on cashback not found", func(t *testing.T) {
+		cashbackProvider.EXPECT().FindCashbackAmount(gomock.Any()).
+			Return(nil, &model.BusinessError{
+				ErrorCode:    apps.ErrCodeBussNoCashback,
+				ErrorMessage: apps.ErrMsgBussNoCashback,
+			})
+		v, ex := svc.Add(&inp)
+		assert.NotNil(t, ex)
+		assert.Nil(t, v)
+		assert.Equal(t, apps.ErrCodeBussNoCashback, ex.ErrorCode)
+	})
+
+	t.Run("should return exception on process cashback failed", func(t *testing.T) {
+		tierProvider.EXPECT().Save(gomock.Any()).Return(nil, &model.TechnicalError{
+			Exception: "something went wrong",
+			Occurred:  time.Now().Unix(),
+			Ticket:    "ERR-001",
+		})
+		cashbackProvider.EXPECT().FindCashbackAmount(gomock.Any()).Return(&model.FindCashbackResponse{
+			Amount: decimal.NewFromInt(200),
+		}, nil)
+		cacher.EXPECT().Hget("WALLET_CODE", inp.MerchantCode).Return("WCODE_A", nil)
+		tid := int64(1)
+		transactionDao.EXPECT().Add(gomock.Any()).Return(&tid, nil)
+		v, ex := svc.Add(&inp)
+		assert.NotNil(t, ex)
+		assert.Nil(t, v)
+	})
+
+}
+
+func TestTransaction_Tier(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	logger, _ := apps.NewLog(false)
+	dao := repository.NewMockTierPersister(ctrl)
+
+	svc := NewTransaction(Transaction{
+		Logger:  logger,
+		TierDao: dao,
+	})
+	inp := &model.SessionRequest{
+		Id:     1,
+		Msisdn: "628118770510",
+	}
+
+	t.Run("should success", func(t *testing.T) {
+		dao.EXPECT().FindByPartnerMsisdn(inp.Id, inp.Msisdn).Return(&model.Tier{
+			CurrentTier:          sql.NullString{String: "GOLD"},
+			TransactionRecurring: 2,
+			ExpiredDate:          sql.NullTime{Time: time.Now()},
+		}, nil)
+		v, ex := svc.Tier(inp)
+		assert.Nil(t, ex)
+		assert.NotNil(t, v)
+	})
+
+	t.Run("should return exception on failed to query", func(t *testing.T) {
+		dao.EXPECT().FindByPartnerMsisdn(inp.Id, inp.Msisdn).Return(nil, &model.TechnicalError{
+			Exception: "something went wrong",
+			Occurred:  time.Now().Unix(),
+			Ticket:    "ERR-001",
+		})
+		v, ex := svc.Tier(inp)
+		assert.NotNil(t, ex)
+		assert.Nil(t, v)
 	})
 }
