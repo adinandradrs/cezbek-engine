@@ -82,6 +82,16 @@ func TestTransaction_CountByPartner(t *testing.T) {
 			Id: 7,
 		},
 	}
+	t.Run("should return exception on failed to map the result", func(t *testing.T) {
+		where := " AND '1' = $2 "
+		rows := pgxpoolmock.NewRows(nil).ToPgxRows()
+		pool.EXPECT().QueryRow(ctx, cmd+where, inp.SessionRequest.Id, gomock.Any()).
+			Return(rows)
+		v, ex := persister.CountByPartner(inp)
+		assert.Nil(t, v)
+		assert.NotNil(t, ex)
+	})
+
 	t.Run("should success without text search", func(t *testing.T) {
 		where := " AND '1' = $2 "
 		rows := pgxpoolmock.NewRows([]string{"count"}).
@@ -282,6 +292,19 @@ func TestTransaction_Add(t *testing.T) {
 				assert.Equal(t, "failed to commit add kezbek trx", r)
 			}
 		}()
+		tid, ex := persister.Add(trx)
+		assert.NotNil(t, ex)
+		assert.Nil(t, tid)
+	})
+
+	t.Run("should return exception on failed to map the ID", func(t *testing.T) {
+		rows := pgxpoolmock.NewRows(nil).ToPgxRows()
+		pool.EXPECT().BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.Serializable}).Return(tx, nil)
+		tx.EXPECT().QueryRow(context.Background(), cmd,
+			apps.StatusInactive, trx.PartnerId, trx.Partner.String, trx.WalletCode.String, trx.Msisdn.String, trx.Email.String,
+			trx.Qty, trx.Amount, trx.PartnerRefCode.String, trx.KezbekRefCode.String,
+			trx.CreatedBy.Int64).Return(rows)
+		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
 		tid, ex := persister.Add(trx)
 		assert.NotNil(t, ex)
 		assert.Nil(t, tid)

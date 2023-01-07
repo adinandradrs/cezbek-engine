@@ -29,11 +29,11 @@ type (
 		PrevTier             sql.NullString `json:"prev_tier" db:"prev_tier"`
 		ExpiredDate          sql.NullTime   `json:"expired_date" db:"expired_date"`
 		TransactionRecurring int            `json:"transaction_recurring" db:"transaction_recurring"`
-		Journey              TierJourneys
+		Journey              TierJourney
 		BaseEntity
 	}
 
-	TierJourneys struct {
+	TierJourney struct {
 		Id                int64          `json:"id" db:"id"`
 		CurrentGrade      int            `json:"current_grade" db:"current_grade"`
 		CurrentTier       sql.NullString `json:"current_tier" db:"current_tier"`

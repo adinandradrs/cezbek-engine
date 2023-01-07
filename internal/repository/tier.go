@@ -50,7 +50,7 @@ func (t *Tier) FindByPartnerMsisdn(pid int64, msisdn string) (*model.Tier, *mode
 	return &d, nil
 }
 
-func (t *Tier) addJourney(j model.TierJourneys, tx pgx.Tx) *model.TechnicalError {
+func (t *Tier) addJourney(j model.TierJourney, tx pgx.Tx) *model.TechnicalError {
 	_, err := tx.Exec(context.Background(), `INSERT INTO tier_journeys 
 		(last_transaction_id, current_grade, current_tier, notes, is_deleted, created_by, created_date)
 		VALUES ($1, $2, $3, $4, FALSE, $5, NOW())`,
