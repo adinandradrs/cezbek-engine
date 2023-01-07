@@ -1,4 +1,4 @@
-[![cezbek-engine-build](https://github.com/adinandradrs/cezbek-engine/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/adinandradrs/cezbek-engine/actions/workflows/ci.yml)[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=adinandradrs_cezbek-engine&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=adinandradrs_cezbek-engine)[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=adinandradrs_cezbek-engine&metric=coverage)](https://sonarcloud.io/summary/new_code?id=adinandradrs_cezbek-engine)
+[![cezbek-engine-build](https://github.com/adinandradrs/cezbek-engine/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/adinandradrs/cezbek-engine/actions/workflows/ci.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=adinandradrs_cezbek-engine&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=adinandradrs_cezbek-engine) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=adinandradrs_cezbek-engine&metric=coverage)](https://sonarcloud.io/summary/new_code?id=adinandradrs_cezbek-engine)
 
 # Cezbek Engine
 
