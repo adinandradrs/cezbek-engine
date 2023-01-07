@@ -1,23 +1,23 @@
+[![cezbek-engine-build](https://github.com/adinandradrs/cezbek-engine/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/adinandradrs/cezbek-engine/actions/workflows/ci.yml)[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=adinandradrs_cezbek-engine&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=adinandradrs_cezbek-engine)[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=adinandradrs_cezbek-engine&metric=coverage)](https://sonarcloud.io/summary/new_code?id=adinandradrs_cezbek-engine)
+
 # Cezbek Engine
 
-Cezbek Engine is a new core back-end system that helps Kezbek manage business, at scale. With Cezbek Engine, Kezbek can have 
+Cezbek Engine is a new core back-end system that helps Kezbek to manage their business, at scale. With Cezbek Engine, Kezbek can have 
 
 - Business to Business (B2B) onboarding for enterprise partner
 - B2B cashback workflow for customer transaction
-- B2B loyalty reward workflow for "tiering" gamification 
+- B2B loyalty reward workflow for "tiering" gamification
 - Notification to boost customer engagement
-- **Budget friendly payment providers** to give Kezbek finance team a better experience (*)
-- **Dashboard for reporting & analytics** for invoice and reconciliation purpose (*) 
-
-(*) means a new additional features
+- **Budget friendly payment providers** to give Kezbek finance team a better experience
+- **Dashboard for reporting & analytics** for invoice and reconciliation purpose 
 
 As per this document is created
 
-- Kezbek is officially partnered with LinkSaja, GoPaid, and Josvo as wallet service providers. Then it only works for B2B partner's customer who have MSISDN as identifier.
-- To integrate with wallet service provider Kezbek could connect through a direct H2H or 3rd party payment provider API, based on the lowest service charge. 
-
-- Kezbek will not manage customer whitelists, product, and campaign that partner that can use Kezbek workflow.
-- Kezbek balance can be used in transaction as long as the transaction amount is not over limit (balance) and means the transaction is not applicable to get another cashback.
+- Kezbek is officially partnered with LinkSaja, GoPaid, and Josvo as wallet service providers. Then it only works for B2B partner's customer who have MSISDN as identifier. 
+- To integrate with wallet service provider Kezbek could connect through a direct H2H or 3rd party payment provider API such as Middletrans and Xenit, based on the lowest service charge. 
+- In development environment we will use Mock API server that will be pretended as H2H and 3rd party payment provider. 
+- Kezbek does not manage customer whitelists, product, and campaign that partner have and considered as out of scope.
+- Cezbek in current phase does not provide any parameter and configuration management so it will be manually handle.
 
 ### Contents
 
@@ -79,11 +79,12 @@ Below is the detail of development budget estimation per month, seems AWS provid
 Our code delivery to operation is using GitHub action as the CI/CD, and should passed the 4 steps :
 
 1. Merge Request (MR) : Legitimate to push from feature branch into release/sprint-{x} branch.
-2. Test : Unit test should pass and have at least 75% of code coverage, Kezbek does not accept for a non testable code or low code coverage to embrace the next refactoring. Also with its SAST result, Kezbek wants a bug free software.
-3. Quality : SonarQube Cloud will scan the code quality, men and code should be improvise together along with Kezbek commitment to develop their employee skill and their product quality. A rating for maintain level, A rating for security, 0 of code smell, and 0 of bugs.
-4. Package : Compilation, packaging, and send to the machine. For a reason, GitHub Package will be used as artifactory and release versioning.
+2. Unit Test : Unit test should pass and have at least 60% of code coverage, Kezbek does not accept for a non testable code or code coverage less than 60% to embrace refactoring in the future. 
+3. SAST : secure and no harm as the result and it more than a library audit, Kezbek wants a bug free software with a secure source code.
+4. Code Scan : SonarQube Cloud will scan the code quality, men and code should be improvise together along with Kezbek commitment to develop their employee skill and their product quality. A rating for maintain level, A rating for security, 0 of code smell, and 0 of bugs.
+5. Package : Compilation, packaging, and send to the machine. For a reason, GitHub Package will be used as artifactory and release versioning.
 
-In contrast for the production environment, we recommend to use docker and K8s as the application backbone and heavily backed up by AWS. Because by using K8s we could scale our apps with a more easy way. So even we are not using it on development environment due to *economics* case, it still have so many similarities because the docker itself is just for a container that non mainly used by the developer. Still it does not break 12 factor apps for dev/prod parity. The packaging will be handled by CI/CD based on the selected branch.
+In contrast for the production environment, we recommend to use docker and K8s as the application backbone and heavily backed up by AWS. Because by using K8s we could scale our apps with a more easy way. So even we are not using it on development environment due to current economy condition, it still have so many similarities because the docker itself is just for a container that non mainly used by the developer. Still it does not break 12 factor apps for dev/prod parity. The packaging will be handled by CI/CD based on the selected branch.
 
 We still recommend Consul and Vault as the configmaps and secrets source, due to its ability as a distributed config server and can be secured using authentication.
 
@@ -123,25 +124,13 @@ For the naming convention for all of those things, we are following the nature o
 | Go Cron         | v1.17.0            | Job                       | Job library that support UNIX cron expression, quartz, and resource lock for distributed job. One of the top usage by community and mostly have many custom time options, we can not benchmark this one but can be trusted due to its active maintainer. |
 | Gosec           | v2.14.0            | CLI Toolkit               | Go CLI SAST checker, standard Go AST by go.dev and has been a basic standard plugin in many CI cloud provider (GitLab, GitHub, CircleCI, and Codacy). |
 | Swaggo          | v1.8.4             | CLI Toolkit and OpenAPI   | Go CLI Swagger Open API code generator.                      |
-| Counterfeiter   | v6.5.0             | CLI Toolkit and Unit Test | Go CLI and library unit test, mock, and stub code generator. A CLI that extends Go Mockgen to use Go testify. |
+| Mockgen         | v1.6.0             | CLI Toolkit and Unit Test | Go CLI and library unit test, mock, and stub code generator. |
 
 #### Data Structure
 
 ------
 
 ![high-level-arch](https://github.com/adinandradrs/cezbek-engine/blob/master/docs/erd.png?raw=true)
-
-Kezbek database is separated into 2 schemas (in production it can be placed in a different machine if we do not use high performant server) : 
-
-- cezbek-engine as a operating schema that holds parameters, partners, transactions, and tiering data.
-
-- cezbek-analytics as a reporting schema that holds transaction summary and used for reporting.
-
-At Cezbek engine schema itself some data is coming from an event sourcing that rely on 2PC to be more consistent on rollback or failed transaction. Cezbek analytics data populated and is coming from cezbek engine as the summary data does not need to be real time. There are 3 summaries that should be collected :  
-
-- Transaction summary per day.
-- Payment provider *fee service* expense.
-- Summary B2B partner customer transaction history.
 
 #### System Migration
 
@@ -170,7 +159,7 @@ To begin with Cezbek Engine product, all developer can refer to this section to 
 At least have installed Go 1.17 or above. Some toolkit that need also to be installed are :
 
 1. [Swaggo](https://github.com/swaggo/swag) to generate Open API specs
-2. Counterfeiter to generate code mock
+2. Mockgen to generate code mock
 
 For those who just checkout Cezbek Engine should run command below to **download libraries dependencies**
 
@@ -187,16 +176,10 @@ go run cmd/api/router.go .
 **To run on scheduler** on local could run the command below
 
 ```
-go run cmd/job/router.go .
+go run cmd/job/cron.go .
 ```
 
-**To run analytic router** on local could run the command below, just make sure the port to run the HTTP server not yet used
-
-```
-go run cmd/analytic/router.go
-```
-
-**To generate OpenAPI specification on each router** could run the command below 
+**To generate OpenAPI specification on router** could run the command below 
 
 ```
 //swag init
