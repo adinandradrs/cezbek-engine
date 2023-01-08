@@ -50,7 +50,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Set Auth Amazon AWS
+      - name: Set Auth AWS
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
@@ -93,7 +93,7 @@ jobs:
           CONSUL_HOST: ${{ secrets.CONSUL_HOST }}
           CONSUL_PORT: ${{ secrets.CONSUL_PORT }}
         run: |
-          docker build -f deployment/Dockerfile.api -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG  --build-arg CONSUL_HOST=$CONSUL_HOST --build-arg CONSUL_PORT=$CONSUL_PORT --build-arg APP_CEZBEK_JOB=cezbek-api-dev .
+          docker build -f deployment/Dockerfile.api -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG  --build-arg CONSUL_HOST=$CONSUL_HOST --build-arg CONSUL_PORT=$CONSUL_PORT --build-arg APP_CEZBEK_API=cezbek-api-dev .
           echo "Pushing cezbek api image to ECR..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
@@ -119,7 +119,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Set Auth Amazon AWS
+      - name: Set Auth AWS
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
