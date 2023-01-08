@@ -1,4 +1,4 @@
-name: cezbek-engine-cicd
+name: cezbek-engine-ci
 
 on:
   push:
@@ -75,6 +75,21 @@ jobs:
         run: |
           docker build -f deployment/Dockerfile.job -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG  --build-arg CONSUL_HOST=$CONSUL_HOST --build-arg CONSUL_PORT=$CONSUL_PORT --build-arg APP_CEZBEK_JOB=cezbek-job-dev .
           echo "Pushing cezbek job image to ECR..."
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" 
+
+      - name: Package API Service to Amazon ECR
+        if: ${{ env.PUSH_PACKAGES }}
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.AWS_ECR_CEZBEK_API }}
+          IMAGE_TAG: ${{ github.sha }}
+          CONSUL_HOST: ${{ secrets.CONSUL_HOST }}
+          CONSUL_PORT: ${{ secrets.CONSUL_PORT }}
+        run: |
+          docker build -f deployment/Dockerfile.api -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG  --build-arg CONSUL_HOST=$CONSUL_HOST --build-arg CONSUL_PORT=$CONSUL_PORT --build-arg APP_CEZBEK_JOB=cezbek-api-dev .
+          echo "Pushing cezbek api image to ECR..."
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" 
     
