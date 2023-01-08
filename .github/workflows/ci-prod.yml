@@ -1,0 +1,35 @@
+name: cezbek-engine-ci-prod
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    name : Quick Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Golang w/ cache
+        uses: magnetikonline/action-golang-cache@v3
+        with:
+          go-version: ~1.17
+
+      - name: Static Security Test
+        uses: securego/gosec@master
+        with:
+          args: -exclude-dir=mock -exclude-dir=internal/docs ./...
+
+      - name: Unit Test
+        run: go test -coverprofile=coverage.out ./internal/...
+
+      - name: Code Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

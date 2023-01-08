@@ -140,3 +140,14 @@ jobs:
           key: ${{secrets.EC2_DEV_PEM}}
           port: 22
           args: "-tt"
+
+      - name: Run API development
+        uses: fifsky/ssh-action@master
+        with:
+          command: |
+            docker run -d -p ${{ secrets.API_PORT }}:${{ secrets.API_PORT }} ${{ steps.login-ecr.outputs.registry }}/${{ secrets.AWS_ECR_CEZBEK_API }}:${{ env.IMAGE_TAG }}
+          host: ${{secrets.EC2_DEV_HOSTNAME}}
+          user: ${{secrets.EC2_DEV_USERNAME}}
+          key: ${{secrets.EC2_DEV_PEM}}
+          port: 22
+          args: "-tt"
