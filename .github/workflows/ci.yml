@@ -37,10 +37,10 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Test Build Job Service
-        run: go mod tidy && go build -v cmd/job/cron.go
+        run: go mod tidy -compat=1.17 && go build -v cmd/job/cron.go
 
       - name: Test Build API Service
-        run: go mod tidy && go build -v cmd/api/router.go
+        run: go mod tidy -compat=1.17 && go build -v cmd/api/router.go
   delivery:
     name: Package Service
     needs: test
