@@ -16,3 +16,4 @@
 .env
 .scannerwork/
 coverage
+/cmd/tool/util.go

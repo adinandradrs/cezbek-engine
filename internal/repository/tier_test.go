@@ -107,8 +107,8 @@ func TestTier_Expire(t *testing.T) {
 	cmd := `UPDATE tiers SET
 		current_grade = prev_grade, 
 		current_tier = prev_tier, 
-		prev_grade = null, 
-		prev_tier = null, 
+		prev_grade = current_grade, 
+		prev_tier = current_tier, 
 		expired_date = $1, 
 		transaction_recurring = 1,
 		updated_date = NOW(), 
@@ -180,8 +180,8 @@ func TestTier_Add(t *testing.T) {
 		created_by, created_date)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, FALSE, $10, NOW()) RETURNING ID`
 	ccmd := `INSERT INTO tier_journeys 
-		(last_transaction_id, current_grade, current_tier, notes, is_deleted, created_by, created_date)
-		VALUES ($1, $2, $3, $4, FALSE, $5, NOW())`
+		(last_transaction_id, current_grade, current_tier, notes, is_deleted, created_by, created_date, tier_id)
+		VALUES ($1, $2, $3, $4, FALSE, $5, NOW(), $6)`
 	tier := model.Tier{
 		PartnerId:            1,
 		Msisdn:               sql.NullString{String: "628118770510"},
@@ -213,7 +213,7 @@ func TestTier_Add(t *testing.T) {
 			tier.TransactionRecurring, tier.CreatedBy.Int64).Return(rows)
 		tx.EXPECT().Exec(context.Background(), ccmd,
 			tier.Journey.LastTransactionId, tier.Journey.CurrentGrade, tier.Journey.CurrentTier.String,
-			tier.Journey.Notes.String, tier.Journey.CreatedBy.Int64,
+			tier.Journey.Notes.String, tier.Journey.CreatedBy.Int64, tier.Journey.TierId,
 		).Return(nil, nil)
 		tx.EXPECT().Commit(ctx).Times(1).Return(nil)
 		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
@@ -252,7 +252,7 @@ func TestTier_Add(t *testing.T) {
 			tier.TransactionRecurring, tier.CreatedBy.Int64).Return(rows)
 		tx.EXPECT().Exec(context.Background(), ccmd,
 			tier.Journey.LastTransactionId, tier.Journey.CurrentGrade, tier.Journey.CurrentTier.String,
-			tier.Journey.Notes.String, tier.Journey.CreatedBy.Int64,
+			tier.Journey.Notes.String, tier.Journey.CreatedBy.Int64, tier.Journey.TierId,
 		).Return(nil, fmt.Errorf("something went wrong"))
 		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
 		ex := persister.Add(tier)
@@ -284,8 +284,8 @@ func TestTier_Update(t *testing.T) {
 		WHERE 
 			msisdn = $10 and partner_id = $11`
 	ccmd := `INSERT INTO tier_journeys 
-		(last_transaction_id, current_grade, current_tier, notes, is_deleted, created_by, created_date)
-		VALUES ($1, $2, $3, $4, FALSE, $5, NOW())`
+		(last_transaction_id, current_grade, current_tier, notes, is_deleted, created_by, created_date, tier_id)
+		VALUES ($1, $2, $3, $4, FALSE, $5, NOW(), $6)`
 	tier := model.Tier{
 		PartnerId:            1,
 		Msisdn:               sql.NullString{String: "628118770510"},
@@ -315,7 +315,7 @@ func TestTier_Update(t *testing.T) {
 			tier.UpdatedBy.Int64, tier.Msisdn.String, tier.PartnerId).Return(nil, nil)
 		tx.EXPECT().Exec(context.Background(), ccmd,
 			tier.Journey.LastTransactionId, tier.Journey.CurrentGrade, tier.Journey.CurrentTier.String,
-			tier.Journey.Notes.String, tier.Journey.CreatedBy.Int64,
+			tier.Journey.Notes.String, tier.Journey.CreatedBy.Int64, tier.Journey.TierId,
 		).Return(nil, nil)
 		tx.EXPECT().Commit(ctx).Times(1).Return(nil)
 		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
@@ -342,7 +342,7 @@ func TestTier_Update(t *testing.T) {
 			tier.UpdatedBy.Int64, tier.Msisdn.String, tier.PartnerId).Return(nil, nil)
 		tx.EXPECT().Exec(context.Background(), ccmd,
 			tier.Journey.LastTransactionId, tier.Journey.CurrentGrade, tier.Journey.CurrentTier.String,
-			tier.Journey.Notes.String, tier.Journey.CreatedBy.Int64,
+			tier.Journey.Notes.String, tier.Journey.CreatedBy.Int64, tier.Journey.TierId,
 		).Return(nil, fmt.Errorf("something went wrong"))
 		tx.EXPECT().Rollback(ctx).Times(1).Return(nil)
 		ex := persister.Update(tier)

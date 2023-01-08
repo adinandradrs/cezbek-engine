@@ -52,10 +52,10 @@ func (t *Tier) FindByPartnerMsisdn(pid int64, msisdn string) (*model.Tier, *mode
 
 func (t *Tier) addJourney(j model.TierJourney, tx pgx.Tx) *model.TechnicalError {
 	_, err := tx.Exec(context.Background(), `INSERT INTO tier_journeys 
-		(last_transaction_id, current_grade, current_tier, notes, is_deleted, created_by, created_date)
-		VALUES ($1, $2, $3, $4, FALSE, $5, NOW())`,
+		(last_transaction_id, current_grade, current_tier, notes, is_deleted, created_by, created_date, tier_id)
+		VALUES ($1, $2, $3, $4, FALSE, $5, NOW(), $6)`,
 		j.LastTransactionId, j.CurrentGrade, j.CurrentTier.String,
-		j.Notes.String, j.CreatedBy.Int64,
+		j.Notes.String, j.CreatedBy.Int64, j.TierId,
 	)
 	if err != nil {
 		return apps.Exception("failed to add tier journey tx", err, zap.Any("", j), t.Logger)
@@ -91,7 +91,7 @@ func (t *Tier) Update(tier model.Tier) *model.TechnicalError {
 	if err != nil {
 		return apps.Exception("failed to update tier tx", err, zap.Any("", tier), t.Logger)
 	}
-
+	tier.Journey.TierId = tier.Id
 	ex := t.addJourney(tier.Journey, tx)
 	if ex != nil {
 		return ex
@@ -154,8 +154,8 @@ func (t *Tier) Expire(expired time.Time) *model.TechnicalError {
 	_, err = tx.Exec(context.Background(), `UPDATE tiers SET
 		current_grade = prev_grade, 
 		current_tier = prev_tier, 
-		prev_grade = null, 
-		prev_tier = null, 
+		prev_grade = current_grade, 
+		prev_tier = current_tier, 
 		expired_date = $1, 
 		transaction_recurring = 1,
 		updated_date = NOW(), 
