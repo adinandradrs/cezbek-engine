@@ -28,8 +28,6 @@ With some notes from the author that
 	- [System Migration](#system-migration)
  - [Documentation](#documentation)
    - [Installation](#installation)
-   - [Unit Test](#installation)
-   - [Surrounding](#surrounding)
 
 
 ### Technology Background
@@ -91,6 +89,8 @@ Amazon Web Service (AWS) will be the provider of Platform as a Service and Infra
 
 ![high-level-arch](https://github.com/adinandradrs/cezbek-engine/blob/master/docs/high-level-arch.jpg?raw=true)
 
+On development we use only docker and on production will use K8s as the orchestrator that heavily backed up by AWS. By using K8s we could scale our apps with a more easy way. So even we are not using it on development environment due to financial costs, it still have so many similarities because the docker itself is just for a container that non mainly used by the developer. Still it does not break 12 factor apps for dev/prod parity. We recommend Consul and Vault as the configmaps and secrets source, due to its ability as a distributed config server and can be secured using authentication. 
+
 Below is the detail of development budget estimation per month, seems AWS provides a budget friendly environment if compared to another cloud provider.
 
 | Infrastructure      | Provider   | Description                                | Est Price/Month                                              |
@@ -105,42 +105,22 @@ Below is the detail of development budget estimation per month, seems AWS provid
 | CIAM                | AWS        | AWS Cognito                                | $0 - $5 / month                                              |
 | SonarQube           | SonarCloud | Sonar scanner on cloud by SonarCloud       | $0 for a public repository or $12 / month for a private repository |
 
-Our code delivery to operation is using GitHub action as the CI/CD, and should passed the 4 steps :
 
-1. Merge Request (MR) : Legitimate to push from feature branch into release/sprint-{x} branch.
-2. Unit Test : Unit test should pass and have at least 60% of code coverage, Kezbek does not accept for a non testable code or code coverage less than 60% to embrace refactoring in the future. 
-3. SAST : secure and no harm as the result and it more than a library audit, Kezbek wants a bug free software with a secure source code.
-4. Code Scan : SonarQube Cloud will scan the code quality, men and code should be improvise together along with Kezbek commitment to develop their employee skill and their product quality. A rating for maintain level, A rating for security, 0 of code smell, and 0 of bugs.
-5. Package : Compilation, packaging, and send to the machine. For a reason, GitHub Package will be used as artifactory and release versioning.
-
-In contrast for the production environment, we recommend to use docker and K8s as the application backbone and heavily backed up by AWS. Because by using K8s we could scale our apps with a more easy way. So even we are not using it on development environment due to current economy condition, it still have so many similarities because the docker itself is just for a container that non mainly used by the developer. Still it does not break 12 factor apps for dev/prod parity. The packaging will be handled by CI/CD based on the selected branch.
-
-We still recommend Consul and Vault as the configmaps and secrets source, due to its ability as a distributed config server and can be secured using authentication.
 
 ![](https://github.com/adinandradrs/cezbek-engine/blob/master/docs/archie-1.0-HLA-PROD-HA.jpg?raw=true)
 
-#### Technology Architecture
+For CI/CD the packaging will be handled by GitHub Actions workflow based on the selected branch. Our code delivery will be scan and should passed the 4 steps. Each step have their own respective stages such as unit test, SAST, sonar-scan, and many more.  
 
+![](https://github.com/adinandradrs/cezbek-engine/blob/master/docs/ci-cd.png?raw=true)
 
+1. **Merge Request** : Legitimate to push from feature branch into release/sprint-{x} branch.
+2. **Quick Test** : Code build, unit test should pass, have at least 60% of code coverage, and no suspicious code. Kezbek does not accept for a non testable code or code coverage less than 60% to embrace refactoring in the future.
+3. **Package Service** : Deliver build package to docker image and upload into ECR.
+4. **Release Service** : Rolling docker image from ECR into machine.
 
-| Library         | Version            | Category                  | Description                                                  |
-| --------------- | ------------------ | ------------------------- | ------------------------------------------------------------ |
-| Pgxpool         | v4.17.2            | Storage                   | Postgres library that support transaction, pool mechanism, cache, and pgxscan to optimize scanning into struct with a lesser ops allocation. Docs for [reference](https://github.com/efectn/go-orm-benchmarks/blob/master/results.md). We avoid to use ORM if we are not smart enough to use a raw SQL. |
-| UberZap         | v1.22.0            | Logger                    | Log library that used by Uber, the output data statically by default is a JSON format. So it becomes developer friendly if one day we will store our log into Elastic tool. Docs for [reference](http://hackemist.com/logbench/). |
-| Go-Redis        | v6.15.9            | Storage                   | Redis library that support pool mechanism. Docs for [reference](https://levelup.gitconnected.com/fastest-redis-client-library-for-go-7993f618f5ab). |
-| Consul          |                    | Service                   | Consul library to support service discovery and config management system as we are not using K8s on development. |
-| Viper           |                    | Config                    | Viper is a library that could do a multiform of configuration. It could fetch the config from a config server, OS environment variable, and YAML format. |
-| Fiber           | v23.6.0            | Router                    | Built-in library in Fiber framework for HTTP router, middleware (interceptor), and limiter. |
-| Fiber           | v23.6.0            | Monitor                   | Built in library in Fiber framework for resource monitoring. |
-| Fiber w/ stdlib | v23.6.0 w/ 1.17.12 | Message Parser            | Built-in library in Fiber framework and combined with standard library to support message encoding decoding such as JSON, Struct, and interface. |
-| Fiber w/ stdlib | v23.6.0 w/ 1.17.12 | File Operation            | Built-in library in Fiber framework for disk operation and stdlib for file operation. |
-| S3 AWS SDK      | v1.44.81           | Object Storage            | S3 object storage library to store and fetch file, legally supported by Amazon Web Service. |
-| SQS AWS SDK     | v1.44.81           | Message Queue             | SQS library to do message queue ops, legally supported by Amazon Web Service. |
-| Gojek Heimdall  | v7.0.2             | External Adaptor          | Extended of standard Go HTTP client library for circuit breaker. Actually this library is using Hystrix. We use Heimdall because the sophisticated of casual typing by using its interface, we do not have to define of every context on each HTTP client function. |
-| Go Cron         | v1.17.0            | Job                       | Job library that support UNIX cron expression, quartz, and resource lock for distributed job. One of the top usage by community and mostly have many custom time options, we can not benchmark this one but can be trusted due to its active maintainer. |
-| Gosec           | v2.14.0            | CLI Toolkit               | Go CLI SAST checker, standard Go AST by go.dev and has been a basic standard plugin in many CI cloud provider (GitLab, GitHub, CircleCI, and Codacy). |
-| Swaggo          | v1.8.4             | CLI Toolkit and OpenAPI   | Go CLI Swagger Open API code generator.                      |
-| Mockgen         | v1.6.0             | CLI Toolkit and Unit Test | Go CLI and library unit test, mock, and stub code generator. |
+Some of tools to ensure the code quality that we have made are SonarCloud, GoSec, and out of the box Go Tools. For application metrics and health we use Fiber build-in monitoring page that can be accessed in application. The metrics also provide REST API that can be used for other monitoring tools such as Prometheus and can be populated to Grafana dashboard.
+
+![](https://github.com/adinandradrs/cezbek-engine/blob/master/docs/monitoring.png?raw=true)
 
 #### Data Structure
 
@@ -148,11 +128,9 @@ We still recommend Consul and Vault as the configmaps and secrets source, due to
 
 ![high-level-arch](https://github.com/adinandradrs/cezbek-engine/blob/master/docs/erd.png?raw=true)
 
-#### System Migration
+To ease data migration and ensure the quality of DDL and DML that made by developer we will use a repository called **cezbek-sre-data**. Data migration will be automated by CI/CD that run Flyway. All the SQL files are versioned and placed under migration/sql directory. Flyway will detect and notify if data migration is failing by email. Below is the example of workflow that running on Data Migration w/ Flyway.
 
-------
-
-For configmap and secrets we will use a repository called cezbek-sre-ops. For data to generate table on a schema and data manipulation we will use a repository called cezbek-sre-data. Data migration will be automated by CI/CD that run Flyway.
+![](https://github.com/adinandradrs/cezbek-engine/blob/master/docs/ci-data.png?raw=true)
 
 ### Documentation
 
@@ -166,7 +144,17 @@ To begin with Cezbek Engine product, all developer can refer to this section to 
 4. Redis 6 as the memory cache
 5. AWS S3 as object storage
 6. AWS SQS as queue service
-7. AWS Cognito as Customer Identity Access Management (CIAM)
+7. AWS SES as notification sender
+8. AWS Cognito as Customer Identity Access Management (CIAM)
+
+Pre defined .env for local development to run the project
+
+```
+CONSUL_HOST={{consul-host}}
+CONSUL_PORT={{consul-port}}
+APP_CEZBEK_API=cezbek-api-{{profile}}
+APP_CEZBEK_JOB=cezbek-job-{{profile}}
+```
 
 #### Installation
 
@@ -175,7 +163,7 @@ To begin with Cezbek Engine product, all developer can refer to this section to 
 At least have installed Go 1.17 or above. Some toolkit that need also to be installed are :
 
 1. [Swaggo](https://github.com/swaggo/swag) to generate Open API specs
-2. Mockgen to generate code mock
+2. Mockgen or Counterfeiter to generate code mock and based on personal taste Mockgen is more than enough 
 
 For those who just checkout Cezbek Engine should run command below to **download libraries dependencies**
 
@@ -183,21 +171,27 @@ For those who just checkout Cezbek Engine should run command below to **download
 go mod tidy
 ```
 
-**To run API router** on local could run the command below, just make sure the port to run the HTTP server not yet used
+**To run API router** on local could run the command below, just make sure the port to run the HTTP server not yet used. Port that will be used by API can be seen on Consul
 
 ```
 go run cmd/api/router.go .
 ```
 
-**To run on scheduler** on local could run the command below
+**To run job and scheduler** on local could run the command below
 
 ```
 go run cmd/job/cron.go .
 ```
 
-**To generate OpenAPI specification on router** could run the command below 
+**To generate OpenAPI specification on router** could run the command below, always run this command before commit to ensure we have the latest OpenAPI specs
 
 ```
-//swag init
+swag init --parseDependency --parseInternal --parseDepth 1 -g ./cmd/api/router.go -o internal/docs
+```
+
+To generate code mocks to enable unit test become more easy could run the command below, always move the generated file to mocks directory to distinct.
+
+```
+mockgen --source=filename.go --destination=filename_mock.go
 ```
 
