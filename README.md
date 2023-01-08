@@ -78,7 +78,7 @@ Below is the table of standard open-source libraries that we used in Cezbek Engi
 
 ------
 
-Amazon Web Service (AWS) will be the provider of PaaS (Platform as a Service) and IaaS (Infrastructure as a Service) because it provides many product and configuration to ease Cezbek Engine setup. AWS does not force to develop and do coding on the cloud, thus the developer still can run on their own machine. AWS free features that should be mandatory and included are : 
+Amazon Web Service (AWS) will be the provider of Platform as a Service and Infrastructure as a Service because it provides many product and configuration to ease Cezbek Engine setup. AWS does not force to develop and do coding on the cloud, thus the developer still can run on their own machine. AWS free features that should be mandatory and included are : 
 
 1. **Amazon S3** low performant on development environment, DevOps team does not have to deploy separate EC2 instance and storage to store file as SFTP
 2. **Amazon Cognito** Customer Identity Access Management (CIAM), developer and DevOps team does not have to deploy or develop separate security layer or service 
