@@ -76,5 +76,5 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-            aws ecr get-login-password --region ap-southeast-3 | docker login --username AWS --password-stdin 735185491450.dkr.ecr.ap-southeast-3.amazonaws.com && docker pull 735185491450.dkr.ecr.ap-southeast-3.amazonaws.com/cezbek-job:$IMAGE_TAG && docker pull 735185491450.dkr.ecr.ap-southeast-3.amazonaws.com/cezbek-api:$IMAGE_TAG 
+            aws ecr get-login-password --region ap-southeast-3 | docker login --username AWS --password-stdin 735185491450.dkr.ecr.ap-southeast-3.amazonaws.com && docker pull 735185491450.dkr.ecr.ap-southeast-3.amazonaws.com/cezbek-job:${IMAGE_TAG} && docker pull 735185491450.dkr.ecr.ap-southeast-3.amazonaws.com/cezbek-api:{$IMAGE_TAG} 
           '
