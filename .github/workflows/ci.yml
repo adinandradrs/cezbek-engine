@@ -41,10 +41,11 @@ jobs:
         with:
           args: -exclude-dir=mock -exclude-dir=internal/docs ./...
   delivery:
-    name: Package
-    if: "contains(github.head_ref, 'development')" 
+    name: Package 
     needs: test
     runs-on: ubuntu-latest
+    env:
+      PUSH_PACKAGES: ${{ github.event_name == 'push' && github.ref == 'refs/heads/development' }}
 
     steps:
       - name: Checkout
@@ -62,6 +63,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Packaging New Cezbek Job to ECR
+        if: ${{ env.PUSH_PACKAGES }}
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
