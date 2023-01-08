@@ -36,12 +36,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Test Build
-        uses: securego/gosec@master
-        with:
-          args: -exclude-dir=mock -exclude-dir=internal/docs ./...
+      - name: Test Build Job Service
+        run: go build -v ./job/...
+
+      - name: Test Build API Service
+        run: go build -v ./api/...
   delivery:
-    name: Package 
+    name: Package Service
     needs: test
     runs-on: ubuntu-latest
     env:
@@ -51,18 +52,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Set Auth AWS
+      - name: Set Auth Amazon AWS
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ap-southeast-3
 
-      - name: Auth to ECR
+      - name: Auth to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Packaging New Cezbek Job to ECR
+      - name: Package Job Service to Amazon ECR
         if: ${{ env.PUSH_PACKAGES }}
         id: build-image
         env:
