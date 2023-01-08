@@ -7,6 +7,7 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/handler/middleware"
 	"github.com/adinandradrs/cezbek-engine/internal/usecase/management"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	swagger "github.com/swaggo/fiber-swagger"
 	"go.uber.org/zap"
 )
@@ -41,6 +42,7 @@ func main() {
 	api := fiber.New()
 
 	//middleware config
+	api.Use(cors.New())
 	preAuthenticator := middleware.NewPreAuthenticator(&middleware.PreAuthenticator{
 		Logger: c.Logger,
 	})

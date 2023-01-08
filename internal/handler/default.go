@@ -4,12 +4,14 @@ import (
 	"github.com/adinandradrs/cezbek-engine/internal/apps"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/monitor"
 )
 
 var checker = validator.New()
 
 func DefaultHandler(router fiber.Router, path string) {
 	router.Get(path+"/ping", ping)
+	router.Get(path+"/metrics", monitor.New(monitor.Config{Title: "Cezbek Engine Metrics Page"}))
 }
 
 // Ping godoc
