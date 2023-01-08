@@ -1,4 +1,4 @@
-[![cezbek-engine-build](https://github.com/adinandradrs/cezbek-engine/actions/workflows/ci.yml/badge.svg?branch=master) ](https://github.com/adinandradrs/cezbek-engine/actions/workflows/ci.yml)[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=adinandradrs_cezbek-engine&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=adinandradrs_cezbek-engine) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=adinandradrs_cezbek-engine&metric=coverage)](https://sonarcloud.io/summary/new_code?id=adinandradrs_cezbek-engine)
+[![cezbek-engine-ci-prod](https://github.com/adinandradrs/cezbek-engine/actions/workflows/ci-prod.yml/badge.svg)](https://github.com/adinandradrs/cezbek-engine/actions/workflows/ci-prod.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=adinandradrs_cezbek-engine&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=adinandradrs_cezbek-engine) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=adinandradrs_cezbek-engine&metric=coverage)](https://sonarcloud.io/summary/new_code?id=adinandradrs_cezbek-engine)
 
 # Cezbek Engine
 
@@ -193,5 +193,25 @@ To generate code mocks to enable unit test become more easy could run the comman
 
 ```
 mockgen --source=filename.go --destination=filename_mock.go
+```
+
+This project use simple docker to build and run. Dockerize API and Job to build on machine, in this example we are using latest tag for our build
+
+```
+docker build -f deployment/Dockerfile.job -t cezbek-api:latest  --build-arg CONSUL_HOST=$CONSUL_HOST --build-arg CONSUL_PORT=$CONSUL_PORT --build-arg APP_CEZBEK_JOB=cezbek-job-{{profile}} .
+
+docker build -f deployment/Dockerfile.api -t cezbek-job:latest  --build-arg CONSUL_HOST=$CONSUL_HOST --build-arg CONSUL_PORT=$CONSUL_PORT --build-arg APP_CEZBEK_API=cezbek-api-{{profile}} .
+```
+
+Or if we only to make sure the apps can be run on local just need to execute the docker compose. Need to be noted that  
+
+```
+# make sure you have connectivity to Kezbek Consul, because the all of the stuffs such as
+# - Database
+# - Redis
+# - AWS
+# - etc
+# will not provided by this file but only on consul,
+# it only contains how to wrap on local machine
 ```
 

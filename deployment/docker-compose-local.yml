@@ -1,0 +1,29 @@
+services:
+  # make sure you have connectivity to Kezbek Consul, because the all of the stuffs such as
+  # - Database
+  # - Redis
+  # - AWS
+  # - etc
+  # will not provided by this file but only on consul,
+  # it only contains how to wrap on local machine
+  api:
+    container_name: cezbek-api
+    build:
+      context: ..
+      dockerfile: ./deployment/Dockerfile.api
+    ports:
+      - 10001:10001 # it could be different based on port that provided by consul
+    environment:
+      - CONSUL_HOST=localhost
+      - CONSUL_PORT=8500
+      - APP_CEZBEK_API=cezbek-api
+
+  job:
+    container_name: cezbek-job
+    build:
+      context: ..
+      dockerfile: ./deployment/Dockerfile.job
+    environment:
+      - CONSUL_HOST=localhost
+      - CONSUL_PORT=8500
+      - APP_CEZBEK_JOB=cezbek-job
