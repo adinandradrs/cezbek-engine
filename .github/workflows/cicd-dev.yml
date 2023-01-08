@@ -11,7 +11,6 @@ on:
 jobs:
   release:
     name: Release Package
-    needs: delivery
     runs-on: ubuntu-latest
 
     steps:
