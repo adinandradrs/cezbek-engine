@@ -92,20 +92,21 @@ func (t *Transaction) Add(inp *model.TransactionRequest) (*model.TransactionResp
 			ErrorMessage: apps.ErrMsgBussClientAddTransaction,
 		}
 	}
-	bx = t.processCashback(&data, camt, inp, id)
+	data.Id = *id
+	bx = t.processCashback(&data, camt, inp)
 	if bx != nil {
 		return nil, bx
 	}
 	return &trx, nil
 }
 
-func (t *Transaction) processCashback(data *model.Transaction, camt *model.FindCashbackResponse, inp *model.TransactionRequest, id *int64) *model.BusinessError {
+func (t *Transaction) processCashback(data *model.Transaction, camt *model.FindCashbackResponse, inp *model.TransactionRequest) *model.BusinessError {
 	reward := decimal.Zero
 	treward, ex := t.TierProvider.Save(&model.TierRequest{
 		PartnerId:     data.PartnerId,
 		Email:         data.Email.String,
 		Msisdn:        data.Msisdn.String,
-		TransactionId: *id,
+		TransactionId: data.Id,
 	})
 	if ex != nil {
 		t.Logger.Error("failed to save tier", zap.Any("tx", inp))
