@@ -147,6 +147,14 @@ To begin with Cezbek Engine product, all developer can refer to this section to 
 7. AWS SES as notification sender
 8. AWS Cognito as Customer Identity Access Management (CIAM)
 
+To run on our local machine we suggest to use Redis docker by run this command and make sure it could accessed by host.docker.internal domain with port 6379
+
+```
+docker pull redis
+
+docker run -d --name local-redis -p 6379:6379 redis
+```
+
 Pre defined .env for local development to run the project
 
 ```
@@ -203,15 +211,42 @@ docker build -f deployment/Dockerfile.job -t cezbek-api:latest  --build-arg CONS
 docker build -f deployment/Dockerfile.api -t cezbek-job:latest  --build-arg CONSUL_HOST=$CONSUL_HOST --build-arg CONSUL_PORT=$CONSUL_PORT --build-arg APP_CEZBEK_API=cezbek-api-{{profile}} .
 ```
 
-Or if we only to make sure the apps can be run on local just need to execute the docker compose. Need to be noted that  
+Or if we only to make sure the apps can be run on local just need to execute the docker compose. We could use these configuration and set based on the required environment 
 
 ```
-# make sure you have connectivity to Kezbek Consul, because the all of the stuffs such as
-# - Database
-# - Redis
-# - AWS
-# - etc
-# will not provided by this file but only on consul,
-# it only contains how to wrap on local machine
+services:
+  # make sure you have connectivity to Kezbek Consul, because the all of the stuffs such as
+  # - Database
+  # - Redis
+  # - AWS
+  # - etc
+  # will not provided by this file but only on consul,
+  # it only contains how to wrap on local machine
+  api:
+    container_name: cezbek-api
+    build:
+      context: ..
+      dockerfile: ./deployment/Dockerfile.api
+    ports:
+      - {{port_fwd}}:{{port_local}} # it could be different based on port that provided by consul
+    environment:
+      - CONSUL_HOST={{consul_host}} # we could use provided Consul on dev e.g 108.136.161.77 or use our own Consul
+      - CONSUL_PORT={{consul_port}}
+      - APP_CEZBEK_API={{app_name_config}} # we could update this one to use our own configuration based on consul 
+
+  job:
+    container_name: cezbek-job
+    build:
+      context: ..
+      dockerfile: ./deployment/Dockerfile.job
+    environment:
+      - CONSUL_HOST={{consul_host}} # we could use provided Consul on dev e.g 108.136.161.77 or use our own Consul
+      - CONSUL_PORT={{consul_port}}
+      - APP_CEZBEK_JOB={{app_name_config}} # we could update this one to use our own configuration based on consul 
 ```
 
+After all we could check the API's sandbox on our browser by ```http://{{host}}:{{port}}/api/swagger/index.html``` e.g ```http://localhost:10001/api/swagger/index.html``` to check the API is running or not. And for the job itself could be checked by docker log tail.
+
+Hope we could improve this engine for a better future, any valuable questions and input could help us to be better. 
+
+[![License: GPL v2](https://img.shields.io/badge/License-GPL_v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
