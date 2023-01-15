@@ -116,15 +116,19 @@ func (o *Onboard) Authenticate(inp *model.OfficerAuthenticationRequest) (*model.
 	}, nil
 }
 
-func (o *Onboard) queueEmailOtp(otp string, p *model.Partner) *model.BusinessError {
-	sbj, _ := o.Cacher.Hget("EMAIL_SUBJECT", "OTP")
+func (o *Onboard) otpTemplate(otp string, p string) string {
 	tmpl, _ := o.Cacher.Hget("EMAIL_TEMPLATE", "OTP")
 	tmpl = strings.ReplaceAll(tmpl, "${otp}", otp)
-	tmpl = strings.ReplaceAll(tmpl, "${partner}", p.Partner.String)
+	tmpl = strings.ReplaceAll(tmpl, "${partner}", p)
 	tmpl = strings.ReplaceAll(tmpl, "\n", "")
 	tmpl = strings.ReplaceAll(tmpl, "\t", "")
+	return tmpl
+}
+
+func (o *Onboard) queueEmailOtp(otp string, p *model.Partner) *model.BusinessError {
+	sbj, _ := o.Cacher.Hget("EMAIL_SUBJECT", "OTP")
 	msg, err := json.Marshal(model.SendEmailRequest{
-		Content:     tmpl,
+		Content:     o.otpTemplate(otp, p.Partner.String),
 		Subject:     sbj,
 		Destination: p.Email.String,
 	})

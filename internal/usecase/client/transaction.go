@@ -160,8 +160,7 @@ func (t *Transaction) sendCashbackRequest(reward *model.WfRewardTierProjection, 
 	}
 }
 
-func (t *Transaction) queueEmailInvoice(tx *model.Transaction, csb model.H2HSendCashbackRequest) *model.BusinessError {
-	sbj, _ := t.Cacher.Hget("EMAIL_SUBJECT", "INVOICE")
+func (t *Transaction) invoiceTemplate(tx *model.Transaction, amt decimal.Decimal) string {
 	tmpl, _ := t.Cacher.Hget("EMAIL_TEMPLATE", "INVOICE")
 	tmpl = strings.ReplaceAll(tmpl, "${reference}", tx.KezbekRefCode.String)
 	tmpl = strings.ReplaceAll(tmpl, "${msisdn}", tx.Msisdn.String)
@@ -170,11 +169,16 @@ func (t *Transaction) queueEmailInvoice(tx *model.Transaction, csb model.H2HSend
 	tmpl = strings.ReplaceAll(tmpl, "${partner}", tx.Partner.String)
 	tmpl = strings.ReplaceAll(tmpl, "${qty}", strconv.Itoa(tx.Qty))
 	tmpl = strings.ReplaceAll(tmpl, "${transactionAmount}", tx.Amount.String())
-	tmpl = strings.ReplaceAll(tmpl, "${cashbackAmount}", csb.Amount.String())
+	tmpl = strings.ReplaceAll(tmpl, "${cashbackAmount}", amt.String())
 	tmpl = strings.ReplaceAll(tmpl, "\n", "")
 	tmpl = strings.ReplaceAll(tmpl, "\t", "")
+	return tmpl
+}
+
+func (t *Transaction) queueEmailInvoice(tx *model.Transaction, csb model.H2HSendCashbackRequest) *model.BusinessError {
+	sbj, _ := t.Cacher.Hget("EMAIL_SUBJECT", "INVOICE")
 	msg, err := json.Marshal(model.SendEmailRequest{
-		Content:     tmpl,
+		Content:     t.invoiceTemplate(tx, csb.Amount),
 		Subject:     sbj,
 		Destination: tx.Email.String,
 	})
