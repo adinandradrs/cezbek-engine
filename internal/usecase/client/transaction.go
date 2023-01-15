@@ -123,12 +123,13 @@ func (t *Transaction) processCashback(data *model.Transaction, camt *model.FindC
 	if bx != nil {
 		return bx
 	}
-	_ = t.queueEmailInvoice(data, *pyld)
 	t.Logger.Info("", zap.Any("cashback_resp", v))
+	go t.queueEmailInvoice(data, *pyld)
+
 	if treward != nil {
 		reward = treward.Reward
 	}
-	_ = t.CashbackDao.Add(model.Cashback{
+	go t.CashbackDao.Add(model.Cashback{
 		KezbekRefCode: data.KezbekRefCode,
 		WalletCode:    data.WalletCode,
 		Reward:        decimal.NullDecimal{Decimal: reward},
@@ -136,6 +137,7 @@ func (t *Transaction) processCashback(data *model.Transaction, camt *model.FindC
 		H2HCode:       sql.NullString{String: v.HostCode},
 		BaseEntity:    data.BaseEntity,
 	})
+
 	return nil
 }
 
