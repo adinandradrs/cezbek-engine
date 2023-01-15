@@ -222,6 +222,14 @@ services:
   # - etc
   # will not provided by this file but only on consul,
   # it only contains how to wrap on local machine
+  cache:
+    container_name: redis-local
+    image: redis:7.0.7-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 60 1 --loglevel warning
+  
   api:
     container_name: cezbek-api
     build:
@@ -246,6 +254,39 @@ services:
 ```
 
 After all we could check the API's sandbox on our browser by ```http://{{host}}:{{port}}/api/swagger/index.html``` e.g ```http://localhost:10001/api/swagger/index.html``` to check the API is running or not. And for the job itself could be checked by docker log tail.
+
+To simulate generated HMAC signature could create a main Go file in this project by adding this code
+
+```
+package main
+
+import (
+	"github.com/adinandradrs/cezbek-engine/internal/apps"
+	"github.com/adinandradrs/cezbek-engine/internal/cdi"
+	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
+	"strconv"
+	"strings"
+	"time"
+)
+
+func main() {
+	c := cdi.NewContainer("app_cezbek_api")
+	epoch := time.Now().Unix()
+
+	d := fiber.MethodPost + ":" + strings.ToUpper("LAJADA") + ":" + strconv.FormatInt(epoch, 10) + ":" +
+		strings.ToUpper("ee33c45e2cfe3e08d352698d31da6bee")
+	c.Logger.Info("EPOCH", zap.Int64("unixts", epoch), zap.String("hmac", apps.HMAC(d, "LAJADA")))
+
+	d = fiber.MethodPost + ":" + strings.ToUpper("TOKMED") + ":" + strconv.FormatInt(epoch, 10) + ":" +
+		strings.ToUpper("9d8c53ae71611b592d8b6247db91df19")
+	c.Logger.Info("EPOCH", zap.Int64("unixts", epoch), zap.String("hmac", apps.HMAC(d, "TOKMED")))
+
+	d = fiber.MethodPost + ":" + strings.ToUpper("BLAPAK") + ":" + strconv.FormatInt(epoch, 10) + ":" +
+		strings.ToUpper("b5e7bdd79ceaa1104bdd21c92c47ef95")
+	c.Logger.Info("EPOCH", zap.Int64("unixts", epoch), zap.String("hmac", apps.HMAC(d, "BLAPAK")))
+}
+```
 
 Hope we could improve this engine for a better future, any valuable questions and input could help us to be better. 
 
