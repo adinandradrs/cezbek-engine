@@ -23,50 +23,72 @@ func main() {
 		DB:   c.Viper.GetInt("rds.index"),
 	})
 	rs := redsync.New(goredis.NewPool(client))
-	_, err := job.Every(c.Viper.GetString("schedule.send_otp_email")).Do(func() {
-		c.Logger.Info("send_otp_email running...")
-		mtx := rs.NewMutex("send_otp_email")
-		if err := mtx.Lock(); err != nil {
-			c.Logger.Error("send_otp_email lock", zap.Error(err))
-		}
-		_ = ucase.JobOnboardWatcher.SendOtpEmail()
-		if ok, err := mtx.Unlock(); !ok || err != nil {
-			c.Logger.Error("send_otp_email unlock", zap.Error(err))
-		}
-	})
-	if err != nil {
-		c.Logger.Panic("cezbek cron job is failing to run [JobOnboardWatcher.SendOtpEmail]")
+	r := runner{
+		Scheduler:  job,
+		Container:  c,
+		JobUsecase: ucase,
+		Redsync:    rs,
 	}
-
-	_, err = job.Every(c.Viper.GetString("schedule.send_invoice_email")).Do(func() {
-		c.Logger.Info("send_invoice_email running...")
-		mtx := rs.NewMutex("send_invoice_email")
-		if err := mtx.Lock(); err != nil {
-			c.Logger.Error("send_invoice_email lock", zap.Error(err))
-		}
-		_ = ucase.JobTransactionWatcher.SendInvoiceEmail()
-		if ok, err := mtx.Unlock(); !ok || err != nil {
-			c.Logger.Error("send_invoice_email unlock", zap.Error(err))
-		}
-	})
-	if err != nil {
-		c.Logger.Panic("cezbek cron job is failing to run [JobTransactionWatcher.SendInvoiceEmail]")
-	}
-
-	_, err = job.Cron(c.Viper.GetString("schedule.expire_tier")).Do(func() {
-		c.Logger.Info("expire_tier running...")
-		mtx := rs.NewMutex("expire_tier")
-		if err := mtx.Lock(); err != nil {
-			c.Logger.Error("expire_tier lock", zap.Error(err))
-		}
-		ucase.JobTierWatcher.Expire()
-		if ok, err := mtx.Unlock(); !ok || err != nil {
-			c.Logger.Error("expire_tier unlock", zap.Error(err))
-		}
-	})
-	if err != nil {
-		c.Logger.Panic("cezbek cron job is failing to run [JobTierWatcher.Expire]")
-	}
-
+	r.onStartupJobExpireTier()
+	r.onStartupJobSendInvoiceEmail()
+	r.onStartupJobSendOtpEmail()
 	job.StartBlocking()
+}
+
+type runner struct {
+	*gocron.Scheduler
+	cdi.Container
+	cdi.JobUsecase
+	*redsync.Redsync
+}
+
+func (r *runner) onStartupJobExpireTier() {
+	_, err := r.Cron(r.Viper.GetString("schedule.expire_tier")).Do(func() {
+		r.Logger.Info("expire_tier running...")
+		mtx := r.NewMutex("expire_tier")
+		if err := mtx.Lock(); err != nil {
+			r.Logger.Error("expire_tier lock", zap.Error(err))
+		}
+		r.JobTierWatcher.Expire()
+		if ok, err := mtx.Unlock(); !ok || err != nil {
+			r.Logger.Error("expire_tier unlock", zap.Error(err))
+		}
+	})
+	if err != nil {
+		r.Logger.Panic("cezbek cron job is failing to run [JobTierWatcher.Expire]")
+	}
+}
+
+func (r *runner) onStartupJobSendInvoiceEmail() {
+	_, err := r.Every(r.Viper.GetString("schedule.send_invoice_email")).Do(func() {
+		r.Logger.Info("send_invoice_email running...")
+		mtx := r.NewMutex("send_invoice_email")
+		if err := mtx.Lock(); err != nil {
+			r.Logger.Error("send_invoice_email lock", zap.Error(err))
+		}
+		_ = r.JobTransactionWatcher.SendInvoiceEmail()
+		if ok, err := mtx.Unlock(); !ok || err != nil {
+			r.Logger.Error("send_invoice_email unlock", zap.Error(err))
+		}
+	})
+	if err != nil {
+		r.Logger.Panic("cezbek cron job is failing to run [JobTransactionWatcher.SendInvoiceEmail]")
+	}
+}
+
+func (r *runner) onStartupJobSendOtpEmail() {
+	_, err := r.Every(r.Viper.GetString("schedule.send_otp_email")).Do(func() {
+		r.Logger.Info("send_otp_email running...")
+		mtx := r.NewMutex("send_otp_email")
+		if err := mtx.Lock(); err != nil {
+			r.Logger.Error("send_otp_email lock", zap.Error(err))
+		}
+		_ = r.JobOnboardWatcher.SendOtpEmail()
+		if ok, err := mtx.Unlock(); !ok || err != nil {
+			r.Logger.Error("send_otp_email unlock", zap.Error(err))
+		}
+	})
+	if err != nil {
+		r.Logger.Panic("cezbek cron job is failing to run [JobOnboardWatcher.SendOtpEmail]")
+	}
 }
