@@ -160,7 +160,7 @@ func (t *Transaction) sendCashbackRequest(reward *model.WfRewardTierProjection, 
 	}
 }
 
-func (t *Transaction) invoiceTemplate(tx *model.Transaction, amt decimal.Decimal) string {
+func (t *Transaction) invoiceEmailContent(tx *model.Transaction, amt decimal.Decimal) string {
 	tmpl, _ := t.Cacher.Hget("EMAIL_TEMPLATE", "INVOICE")
 	tmpl = strings.ReplaceAll(tmpl, "${reference}", tx.KezbekRefCode.String)
 	tmpl = strings.ReplaceAll(tmpl, "${msisdn}", tx.Msisdn.String)
@@ -178,7 +178,7 @@ func (t *Transaction) invoiceTemplate(tx *model.Transaction, amt decimal.Decimal
 func (t *Transaction) queueEmailInvoice(tx *model.Transaction, csb model.H2HSendCashbackRequest) *model.BusinessError {
 	sbj, _ := t.Cacher.Hget("EMAIL_SUBJECT", "INVOICE")
 	msg, err := json.Marshal(model.SendEmailRequest{
-		Content:     t.invoiceTemplate(tx, csb.Amount),
+		Content:     t.invoiceEmailContent(tx, csb.Amount),
 		Subject:     sbj,
 		Destination: tx.Email.String,
 	})
