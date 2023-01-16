@@ -12,22 +12,20 @@ import (
 
 func main() {
 	c := cdi.NewContainer("app_cezbek_job")
-	infra := c.LoadInfra()
-	redis := c.LoadRedis()
-	ucase := c.RegisterJobUsecase(infra, redis)
 	job := gocron.NewScheduler(time.UTC)
 	c.Logger.Info("cezbek cron job is running on background...")
 
-	client := rv8.NewClient(&rv8.Options{
-		Addr: c.Viper.GetString("rds.addresses"),
-		DB:   c.Viper.GetInt("rds.index"),
-	})
-	rs := redsync.New(goredis.NewPool(client))
+	pool := goredis.NewPool(rv8.NewClient(
+		&rv8.Options{
+			Addr: c.Viper.GetString("rds.addresses"),
+			DB:   c.Viper.GetInt("rds.index"),
+		}))
 	r := runner{
-		Scheduler:  job,
-		Container:  c,
-		JobUsecase: ucase,
-		Redsync:    rs,
+		Scheduler: job,
+		Container: c,
+		JobUsecase: c.RegisterJobUsecase(c.LoadInfra(),
+			c.LoadRedis()),
+		Redsync: redsync.New(pool),
 	}
 	r.onStartupJobExpireTier()
 	r.onStartupJobSendInvoiceEmail()
