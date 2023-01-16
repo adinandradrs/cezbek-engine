@@ -79,7 +79,7 @@ func TestWorkflow_FindCashbackByTransaction(t *testing.T) {
 	})
 	qty, trx := 1, decimal.New(15000, 1)
 	cmd := `select cashback_percentage from wf_cashbacks 
-		where min_qty >= $1 AND max_qty <= $1 AND
+		where $1 >= min_qty AND $1 <= max_qty AND
 		($2 >= min_transaction and $2 <= max_transaction) AND
 		is_deleted = false AND status = $3`
 	t.Run("should success", func(t *testing.T) {
